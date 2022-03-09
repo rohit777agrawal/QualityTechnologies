@@ -9,7 +9,7 @@ class App extends Component {
         super(props);
         this.state = {
             apiResponse: "",
-            loggedIn: false,
+            loggedIn: localStorage.getItem('loggedIn') ? JSON.parse(localStorage.getItem('loggedIn')) : false ,
             loginError: "",
         };
     }
@@ -30,6 +30,7 @@ class App extends Component {
             .then(res => {
                 if(res === "success"){
                     this.setState({loggedIn: true})
+                    localStorage.setItem('loggedIn',JSON.stringify(this.state.loggedIn))
                 }
                 else if (res === "failure"){
                     this.setState({loginError: "User not found"});
