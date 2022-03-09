@@ -45,8 +45,9 @@ class LoginPage extends Component {
                               }}
                             >
                             Submit
-                            </Button>
-                          </Form>
+                        </Button>
+                        <p className="text-warn">{this.props.loginError}</p>
+                        </Form>
                         </Col>
                         {/* <Col></Col> */}
                     </Row>
