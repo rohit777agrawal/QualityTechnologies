@@ -22,19 +22,18 @@ class LoginPage extends Component {
     render() {
         return (
             <div>
-                <Container fluid className="vh-100 text-center" >
-                    <Row className="fixed-top"><h3>Chatr</h3></Row>
-                    <Row className="h-100 align-items-center col-3">
-                        {/* <Col></Col> */}
+                <Container fluid className="vh-100 text-center col-3">
+                    <Row className="h-100 justify-content-center align-items-center">
                         <Col className="w-100">
-                        <Form className="">
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label>Email address</Form.Label>
-                            <Form.Control type="email" placeholder="Enter email"  onChange={(e)=>{this.handleEmailInput(e)}} />
-                            <Form.Text className="text-muted">
-                            We'll never share your email with anyone else.
-                            </Form.Text>
-                        </Form.Group>
+                          <h1> Chatr </h1>
+                          <Form className="">
+                            <Form.Group className="mb-3" controlId="formBasicEmail">
+                              <Form.Label>Email address</Form.Label>
+                              <Form.Control type="email" placeholder="Enter email"  onChange={(e)=>{this.handleEmailInput(e)}} />
+                              <Form.Text className="text-muted">
+                              We'll never share your email with anyone else.
+                              </Form.Text>
+                            </Form.Group>
 
                             <Form.Group className="mb-3" controlId="formBasicPassword">
                               <Form.Label>Password</Form.Label>

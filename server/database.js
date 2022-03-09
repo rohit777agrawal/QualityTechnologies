@@ -19,8 +19,18 @@ var Teacher = mongoose.model('Teacher', TeacherSchema );
 
 var test_teacher = new Teacher({ email: 'a', password: 's' });
 
-test_teacher.save(function (err) {
+const query  = Teacher.where({ email: 'a', password: 's' });
+query.findOne(function (err, teacher) {
     if (err) return handleError(err);
+    if (teacher) {
+        // don't add if already exists
+    }
+    else {
+        test_teacher.save(function (err) {
+            if (err) return handleError(err);
+        });
+    }
 });
+
 
 module.exports = { mongoose, db, Teacher}
