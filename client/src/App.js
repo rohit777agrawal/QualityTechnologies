@@ -9,7 +9,8 @@ class App extends Component {
         super(props);
         this.state = {
             apiResponse: "",
-            loggedIn: false
+            loggedIn: false,
+            loginError: "",
         };
     }
 
@@ -27,14 +28,14 @@ class App extends Component {
         fetch("http://localhost:5000/login", requestOptions)
             .then(res => res.text())
             .then(res => {
-                console.log(res)
                 if(res === "success"){
-                    console.log("Successfully logged in")
                     this.setState({loggedIn: true})
-                    console.log(this.state.loggedIn)
+                }
+                else if (res === "failure"){
+                    this.setState({loginError: "User not found"});
                 }
                 else{
-                    console.log("unsuccessful login")
+                    this.setState({loginError: "Unspecified error"});
                 }
                 
             })
@@ -51,6 +52,7 @@ class App extends Component {
             return (
                 <LoginPage 
                     loginHandler={this.submitLoginInfo.bind(this)}
+                    loginError={this.state.loginError}
                 />
             );
         }
