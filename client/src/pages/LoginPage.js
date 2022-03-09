@@ -26,7 +26,7 @@ class LoginPage extends Component {
                     <Row className="fixed-top"><h3>Chatr</h3></Row>
                     <Row className="h-100 align-items-center col-3">
                         {/* <Col></Col> */}
-                        <Col className="bg-dark w-100">
+                        <Col className="w-100">
                         <Form className="">
                         <Form.Group className="mb-3" controlId="formBasicEmail">
                             <Form.Label>Email address</Form.Label>
@@ -47,6 +47,7 @@ class LoginPage extends Component {
                         >
                             Submit
                         </Button>
+                        <p className="text-warn">{this.props.loginError}</p>
                         </Form>
                         </Col>
                         {/* <Col></Col> */}

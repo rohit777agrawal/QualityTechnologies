@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 
-var mongoose = require('./database');
+var {mongoose, db, Teacher} = require('../database');
 
 router.get("/", function(req, res, next) {
     console.log("successfully logged in")
@@ -10,14 +10,17 @@ router.get("/", function(req, res, next) {
 
 router.post("/", function(req, res, next) {
     console.log("Logged in '" + req.body.email + "' with password '" + req.body.password + "'");
-    const query  = Kitten.where({ color: 'white' });
-    query.findOne(function (err, kitten) {
+    const query  = Teacher.where({ email: req.body.email, password: req.body.password });
+    query.findOne(function (err, teacher) {
         if (err) return handleError(err);
-        if (kitten) {
-            // doc may be null if no document matched
+        if (teacher) {
+            res.send("success")
+        }
+        else {
+            res.send("failure");
         }
     });
-    res.send("success")
+    
 });
 
 module.exports = router;
