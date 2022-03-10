@@ -31,6 +31,7 @@ class App extends Component {
                 if(res === "success"){
                     this.setState({loggedIn: true})
                     localStorage.setItem('loggedIn',JSON.stringify(this.state.loggedIn))
+                    
                 }
                 else if (res === "failure"){
                     this.setState({loginError: "User not found"});

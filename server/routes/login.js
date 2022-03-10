@@ -9,7 +9,6 @@ router.get("/", function(req, res, next) {
 });
 
 router.post("/", function(req, res, next) {
-    
     const query  = Teacher.where({ email: req.body.email, password: req.body.password });
     query.findOne(function (err, teacher) {
         if (err) return handleError(err);
@@ -22,7 +21,6 @@ router.post("/", function(req, res, next) {
             console.log("User " + req.body.email + " with password " + req.body.password + " does not exist")
         }
     });
-    
 });
 
 module.exports = router;
