@@ -11,11 +11,15 @@ class App extends Component {
             apiResponse: "",
             loggedIn: localStorage.getItem('loggedIn') ? JSON.parse(localStorage.getItem('loggedIn')) : false ,
             loginError: "",
+            email: "",
+            messages: [{text: "test message"}]
         };
     }
 
-    updateLogin(loginSuccessful){
-        this.setState({loggedIn: loginSuccessful})
+    onSuccessfulLogin(email){
+        this.setState({loggedIn: true})
+        localStorage.setItem('loggedIn',JSON.stringify(this.state.loggedIn))
+        this.setState({email: email})
     }
 
     submitLoginInfo(email, password){
@@ -29,9 +33,7 @@ class App extends Component {
             .then(res => res.text())
             .then(res => {
                 if(res === "success"){
-                    this.setState({loggedIn: true})
-                    localStorage.setItem('loggedIn',JSON.stringify(this.state.loggedIn))
-                    
+                    this.onSuccessfulLogin(email)
                 }
                 else if (res === "failure"){
                     this.setState({loginError: "User not found"});
@@ -44,10 +46,21 @@ class App extends Component {
             .catch(err => err);
     }
 
+    sendMessage(text){
+        this.state.messages.push({
+            'text': text,
+            // name: this.state.email
+        })
+        console.log(this.state.messages)
+    }
+
     render(){
         if (this.state.loggedIn){
             return (
-                <ChatPage/>
+                <ChatPage
+                    messages={this.state.messages}
+                    messageHandler={this.sendMessage.bind(this)}
+                />
             );
         }
         else {
