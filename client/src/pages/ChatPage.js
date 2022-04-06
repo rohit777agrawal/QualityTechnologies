@@ -1,18 +1,18 @@
 import React, { Component } from "react";
-import { Container, Row, Col} from 'react-bootstrap';
+import { Container, Row, Col, Button} from 'react-bootstrap';
 // import "./App.css";
 
 class ChatPage extends Component {
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (
             <Container fluid className="vh-100 text-center" >
                 <Row className="h-10 bg-dark text-light sticky-top">
                     <Col>
-                        <h3>Chatr</h3>
+                        <h1>Chatr</h1>
+                        <Button variant="outline-danger" size="sm" style={{float: "right", marginTop: 0, marginBottom: "5px"}} type="submit" onClick={(e)=>{
+                            localStorage.setItem('login', "")
+                            this.props.loginUpdater(false)
+                        }}>Log Out</Button>
                     </Col>
                 </Row>
                 <Row>
@@ -25,7 +25,7 @@ class ChatPage extends Component {
                         <p>text box will go here</p>
                     </Col>
                 </Row>
-            </Container>  
+            </Container>
         );
     }
 }

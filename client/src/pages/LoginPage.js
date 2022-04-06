@@ -1,13 +1,20 @@
 import React, { Component } from "react";
 import { Container, Row, Col, Card, Button, Form} from 'react-bootstrap';
+import ErrorBox from '../components/ErrorBox.js'
+
+const url = "http://localhost:5000/";
 
 class LoginPage extends Component {
+    componentDidMount(){
+        document.title = "Login to Chatr";
+    }
+
     constructor(props) {
         super(props);
         this.state = {
             apiResponse: "",
             email: "",
-            password: ""
+            password: "",
         };
     }
 
@@ -21,12 +28,12 @@ class LoginPage extends Component {
 
     render() {
         return (
-            <div>
+            <>
                 <Container fluid className="vh-100 text-center col-3">
                     <Row className="h-100 justify-content-center align-items-center">
                         <Col className="w-100">
                           <h1> Chatr </h1>
-                          <Form className="">
+                          <Form className="" target="">
                             <Form.Group className="mb-3" controlId="formBasicEmail">
                               <Form.Label>Email address</Form.Label>
                               <Form.Control type="email" placeholder="Enter email"  onChange={(e)=>{this.handleEmailInput(e)}} />
@@ -40,23 +47,25 @@ class LoginPage extends Component {
                               <Form.Control type="password" placeholder="Password" onChange={(e)=>{this.handlePasswordInput(e)}}/>
                             </Form.Group>
                             <Button variant="primary" type="submit"
-                              onClick={()=>{
-                                this.props.loginHandler(this.state.email, this.state.password)
+                              onClick={(e)=>{
+                                e.preventDefault();
+                                console.log();
+                                this.props.loginHandler(this.state.email, this.state.password);
                               }}
                             >
                             Submit
                         </Button>
-                        <p className="text-warn">{this.props.loginError}</p>
                         </Form>
                         </Col>
                         {/* <Col></Col> */}
                     </Row>
                     <Row >
-                        <Col className="fixed-bottom">{this.state.email + " " + this.state.password}</Col>
+                        <Col className="fixed-bottom">{this.state.email + " " + this.state.password}
+                            <ErrorBox>{this.props.loginError}</ErrorBox>
+                        </Col>
                     </Row>
                 </Container>
-
-            </div>
+            </>
         );
     }
 }
