@@ -1,16 +1,16 @@
 var express = require("express");
 var router = express.Router();
 
-var {mongoose, db, Teacher} = require('../database');
+var {mongoose, db, User} = require('../database');
 
 router.get("/:id", function(req, res, next) {
-    Teacher.findById(req.params.id, function(err, teacher) {
-        res.json(teacher);
+    User.findById(req.params.id, function(err, user) {
+        res.json(user);
     });
 });
 
 router.post("/", function(req, res, next) {
-    const query  = Teacher.where({ email: req.body.email, password: req.body.password });
+    const query  = User.where({ email: req.body.email, password: req.body.password });
     query.findOne(function (err, teacher) {
         if (err) return handleError(err);
         if (teacher) {
