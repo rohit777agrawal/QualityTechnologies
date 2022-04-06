@@ -2,6 +2,7 @@
 var mongoose = require('mongoose');
 
 //Set up default mongoose connection
+//Set url here
 var mongoDB = '';
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true});
 
