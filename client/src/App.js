@@ -38,9 +38,10 @@ class App extends Component {
             apiResponse: "",
             loggedIn: false,
             loginError: "",
+            email: "",
+            messages: [{text: "test message"}]
         };
     }
-
     updateLogin(loginSuccessful){
         this.setState({loggedIn: loginSuccessful} )
         if(!loginSuccessful){
@@ -73,10 +74,22 @@ class App extends Component {
 
     }
 
+    sendMessage(text){
+        this.state.messages.push({
+            'text': text,
+            // name: this.state.email
+        })
+        console.log(this.state.messages)
+    }
+
     render(){
         if (this.state.loggedIn){
             return (
-                <ChatPage loginUpdater={this.updateLogin.bind(this)}/>
+                <ChatPage
+                    messages={this.state.messages}
+                    messageHandler={this.sendMessage.bind(this)}
+                    loginUpdater={this.updateLogin.bind(this)}
+                />
             );
         }
         else {

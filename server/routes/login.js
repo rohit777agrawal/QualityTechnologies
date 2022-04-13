@@ -25,7 +25,6 @@ router.post("/", function(req, res, next) {
             console.log("User " + req.body.email + " with password " + req.body.password + " does not exist")
         }
     });
-
 });
 
 module.exports = router;
