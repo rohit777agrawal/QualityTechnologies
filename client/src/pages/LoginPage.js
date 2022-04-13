@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import { Container, Row, Col, Card, Button, Form} from 'react-bootstrap';
+import { Container, Row, Col, /*Card,*/ Button, Form} from 'react-bootstrap';
 import ErrorBox from '../components/ErrorBox.js'
 
-const url = "http://localhost:5000/";
+//const url = "http://localhost:5000/";
 
 class LoginPage extends Component {
     componentDidMount(){
@@ -27,6 +27,7 @@ class LoginPage extends Component {
     }
 
     render() {
+        console.log(this)
         return (
             <>
                 <Container fluid className="vh-100 text-center col-3">
@@ -46,10 +47,9 @@ class LoginPage extends Component {
                               <Form.Label>Password</Form.Label>
                               <Form.Control type="password" placeholder="Password" onChange={(e)=>{this.handlePasswordInput(e)}}/>
                             </Form.Group>
-                            <Button variant="primary" type="submit"
-                              onClick={(e)=>{
+                            <Button variant="primary" type="submit" onClick={(e) => {
                                 e.preventDefault();
-                                console.log();
+                                console.log(e);
                                 this.props.loginHandler(this.state.email, this.state.password);
                               }}
                             >
@@ -60,7 +60,8 @@ class LoginPage extends Component {
                         {/* <Col></Col> */}
                     </Row>
                     <Row >
-                        <Col className="fixed-bottom">{this.state.email + " " + this.state.password}
+                        <Col className="fixed-bottom">
+                            {/*this.state.email + " " + this.state.password*/}
                             <ErrorBox>{this.props.loginError}</ErrorBox>
                         </Col>
                     </Row>

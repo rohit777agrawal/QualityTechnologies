@@ -12,17 +12,23 @@ class App extends Component {
     componentDidMount(){
         var id;
         //Verify that a valid login is saved
-        if((id = localStorage.getItem('login'))!=''){
-            fetch(url + "user/login/" + id)
-            .then((res) => res.json())
-            .then(json => {
-                if(json._id == id){
-                    this.setState({loggedIn: true});
+        if((id = localStorage.getItem('login'))!==''){
+            (async () => {
+                let response;
+                try{
+                    response = await fetch(url + "user/login/" + id)
+                } catch (ex) {
+                    console.log("Error", response.status);
                 }
-            },
-            (err) => {
-            console.log("err", err);
-            })
+                if(response.ok){
+                    var json = response.json();
+                    if(json._id === id){
+                        this.setState({loggedIn: true});
+                    }
+                } else {
+                    console.log("Error", response.status);
+                }
+            })()
         }
     }
 

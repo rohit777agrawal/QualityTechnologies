@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 
 //Set up default mongoose connection
 //Set url here
-var mongoDB = '';
+var mongoDB = 'mongodb+srv://CrazyArtOrange:city-oaf-handshake@cluster0.son2o.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true});
 
 //Get the default connection
@@ -12,24 +12,39 @@ var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 var UserSchema = new mongoose.Schema({
+    name: String,
     email: String,
-    teacher: Boolean,
     password: String,
-    messageIds: [String]
+    link: String,
+    displayName: String,
+    teacher: Boolean,
+    sentMessageIDs: [String],
+    recievedMessageIDs: [String],
+    classroomIDs: [String],
+    active: Boolean
 })
 
 var MessageSchema = new mongoose.Schema({
     sender: String,
     recipients: [String],
-    contents: String
+    contents: String,
+    sentTime: Date
 })
+
+var ClassroomSchema = new mongoose.Schema({
+    teacherID: String,
+    userIDs: [String],
+    active: Boolean
+})
+
+
 
 var User = mongoose.model('User', UserSchema );
 var Message = mongoose.model('Message', MessageSchema );
 //var test_Teacher = new User({ email: 'teacher@mail.com', teacher: true, password: 'password' });
 //var test_Student = new User({ email: 'student@mail.com', teacher: false, password: 'password' });
 
-createUserIfMissing = (userIn) => {
+function createUserIfMissing(userIn) {
     const query  = User.where(userIn);
     query.findOne(function (err, user) {
         if (err) return handleError(err);
