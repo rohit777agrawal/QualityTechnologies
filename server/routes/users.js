@@ -3,6 +3,16 @@ var router = express.Router();
 
 var {mongoose, db, User} = require('../database');
 
+router.get('/', function(req, res, next) {
+    User.find(function(err, users){
+        if(err) {
+            console.log(err);
+        } else {
+            res.json(users);
+        }
+    })
+})
+
 router.get("/:id", function(req, res, next) {
     User.findById(req.params.id, function(err, user) {
         res.json(user);

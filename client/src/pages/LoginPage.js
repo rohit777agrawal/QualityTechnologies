@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import { Container, Row, Col, /*Card,*/ Button, Form} from 'react-bootstrap';
 import ErrorBox from '../components/ErrorBox.js'
 
-//const url = "http://localhost:5000/";
-
 class LoginPage extends Component {
     componentDidMount(){
         document.title = "Login to Chatr";
@@ -27,7 +25,6 @@ class LoginPage extends Component {
     }
 
     render() {
-        console.log(this)
         return (
             <>
                 <Container fluid className="vh-100 text-center col-3">
@@ -49,7 +46,6 @@ class LoginPage extends Component {
                             </Form.Group>
                             <Button variant="primary" type="submit" onClick={(e) => {
                                 e.preventDefault();
-                                console.log(e);
                                 this.props.loginHandler(this.state.email, this.state.password);
                               }}
                             >

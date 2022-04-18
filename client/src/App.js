@@ -16,7 +16,7 @@ class App extends Component {
             (async () => {
                 let response;
                 try{
-                    response = await fetch(url + "user/login/" + id)
+                    response = await fetch(url + "users/login/" + id)
                 } catch (ex) {
                     console.log("Error", response.status);
                 }
@@ -56,7 +56,7 @@ class App extends Component {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ 'email': email, 'password': password })
         }
-        fetch(url + "user/login", requestOptions)
+        fetch(url + "users/login", requestOptions)
             .then((res) => res.json())
             .then((json) => {
                 if(json.text === "success"){
@@ -88,7 +88,7 @@ class App extends Component {
                 <ChatPage
                     messages={this.state.messages}
                     messageHandler={this.sendMessage.bind(this)}
-                    loginUpdater={this.updateLogin.bind(this)}
+                    loginHandler={this.updateLogin.bind(this)}
                 />
             );
         }

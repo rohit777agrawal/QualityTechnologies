@@ -24,7 +24,7 @@ class ChatPage extends Component {
                 <Row>
                     <p>{this.state.messages[0].text}</p>
                 </Row>
-                
+
             );
             return <p>{JSON.stringify(this.props.messages)}</p>
         }
@@ -40,7 +40,7 @@ class ChatPage extends Component {
                         <h1>Chatr</h1>
                         <Button variant="outline-danger" size="sm" style={{float: "right", marginTop: 0, marginBottom: "5px"}} type="submit" onClick={(e)=>{
                             localStorage.setItem('login', "")
-                            this.props.loginUpdater(false)
+                            this.props.loginHandler(false)
                         }}>Log Out</Button>
                     </Col>
                 </Row>
@@ -62,6 +62,7 @@ class ChatPage extends Component {
                                 onChange={this.handleMessageInput}
                             />
                             <Button variant="outline-secondary" id="button-addon2" type="submit" onClick={(e)=>{
+                                e.preventDefault();
                                 // this.state.draftMessage = ""
                                 console.log(this.state.draftMessage)
                                 this.setState({draftMessage: ""})
