@@ -6,7 +6,6 @@ import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const url = "http://localhost:5000/";
-//fetch(url + "login/" + localStorage.getItem('login')))
 
 class App extends Component {
     componentDidMount(){

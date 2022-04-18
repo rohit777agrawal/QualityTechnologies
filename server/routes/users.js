@@ -36,7 +36,6 @@ router.post("/login", function(req, res, next) {
 
 router.put("/:id", function(req, res, next) {
     User.findById(req.params.id, function(err, user) {
-        //console.log(user);
         Object.assign(user, req.params.body);
         user.save();
     })

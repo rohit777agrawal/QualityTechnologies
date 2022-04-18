@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Container, Row, Col, InputGroup, FormControl, Button, Form, Card} from 'react-bootstrap';
-// import "./App.css";
 
 class ChatPage extends Component {
     constructor(props) {

@@ -15,7 +15,6 @@ class ErrorBox extends Component{
             </div>
             )
     }
-
 }
 
 export default ErrorBox;
