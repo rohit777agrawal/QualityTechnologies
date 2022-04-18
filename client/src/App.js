@@ -4,6 +4,9 @@ import LoginPage from "./pages/LoginPage.js";
 import "./App.css";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js';
+import io from "socket.io-client"
+
+const socket = io()
 
 const url = "http://localhost:5000/";
 //fetch(url + "login/" + localStorage.getItem('login')))
