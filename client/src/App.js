@@ -6,9 +6,24 @@ import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js';
 import io from "socket.io-client"
 
-const socket = io()
-
 const url = "http://localhost:5000/";
+
+const socket = io(url);
+
+const tempMessages = []
+
+// Message from server
+socket.on('message', message => {
+    console.log(message);
+
+    tempMessages.push({
+        "text": message,
+    })
+
+    //console.log(tempMessages);
+
+})
+
 //fetch(url + "login/" + localStorage.getItem('login')))
 
 class App extends Component {
@@ -17,7 +32,7 @@ class App extends Component {
         //Verify that a valid login is saved
         if((id = localStorage.getItem('login'))!==''){
             (async () => {
-                let response;
+    let response;
                 try{
                     response = await fetch(url + "users/login/" + id)
                 } catch (ex) {
@@ -42,7 +57,7 @@ class App extends Component {
             loggedIn: false,
             loginError: "",
             email: "",
-            messages: [{text: "test message"}]
+            messages: [{text: "test Message"}]
         };
     }
     updateLogin(loginSuccessful){
@@ -77,12 +92,18 @@ class App extends Component {
 
     }
 
-    sendMessage(text){
-        this.state.messages.push({
-            'text': text,
-            // name: this.state.email
-        })
+    sendMessage(text) {
+        //this.state.messages.push({
+        //    'text': text,
+        //    // name: this.state.email
+        //})
+        for (let message in tempMessages){
+            this.state.messages.push(tempMessages[message]);
+        }
         console.log(this.state.messages)
+        tempMessages.splice(0,tempMessages.length);
+
+        //console.log(tempMessages)
     }
 
     render(){
