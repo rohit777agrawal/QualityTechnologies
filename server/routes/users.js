@@ -1,3 +1,4 @@
+const { json } = require("express");
 var express = require("express");
 var router = express.Router();
 
@@ -13,23 +14,40 @@ router.get('/', function(req, res, next) {
     })
 })
 
+router.get("/active", function(req, res, next) {
+    User.find({active: true}, (err, users)=>{
+        if (err){
+            res.status(500).json(err);
+        }
+        else if (users){
+            res.status(200).json(users)
+        }
+        else {
+            res.status(404).json("no users found")
+        }
+    })
+});
+
 router.get("/:id", function(req, res, next) {
     User.findById(req.params.id, function(err, user) {
         res.json(user);
     });
 });
 
+
+
 router.post("/login", function(req, res, next) {
-    const query  = User.where({ email: req.body.email, password: req.body.password });
-    query.findOne(function (err, user) {
-        if (err) return handleError(err);
-        if (user) {
-            res.json({text: "success", _id: user._id})
-            console.log("Found user '" + req.body.email + "' with password '" + req.body.password + "'");
+    const filter  = { email: req.body.email, password: req.body.password }
+    User.findOneAndUpdate( filter, { $set: {active: true}}, {"new": true}, (err, user)=>{
+        if (err) {
+            console.log(err)
+            res.status(500).json({"error": JSON.stringify(err)})
+        }
+        else if (user){
+            res.status(202).json({text: "success"})
         }
         else {
-            res.json({text:"failure"});
-            console.log("User " + req.body.email + " with password " + req.body.password + " does not exist")
+            res.status(404).json({text: "failure"})
         }
     });
 });

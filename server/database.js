@@ -56,7 +56,30 @@ function createUserIfMissing(userIn) {
     });
 }
 
-createUserIfMissing({ email: 'teacher@mail.com', teacher: true, password: 'password' });
-createUserIfMissing({ email: 'student@mail.com', teacher: false, password: 'password' });
+createUserIfMissing({ 
+    name: 'test teacher', 
+    email: 'teacher@mail.com',
+    password: 'password',
+    link: "",
+    displayName: "testTeacher",
+    teacher: true,
+    sentMessageIDs: [],
+    recievedMessageIDs: [],
+    classroomIDs: [],
+    active: false
+});
+
+createUserIfMissing({ 
+    name: 'test student',
+    email: 'student@mail.com',
+    password: 'password',
+    link: '123xyz',
+    displayName: "testStudent",
+    teacher: false,
+    sentMessageIDs: [],
+    recievedMessageIDs: [],
+    classroomIDs: [],
+    active: false
+});
 
 module.exports = { mongoose, db, User, Message}

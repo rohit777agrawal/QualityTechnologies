@@ -39,7 +39,8 @@ class App extends Component {
             loggedIn: false,
             loginError: "",
             email: "",
-            messages: [{text: "test message"}]
+            messages: [{text: "test message"}],
+            activeUsers: []
         };
     }
     updateLogin(loginSuccessful){
@@ -82,13 +83,33 @@ class App extends Component {
         console.log(this.state.messages)
     }
 
+    handleActiveUsers(){
+        const requestOptions = {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'},
+        }
+        fetch(url + "users/active", requestOptions)
+            .then((res) => {
+                if (res.ok){
+                    return res.json()
+                }
+            })
+            .then((users)=>{
+                console.log(users)
+                this.setState({activeUsers: users})
+            })
+            .catch(err => err);
+    }
+
     render(){
         if (this.state.loggedIn){
             return (
                 <ChatPage
                     messages={this.state.messages}
                     messageHandler={this.sendMessage.bind(this)}
-                    loginHandler={this.updateLogin.bind(this)}
+                    loginUpdater={this.updateLogin.bind(this)}
+                    activeUsersHandler={this.handleActiveUsers.bind(this)}
+                    activeUsers={this.state.activeUsers}
                 />
             );
         }

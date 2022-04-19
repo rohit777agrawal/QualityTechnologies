@@ -40,11 +40,14 @@ class ChatPage extends Component {
                         <h1>Chatr</h1>
                         <Button variant="outline-danger" size="sm" style={{float: "right", marginTop: 0, marginBottom: "5px"}} type="submit" onClick={(e)=>{
                             localStorage.setItem('login', "")
-                            this.props.loginHandler(false)
+                            this.props.loginUpdater(false)
                         }}>Log Out</Button>
                     </Col>
                 </Row>
                 <Row className="align-items-bottom">
+                    <Col md="auto">
+                        {this.renderActiveUsers()}
+                    </Col>
                     <Col className="align-items-bottom">
                         {this.renderMessages()}
                     </Col>
