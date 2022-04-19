@@ -95,10 +95,12 @@ class App extends Component {
                 }
             })
             .then((users)=>{
-                console.log(users)
                 this.setState({activeUsers: users})
             })
-            .catch(err => err);
+            .catch((err) => {
+                console.log(err)
+                return err
+            });
     }
 
     render(){

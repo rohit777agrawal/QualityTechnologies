@@ -14,6 +14,10 @@ class ChatPage extends Component {
         this.handleMessageInput = this.handleMessageInput.bind(this)
     }
 
+    componentDidMount(){
+        this.props.activeUsersHandler()
+    }
+
     handleMessageInput(e){
         this.setState({draftMessage: e.target.value})
     }
@@ -32,6 +36,13 @@ class ChatPage extends Component {
             return <p>no messages yet! {JSON.stringify(this.props)}</p>
         }
     }
+
+    renderActiveUsers(){
+        return this.props.activeUsers.map((user)=>{
+            return <p key={user._id}>{user.displayName}</p>
+        })
+    }
+
     render() {
         return (
             <Container fluid className="vh-100 text-center" >
