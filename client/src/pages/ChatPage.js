@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Container, Row, Col, InputGroup, FormControl, Button, Form, Card} from 'react-bootstrap';
-// import "./App.css";
 
 class ChatPage extends Component {
     constructor(props) {
@@ -20,11 +19,12 @@ class ChatPage extends Component {
 
     renderMessages(){
         if (this.props.messages.length > 0){
+            var rows = [];
+            for(var i = 0; i < this.state.messages.length; i++){
+                rows.push(<Row key = {i}><p>{this.state.messages[i].text}</p></Row>);
+            }
             return (
-                <Row>
-                    <p>{this.state.messages[0].text}</p>
-                </Row>
-                
+                rows
             );
             return <p>{JSON.stringify(this.props.messages)}</p>
         }
@@ -32,13 +32,19 @@ class ChatPage extends Component {
             return <p>no messages yet! {JSON.stringify(this.props)}</p>
         }
     }
-
     render() {
         return (
             <Container fluid className="vh-100 text-center" >
-                <Row className="h-10 bg-dark text-light sticky-top">
+                <Row style={{justifyContent: "center"}} className="h-10 bg-dark text-light sticky-top">
+                    <Col />
                     <Col>
-                        <h3>Chatr</h3>
+                        <h1>Chatr</h1>
+                    </Col>
+                    <Col style={{display:"flex", flexDirection: "column", justifyContent:"center"}}>
+                        <Button style={{alignSelf: "flex-end"}} variant="outline-danger" size="sm" type="submit" onClick={(e)=>{
+                            localStorage.setItem('login', "")
+                            this.props.loginHandler(false)
+                        }}>Log Out</Button>
                     </Col>
                 </Row>
                 <Row className="align-items-bottom">
@@ -59,6 +65,7 @@ class ChatPage extends Component {
                                 onChange={this.handleMessageInput}
                             />
                             <Button variant="outline-secondary" id="button-addon2" type="submit" onClick={(e)=>{
+                                e.preventDefault();
                                 // this.state.draftMessage = ""
                                 console.log(this.state.draftMessage)
                                 this.setState({draftMessage: ""})
@@ -70,7 +77,7 @@ class ChatPage extends Component {
                         </Form>
                     </Col>
                 </Row>
-            </Container>  
+            </Container>
         );
     }
 }

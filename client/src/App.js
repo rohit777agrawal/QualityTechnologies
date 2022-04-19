@@ -3,23 +3,42 @@ import ChatPage from './pages/ChatPage.js';
 import LoginPage from "./pages/LoginPage.js";
 import "./App.css";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import '../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js';
+
+const url = "http://localhost:5000/";
 
 class App extends Component {
+    componentDidMount(){
+        var id;
+        //Verify that a valid login is saved
+        if((id = localStorage.getItem('login'))!==''){
+            fetch(url + "users/" + id)
+                .then((res) => res.json())
+                .then((json) => {
+                    this.setState({loggedIn: json._id === id});
+                })
+                .catch((err) => {
+                    console.error(err);
+                })
+        }
+    }
+
     constructor(props) {
         super(props);
         this.state = {
             apiResponse: "",
-            loggedIn: localStorage.getItem('loggedIn') ? JSON.parse(localStorage.getItem('loggedIn')) : false ,
+            loggedIn: false,
             loginError: "",
             email: "",
             messages: [{text: "test message"}]
         };
     }
-
-    onSuccessfulLogin(email){
-        this.setState({loggedIn: true})
-        localStorage.setItem('loggedIn',JSON.stringify(this.state.loggedIn))
-        this.setState({email: email})
+    updateLogin(loginSuccessful){
+        this.setState({loggedIn: loginSuccessful} )
+        if(!loginSuccessful){
+            console.log(this.state.loggedIn);
+            this.setState({loginError: ""})
+        }
     }
 
     submitLoginInfo(email, password){
@@ -28,25 +47,36 @@ class App extends Component {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ 'email': email, 'password': password })
         }
-
-        fetch("http://localhost:5000/login", requestOptions)
-            .then(res => res.text())
-            .then(res => {
-                if(res === "success"){
-                    this.onSuccessfulLogin(email)
+        fetch(url + "users/login", requestOptions)
+            .then((res) => res.json())
+            .then((json) => {
+                if(json.text === "success"){
+                    this.setState({loggedIn: true})
+                    localStorage.setItem('login',json._id)
                 }
-                else if (res === "failure"){
+                else if (json.text === "failure"){
                     this.setState({loginError: "User not found"});
                 }
                 else{
                     this.setState({loginError: "Unspecified error"});
                 }
-                
             })
-            .catch(err => err);
+            .catch((err) => {
+                console.error(err);
+            });
     }
 
     sendMessage(text){
+        const requestOptions = {
+            method: 'Post',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({"sender": localStorage.getItem('login'), "recipients": fetch(url+"users/"), "contents": text})
+        }
+        /*fetch(url + "messages/", requestOptions)
+            .then((res) => res.json())
+            .then((json) => {
+                console.log(json);
+            })*/
         this.state.messages.push({
             'text': text,
             // name: this.state.email
@@ -60,12 +90,13 @@ class App extends Component {
                 <ChatPage
                     messages={this.state.messages}
                     messageHandler={this.sendMessage.bind(this)}
+                    loginHandler={this.updateLogin.bind(this)}
                 />
             );
         }
         else {
             return (
-                <LoginPage 
+                <LoginPage
                     loginHandler={this.submitLoginInfo.bind(this)}
                     loginError={this.state.loginError}
                 />
