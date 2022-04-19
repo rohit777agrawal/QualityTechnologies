@@ -12,22 +12,14 @@ class App extends Component {
         var id;
         //Verify that a valid login is saved
         if((id = localStorage.getItem('login'))!==''){
-            (async () => {
-                let response;
-                try{
-                    response = await fetch(url + "users/login/" + id)
-                } catch (ex) {
-                    console.log("Error", response.status);
-                }
-                if(response.ok){
-                    var json = response.json();
-                    if(json._id === id){
-                        this.setState({loggedIn: true});
-                    }
-                } else {
-                    console.log("Error", response.status);
-                }
-            })()
+            fetch(url + "users/" + id)
+                .then((res) => res.json())
+                .then((json) => {
+                    this.setState({loggedIn: json._id === id});
+                })
+                .catch((err) => {
+                    console.error(err);
+                })
         }
     }
 
@@ -69,11 +61,22 @@ class App extends Component {
                     this.setState({loginError: "Unspecified error"});
                 }
             })
-            .catch(err => err);
-
+            .catch((err) => {
+                console.error(err);
+            });
     }
 
     sendMessage(text){
+        const requestOptions = {
+            method: 'Post',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({"sender": localStorage.getItem('login'), "recipients": fetch(url+"users/"), "contents": text})
+        }
+        /*fetch(url + "messages/", requestOptions)
+            .then((res) => res.json())
+            .then((json) => {
+                console.log(json);
+            })*/
         this.state.messages.push({
             'text': text,
             // name: this.state.email

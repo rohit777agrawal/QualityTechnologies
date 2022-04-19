@@ -19,11 +19,12 @@ class ChatPage extends Component {
 
     renderMessages(){
         if (this.props.messages.length > 0){
+            var rows = [];
+            for(var i = 0; i < this.state.messages.length; i++){
+                rows.push(<Row key = {i}><p>{this.state.messages[i].text}</p></Row>);
+            }
             return (
-                <Row>
-                    <p>{this.state.messages[0].text}</p>
-                </Row>
-
+                rows
             );
             return <p>{JSON.stringify(this.props.messages)}</p>
         }
@@ -34,10 +35,13 @@ class ChatPage extends Component {
     render() {
         return (
             <Container fluid className="vh-100 text-center" >
-                <Row className="h-10 bg-dark text-light sticky-top">
+                <Row style={{justifyContent: "center"}} className="h-10 bg-dark text-light sticky-top">
+                    <Col />
                     <Col>
                         <h1>Chatr</h1>
-                        <Button variant="outline-danger" size="sm" style={{float: "right", marginTop: 0, marginBottom: "5px"}} type="submit" onClick={(e)=>{
+                    </Col>
+                    <Col style={{display:"flex", flexDirection: "column", justifyContent:"center"}}>
+                        <Button style={{alignSelf: "flex-end"}} variant="outline-danger" size="sm" type="submit" onClick={(e)=>{
                             localStorage.setItem('login', "")
                             this.props.loginHandler(false)
                         }}>Log Out</Button>
