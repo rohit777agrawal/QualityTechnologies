@@ -21,8 +21,10 @@ class App extends Component {
                     console.error(err);
                 })
         }
+        ["Tomorrow will bring something new, so leave today as a memory.", "He stomped on his fruit loops and thus became a cereal killer.", "Each person who knows you has a different perception of who you are.", "Lets all be unique together until we realise we are all the same.", "It was always dangerous to drive with him since he insisted the safety cones were a slalom course.", "You have every right to be angry, but that doesn't give you the right to be mean.", "Her hair was windswept as she rode in the black convertible."].forEach((message) => {
+            this.state.messages.push({text: message, wasSent: Math.random() > 0.5});
+        })
     }
-
     constructor(props) {
         super(props);
         this.state = {
