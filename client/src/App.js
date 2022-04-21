@@ -30,7 +30,7 @@ class App extends Component {
             loggedIn: false,
             loginError: "",
             email: "",
-            messages: [{text: "test message"}]
+            messages: [{text: "test message", wasSent: true}]
         };
     }
     updateLogin(loginSuccessful){
@@ -79,6 +79,7 @@ class App extends Component {
             })*/
         this.state.messages.push({
             'text': text,
+            'wasSent': Math.random() > 0.5
             // name: this.state.email
         })
         console.log(this.state.messages)
