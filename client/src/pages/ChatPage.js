@@ -66,6 +66,7 @@ class ChatPage extends Component {
                                 console.log(this.state.draftMessage)
                                 this.setState({draftMessage: ""})
                                 this.props.messageHandler(this.state.draftMessage)
+                                socket.emit('chatMessage', this.state.draftMessage)
                             }}>
                             send
                             </Button>
