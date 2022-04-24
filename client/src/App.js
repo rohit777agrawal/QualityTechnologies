@@ -47,6 +47,14 @@ class App extends Component {
                     console.log("Error", response.status);
                 }
             })()
+            fetch(url + "users/" + id)
+                .then((res) => res.json())
+                .then((json) => {
+                    this.setState({loggedIn: json._id === id});
+                })
+                .catch((err) => {
+                    console.error(err);
+                })
         }
     }
 
@@ -88,8 +96,9 @@ class App extends Component {
                     this.setState({loginError: "Unspecified error"});
                 }
             })
-            .catch(err => err);
-
+            .catch((err) => {
+                console.error(err);
+            });
     }
 
     sendMessage(text) {
@@ -100,11 +109,27 @@ class App extends Component {
         for (let message in tempMessages){
             this.state.messages.push(tempMessages[message]);
         }
-        console.log(this.state.messages)
-        tempMessages.splice(0,tempMessages.length);
-
-        //console.log(tempMessages)
     }
+    //sendMessage(text){
+    //    const requestOptions = {
+    //        method: 'Post',
+    //        headers: {'Content-Type': 'application/json'},
+    //        body: JSON.stringify({"sender": localStorage.getItem('login'), "recipients": fetch(url+"users/"), "contents": text})
+    //    }
+    //    /*fetch(url + "messages/", requestOptions)
+    //        .then((res) => res.json())
+    //        .then((json) => {
+    //            console.log(json);
+    //        })*/
+    //    this.state.messages.push({
+    //        'text': text,
+    //        // name: this.state.email
+    //    })
+    //    console.log(this.state.messages)
+    //    tempMessages.splice(0,tempMessages.length);
+
+    //    //console.log(tempMessages)
+    //}
 
     render(){
         if (this.state.loggedIn){
