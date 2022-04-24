@@ -1,12 +1,6 @@
 import React, { Component } from "react";
 import { Container, Row, Col, InputGroup, FormControl, Button, Form, Card} from 'react-bootstrap';
 
-import io from "socket.io-client"
-
-const url = "http://localhost:5000/";
-
-const socket = io(url);
-
 class ChatPage extends Component {
   constructor(props) {
     super(props);
@@ -66,7 +60,6 @@ class ChatPage extends Component {
                                 console.log(this.state.draftMessage)
                                 this.setState({draftMessage: ""})
                                 this.props.messageHandler(this.state.draftMessage)
-                                socket.emit('chatMessage', this.state.draftMessage)
                             }}>
                             send
                             </Button>

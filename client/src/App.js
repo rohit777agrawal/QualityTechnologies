@@ -13,16 +13,7 @@ const socket = io(url);
 const tempMessages = []
 
 // Message from server
-socket.on('message', message => {
-    console.log(message);
 
-    tempMessages.push({
-        "text": message,
-    })
-
-    //console.log(tempMessages);
-
-})
 
 //fetch(url + "login/" + localStorage.getItem('login')))
 
@@ -60,6 +51,7 @@ class App extends Component {
 
     constructor(props) {
         super(props);
+
         this.state = {
             apiResponse: "",
             loggedIn: false,
@@ -67,12 +59,24 @@ class App extends Component {
             email: "",
             messages: [{text: "test Message"}]
         };
+
+        this.initSocket();
     }
+
+    initSocket(){
+        socket.on('message', message => {
+            console.log(message);
+            var updatedMessages = this.state.messages;
+            updatedMessages.push({text: message});
+            this.setState({messages: updatedMessages});        
+        })
+    }
+
     updateLogin(loginSuccessful){
         this.setState({loggedIn: loginSuccessful} )
         if(!loginSuccessful){
             console.log(this.state.loggedIn);
-            this.setState({loginError: ""})
+            this.setState({loginError: ""});
         }
     }
 
@@ -109,6 +113,8 @@ class App extends Component {
         for (let message in tempMessages){
             this.state.messages.push(tempMessages[message]);
         }
+
+        socket.emit('chatMessage', text)
     }
     //sendMessage(text){
     //    const requestOptions = {
