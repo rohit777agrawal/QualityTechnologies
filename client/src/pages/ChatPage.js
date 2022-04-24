@@ -2,36 +2,26 @@ import React, { Component } from "react";
 import { Container, Row, Col, InputGroup, FormControl, Button, Form, Card} from 'react-bootstrap';
 
 class ChatPage extends Component {
-    constructor(props) {
-        super(props);
+  constructor(props) {
+    super(props);
 
-        this.state = {
-            draftMessage: "",
-            messages: props.messages
-        }
-
-        this.handleMessageInput = this.handleMessageInput.bind(this)
+    this.state = {
+      draftMessage: "",
+      messages: props.messages
     }
 
-    handleMessageInput(e){
-        this.setState({draftMessage: e.target.value})
-    }
+    this.handleMessageInput = this.handleMessageInput.bind(this)
+  }
 
-    renderMessages(){
-        if (this.props.messages.length > 0){
-            var rows = [];
-            for(var i = 0; i < this.state.messages.length; i++){
-                rows.push(<Row key = {i}><p>{this.state.messages[i].text}</p></Row>);
-            }
-            return (
-                rows
-            );
-            return <p>{JSON.stringify(this.props.messages)}</p>
-        }
-        else {
-            return <p>no messages yet! {JSON.stringify(this.props)}</p>
-        }
-    }
+  handleMessageInput(e){
+    this.setState({draftMessage: e.target.value})
+  }
+
+  renderMessages(){
+    return this.props.messages.map((message) => {
+      return <p>{message.text}</p>
+    })
+  }
     render() {
         return (
             <Container fluid className="vh-100 text-center" >
