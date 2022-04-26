@@ -40,7 +40,7 @@ class App extends Component {
             }
         })
 
-        socket.on('messageFromServer', message => {
+        this.socket.on('messageFromServer', message => {
             //console.log(message);
             var updatedMessages = this.state.messages;
             updatedMessages.push({text: message});
@@ -50,10 +50,11 @@ class App extends Component {
     }
 
     updateLogin(loginSuccessful){
-        this.setState({loggedIn: loginSuccessful} )
+        this.setState({loggedIn: loginSuccessful})
         if(!loginSuccessful){
-            console.log(this.state.loggedIn);
+            console.log(loginSuccessful);
             this.setState({loginError: ""});
+            this.socket.disconnect()
         }
     }
 
@@ -84,12 +85,13 @@ class App extends Component {
             .catch((err) => {
                 console.log(err);
                 this.setState({loginError: err})
-            });
+            }
+        );
     }
 
     sendMessage(text) {
         // send messages to message to server-side socket
-        socket.emit('messageToServer', text);
+        this.socket.emit('messageToServer', text);
     }
 
     render(){
@@ -100,6 +102,7 @@ class App extends Component {
                     messageHandler={this.sendMessage.bind(this)}
                     loginHandler={this.updateLogin.bind(this)}
                     initChat={this.initChat.bind(this)}
+                    user={this.state.user}
                 />
             );
         }

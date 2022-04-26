@@ -2,6 +2,7 @@ var { Server } = require("socket.io");
 var { User, Message } = require('./database');
 
 class SocketManger {
+  socketIDToUserID = {}
 
   constructor(server){
       this.io = new Server(server, { /* options */ 
@@ -15,37 +16,60 @@ class SocketManger {
   }
 
   setupConnections(){
-    var user;
 
     this.io.on("connection", (socket) => {
       const query  = User.where({ auth: {token: socket.handshake.auth.token} });
-      query.findOne((err, foundUser) => {
-        if (foundUser) {
-          // Welcome connectee
-          user = foundUser
+      query.findOne((err, user) => {
+        if (user) {
+          //save user ID
+          this.socketIDToUserID[socket.id] = user._id
+
+          // set user's online status
           user.active = true
           user.save()
-          this.io.emit('messageFromServer', 'Welcome to Chatr, ' + user.displayName);
+
+          // Welcome connectee
+          socket.emit('messageFromServer', 'Welcome to Chatr, ' + user.displayName);
+          // Broadcast to all users except connectee
+          socket.broadcast.emit("messageFromServer", user.displayName + " has joined the chat");
         }
         else {
-          socket.disconnect
+          socket.disconnect()
         }
       });
         
       
-      // Broadcast to all users except connectee
-      //socket.broadcast.emit("message", "A user has joined the chat");
     
       // On disconnect tell everyone disconnectee left
       socket.on('disconnect', () => {
-        user.active = false
-        user.save()
-        this.io.emit("messageFromServer", user.displayName + " has left the chat");
+        User.findById(this.socketIDToUserID[socket.id], (err, user)=>{
+          if (err){
+            console.log(err)
+          }
+          if (user){
+            this.io.emit("messageFromServer", user.displayName + " has left the chat");
+            user.active = false
+            user.save()
+          }
+          else {
+            console.log("Error: received disconnect signal but no user found")
+          }
+        })
       });
     
       // Listen for chatMessage
       socket.on("messageToServer", (msg) => {
-        this.io.emit('messageFromServer', msg)
+        User.findById(this.socketIDToUserID[socket.id], (err, user)=>{
+          if (err){
+            console.log(err)
+          }
+          if (user){
+            this.io.emit('messageFromServer', msg)
+          }
+          else {
+            console.log("Error: received message but no user found")
+          }
+        })
       })
     });
   }
