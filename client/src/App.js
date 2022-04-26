@@ -10,11 +10,6 @@ const url = "http://localhost:5000/";
 
 const socket = io(url);
 
-const tempMessages = []
-
-// Message from server
-
-
 //fetch(url + "login/" + localStorage.getItem('login')))
 
 class App extends Component {
@@ -64,8 +59,8 @@ class App extends Component {
     }
 
     initSocket(){
-        socket.on('message', message => {
-            console.log(message);
+        socket.on('messageFromServer', message => {
+            //console.log(message);
             var updatedMessages = this.state.messages;
             updatedMessages.push({text: message});
             this.setState({messages: updatedMessages});        
@@ -106,36 +101,9 @@ class App extends Component {
     }
 
     sendMessage(text) {
-        //this.state.messages.push({
-        //    'text': text,
-        //    // name: this.state.email
-        //})
-        for (let message in tempMessages){
-            this.state.messages.push(tempMessages[message]);
-        }
-
-        socket.emit('chatMessage', text)
+        // send messages to message to server-side socket
+        socket.emit('messageToServer', text);
     }
-    //sendMessage(text){
-    //    const requestOptions = {
-    //        method: 'Post',
-    //        headers: {'Content-Type': 'application/json'},
-    //        body: JSON.stringify({"sender": localStorage.getItem('login'), "recipients": fetch(url+"users/"), "contents": text})
-    //    }
-    //    /*fetch(url + "messages/", requestOptions)
-    //        .then((res) => res.json())
-    //        .then((json) => {
-    //            console.log(json);
-    //        })*/
-    //    this.state.messages.push({
-    //        'text': text,
-    //        // name: this.state.email
-    //    })
-    //    console.log(this.state.messages)
-    //    tempMessages.splice(0,tempMessages.length);
-
-    //    //console.log(tempMessages)
-    //}
 
     render(){
         if (this.state.loggedIn){
