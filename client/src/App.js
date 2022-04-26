@@ -8,40 +8,13 @@ import io from "socket.io-client"
 
 const url = "http://localhost:5000/";
 
-const socket = io(url);
+// const socket = io(url, {autoConnect: false});
 
 //fetch(url + "login/" + localStorage.getItem('login')))
 
 class App extends Component {
     componentDidMount(){
-        var id;
-        //Verify that a valid login is saved
-        if((id = localStorage.getItem('login'))!==''){
-            (async () => {
-    let response;
-                try{
-                    response = await fetch(url + "users/login/" + id)
-                } catch (ex) {
-                    console.log("Error", response.status);
-                }
-                if(response.ok){
-                    var json = response.json();
-                    if(json._id === id){
-                        this.setState({loggedIn: true});
-                    }
-                } else {
-                    console.log("Error", response.status);
-                }
-            })()
-            fetch(url + "users/" + id)
-                .then((res) => res.json())
-                .then((json) => {
-                    this.setState({loggedIn: json._id === id});
-                })
-                .catch((err) => {
-                    console.error(err);
-                })
-        }
+        
     }
 
     constructor(props) {
@@ -52,26 +25,41 @@ class App extends Component {
             loggedIn: false,
             loginError: "",
             email: "",
-            messages: [{text: "test Message"}]
+            user: null,
+            messages: [],
+            activeUsers: []
         };
 
-        this.initSocket();
+        this.socket = null;
+
     }
 
-    initSocket(){
-        socket.on('messageFromServer', message => {
+    initChat(){
+        this.socket = io(url, {
+            auth: {
+                token: this.state.user.auth.token
+            }
+        })
+
+        this.socket.on('messageFromServer', message => {
             //console.log(message);
             var updatedMessages = this.state.messages;
-            updatedMessages.push({text: message});
+            updatedMessages.push(message);
             this.setState({messages: updatedMessages});        
         })
+
+        this.socket.on('activeUsers', users=>{
+            this.setState({activeUsers: users})
+        })
+
     }
 
     updateLogin(loginSuccessful){
-        this.setState({loggedIn: loginSuccessful} )
+        this.setState({loggedIn: loginSuccessful})
         if(!loginSuccessful){
-            console.log(this.state.loggedIn);
+            console.log(loginSuccessful);
             this.setState({loginError: ""});
+            this.socket.disconnect()
         }
     }
 
@@ -82,27 +70,33 @@ class App extends Component {
             body: JSON.stringify({ 'email': email, 'password': password })
         }
         fetch(url + "users/login", requestOptions)
-            .then((res) => res.json())
-            .then((json) => {
-                if(json.text === "success"){
-                    this.setState({loggedIn: true})
-                    localStorage.setItem('login',json._id)
+            .then((res) =>{
+                if (res.ok){
+                    return res.json()
                 }
-                else if (json.text === "failure"){
-                    this.setState({loginError: "User not found"});
+                else if (res.status == 404){
+                    throw "Email or password not found"
                 }
-                else{
-                    this.setState({loginError: "Unspecified error"});
+                else {
+                    throw "Unspecified error"
                 }
             })
+            .then((user)=>{
+                console.log(user)
+                this.setState({user: user})
+                this.setState({loggedIn: true})
+                localStorage.setItem('login', user._id)
+            })
             .catch((err) => {
-                console.error(err);
-            });
+                console.log(err);
+                this.setState({loginError: err})
+            }
+        );
     }
 
     sendMessage(text) {
         // send messages to message to server-side socket
-        socket.emit('messageToServer', text);
+        this.socket.emit('messageToServer', text);
     }
 
     render(){
@@ -112,6 +106,9 @@ class App extends Component {
                     messages={this.state.messages}
                     messageHandler={this.sendMessage.bind(this)}
                     loginHandler={this.updateLogin.bind(this)}
+                    initChat={this.initChat.bind(this)}
+                    user={this.state.user}
+                    activeUsers={this.state.activeUsers}
                 />
             );
         }

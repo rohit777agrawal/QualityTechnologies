@@ -11,17 +11,29 @@ class ChatPage extends Component {
     }
 
     this.handleMessageInput = this.handleMessageInput.bind(this)
+    
+  }
+
+  componentDidMount(){
+    this.props.initChat()
   }
 
   handleMessageInput(e){
     this.setState({draftMessage: e.target.value})
   }
 
+  renderActiveUsers(){
+      return this.props.activeUsers.map((user)=>{
+          return <p>{user.displayName}</p>
+      })
+  }
+
   renderMessages(){
     return this.props.messages.map((message) => {
-      return <p>{message.text}</p>
+      return <p>{message.user}: {message.text}</p>
     })
   }
+  
     render() {
         return (
             <Container fluid className="vh-100 text-center" >
@@ -30,15 +42,19 @@ class ChatPage extends Component {
                     <Col>
                         <h1>Chatr</h1>
                     </Col>
-                    <Col style={{display:"flex", flexDirection: "column", justifyContent:"center"}}>
+                    <Col style={{display:"inline-block", flexDirection: "column", justifyContent:"right"}}>
+                        <p style={{display:"inline-block"}}>{this.props.user.displayName}</p>
                         <Button style={{alignSelf: "flex-end"}} variant="outline-danger" size="sm" type="submit" onClick={(e)=>{
                             localStorage.setItem('login', "")
                             this.props.loginHandler(false)
                         }}>Log Out</Button>
                     </Col>
                 </Row>
-                <Row className="align-items-bottom">
-                    <Col className="align-items-bottom">
+                <Row className="align-items-bottom text-left">
+                    <Col md="auto">
+                        {this.renderActiveUsers()}
+                    </Col>
+                    <Col className="align-items-bottom text-left">
                         {this.renderMessages()}
                     </Col>
                 </Row>

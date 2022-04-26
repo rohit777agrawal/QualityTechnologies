@@ -5,6 +5,7 @@
  */
 
 var app = require('../app');
+var SocketManager = require('../SocketManager')
 var debug = require('debug')('server:server');
 var http = require('http');
 
@@ -21,34 +22,7 @@ app.set('port', port);
 var server = http.createServer(app);
 
 /* Socket.io */
-var { Server } = require("socket.io");
-var io = new Server(server, { /* options */ 
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
-})
-
-// On connect
-io.on("connection", (socket) => {
-  
-  // Welcome connectee
-  socket.emit('messageFromServer', 'Welcome to Chatr');
-
-  // Broadcast to all users except connectee
-  //socket.broadcast.emit("message", "A user has joined the chat");
-
-  // On disconnect tell everyone disconnectee left
-  socket.on('disconnect', () => {
-    io.emit("messageFromServer", "A user has left the chat");
-  });
-
-  // Listen for chatMessage
-  socket.on("messageToServer", (msg) => {
-    io.emit('messageFromServer', msg)
-  })
-});
-
+var socket = new SocketManager(server)
 
 /**
  * Listen on provided port, on all network interfaces.
