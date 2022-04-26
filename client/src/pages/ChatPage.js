@@ -11,6 +11,11 @@ class ChatPage extends Component {
     }
 
     this.handleMessageInput = this.handleMessageInput.bind(this)
+    
+  }
+
+  componentDidMount(){
+    this.props.initChat()
   }
 
   handleMessageInput(e){
@@ -22,6 +27,7 @@ class ChatPage extends Component {
       return <p>{message.text}</p>
     })
   }
+  
     render() {
         return (
             <Container fluid className="vh-100 text-center" >

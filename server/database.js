@@ -21,7 +21,10 @@ var UserSchema = new mongoose.Schema({
     sentMessageIDs: [String],
     recievedMessageIDs: [String],
     groupIDs: [String],
-    active: Boolean
+    active: Boolean,
+    auth: {
+        token: String
+    }
 })
 
 var MessageSchema = new mongoose.Schema({
