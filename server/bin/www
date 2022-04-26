@@ -33,19 +33,19 @@ var io = new Server(server, { /* options */
 io.on("connection", (socket) => {
   
   // Welcome connectee
-  socket.emit('message', 'Welcome to Chatr');
+  socket.emit('messageFromServer', 'Welcome to Chatr');
 
   // Broadcast to all users except connectee
   //socket.broadcast.emit("message", "A user has joined the chat");
 
   // On disconnect tell everyone disconnectee left
   socket.on('disconnect', () => {
-    io.emit("message", "A user has left the chat");
+    io.emit("messageFromServer", "A user has left the chat");
   });
 
   // Listen for chatMessage
-  socket.on("chatMessage", (msg) => {
-    io.emit('message', msg)
+  socket.on("messageToServer", (msg) => {
+    io.emit('messageFromServer', msg)
   })
 });
 

@@ -59,8 +59,8 @@ class App extends Component {
     }
 
     initSocket(){
-        socket.on('message', message => {
-            console.log(message);
+        socket.on('messageFromServer', message => {
+            //console.log(message);
             var updatedMessages = this.state.messages;
             updatedMessages.push({text: message});
             this.setState({messages: updatedMessages});        
@@ -106,14 +106,9 @@ class App extends Component {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({"sender": localStorage.getItem('login'), "recipients": fetch(url+"users/"), "contents": text})
         }
-        /*fetch(url + "messages/", requestOptions)
-            .then((res) => res.json())
-            .then((json) => {
-                console.log(json);
-            })*/
 
-        // send messages to message socket
-        socket.emit('chatMessage', text);
+        // send messages to message to server-side socket
+        socket.emit('messageToServer', text);
     }
     //sendMessage(text){
     //}
