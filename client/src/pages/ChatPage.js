@@ -22,9 +22,15 @@ class ChatPage extends Component {
     this.setState({draftMessage: e.target.value})
   }
 
+  renderActiveUsers(){
+      return this.props.activeUsers.map((user)=>{
+          return <p>{user.displayName}</p>
+      })
+  }
+
   renderMessages(){
     return this.props.messages.map((message) => {
-      return <p>{message.text}</p>
+      return <p>{message.user}: {message.text}</p>
     })
   }
   
@@ -45,6 +51,9 @@ class ChatPage extends Component {
                     </Col>
                 </Row>
                 <Row className="align-items-bottom text-left">
+                    <Col md="auto">
+                        {this.renderActiveUsers()}
+                    </Col>
                     <Col className="align-items-bottom text-left">
                         {this.renderMessages()}
                     </Col>

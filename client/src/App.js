@@ -26,7 +26,8 @@ class App extends Component {
             loginError: "",
             email: "",
             user: null,
-            messages: [{text: "test Message"}]
+            messages: [],
+            activeUsers: []
         };
 
         this.socket = null;
@@ -43,8 +44,12 @@ class App extends Component {
         this.socket.on('messageFromServer', message => {
             //console.log(message);
             var updatedMessages = this.state.messages;
-            updatedMessages.push({text: message});
+            updatedMessages.push(message);
             this.setState({messages: updatedMessages});        
+        })
+
+        this.socket.on('activeUsers', users=>{
+            this.setState({activeUsers: users})
         })
 
     }
@@ -103,6 +108,7 @@ class App extends Component {
                     loginHandler={this.updateLogin.bind(this)}
                     initChat={this.initChat.bind(this)}
                     user={this.state.user}
+                    activeUsers={this.state.activeUsers}
                 />
             );
         }

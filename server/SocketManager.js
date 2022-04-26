@@ -29,17 +29,21 @@ class SocketManger {
           user.save()
 
           // Welcome connectee
-          socket.emit('messageFromServer', 'Welcome to Chatr, ' + user.displayName);
+          socket.emit('messageFromServer', {user: 'server', text: 'Welcome to Chatr, ' + user.displayName});
           // Broadcast to all users except connectee
-          socket.broadcast.emit("messageFromServer", user.displayName + " has joined the chat");
+          socket.broadcast.emit("messageFromServer", {user: 'server', text: user.displayName + " has joined the chat"});
+          // inform all users of updated active users list
+          User.find({
+            '_id': { $in: Object.keys(this.socketIDToUserID).map(key=>this.socketIDToUserID[key])}
+          }, (err, activeUsers) => {
+             this.io.emit('activeUsers', activeUsers)
+          });
         }
         else {
           socket.disconnect()
         }
       });
         
-      
-    
       // On disconnect tell everyone disconnectee left
       socket.on('disconnect', () => {
         User.findById(this.socketIDToUserID[socket.id], (err, user)=>{
@@ -47,9 +51,16 @@ class SocketManger {
             console.log(err)
           }
           if (user){
-            this.io.emit("messageFromServer", user.displayName + " has left the chat");
+            this.io.emit("messageFromServer", {user: "server", text: user.displayName + " has left the chat"});
             user.active = false
             user.save()
+            delete this.socketIDToUserID[socket.id]
+            User.find({
+              '_id': { $in: Object.keys(this.socketIDToUserID).map(key=>this.socketIDToUserID[key])}
+            }, (err, activeUsers) => {
+               console.log("broadcasting updated user list");
+               this.io.emit('activeUsers', activeUsers)
+            });
           }
           else {
             console.log("Error: received disconnect signal but no user found")
@@ -64,7 +75,7 @@ class SocketManger {
             console.log(err)
           }
           if (user){
-            this.io.emit('messageFromServer', msg)
+            this.io.emit('messageFromServer', {user: user.displayName, text: msg})
           }
           else {
             console.log("Error: received message but no user found")
