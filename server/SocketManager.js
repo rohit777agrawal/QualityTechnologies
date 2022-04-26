@@ -25,7 +25,7 @@ class SocketManger {
           user = foundUser
           user.active = true
           user.save()
-          this.io.emit('message', 'Welcome to Chatr, ' + user.displayName);
+          this.io.emit('messageFromServer', 'Welcome to Chatr, ' + user.displayName);
         }
         else {
           socket.disconnect
@@ -40,12 +40,12 @@ class SocketManger {
       socket.on('disconnect', () => {
         user.active = false
         user.save()
-        this.io.emit("message", user.displayName + " has left the chat");
+        this.io.emit("messageFromServer", user.displayName + " has left the chat");
       });
     
       // Listen for chatMessage
-      socket.on("chatMessage", (msg) => {
-        this.io.emit('message', msg)
+      socket.on("messageToServer", (msg) => {
+        this.io.emit('messageFromServer', msg)
       })
     });
   }
