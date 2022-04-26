@@ -101,17 +101,9 @@ class App extends Component {
     }
 
     sendMessage(text) {
-        const requestOptions = {
-            method: 'Post',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({"sender": localStorage.getItem('login'), "recipients": fetch(url+"users/"), "contents": text})
-        }
-
         // send messages to message to server-side socket
         socket.emit('messageToServer', text);
     }
-    //sendMessage(text){
-    //}
 
     render(){
         if (this.state.loggedIn){
