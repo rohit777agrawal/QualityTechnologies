@@ -17,23 +17,27 @@ var UserSchema = new mongoose.Schema({
     password: String,
     link: String,
     displayName: String,
-    teacher: Boolean,
+    isTeacher: Boolean,
     sentMessageIDs: [String],
     recievedMessageIDs: [String],
-    classroomIDs: [String],
-    active: Boolean
+    groupIDs: [String],
+    active: Boolean,
+    auth: {
+        token: String
+    }
 })
 
 var MessageSchema = new mongoose.Schema({
-    sender: String,
-    recipients: [String],
+    senderID: String,
+    groupID: String,
     contents: String,
     sentTime: Date
 })
 
-var ClassroomSchema = new mongoose.Schema({
+var GroupSchema = new mongoose.Schema({
     teacherID: String,
     userIDs: [String],
+    subGroupIDs: [String],
     active: Boolean
 })
 
@@ -56,7 +60,30 @@ function createUserIfMissing(userIn) {
     });
 }
 
-createUserIfMissing({ email: 'teacher@mail.com', teacher: true, password: 'password' });
-createUserIfMissing({ email: 'student@mail.com', teacher: false, password: 'password' });
+createUserIfMissing({ 
+    name: 'test teacher', 
+    email: 'teacher@mail.com',
+    password: 'password',
+    link: "",
+    displayName: "testTeacher",
+    teacher: true,
+    sentMessageIDs: [],
+    recievedMessageIDs: [],
+    classroomIDs: [],
+    active: false
+});
+
+createUserIfMissing({ 
+    name: 'test student',
+    email: 'student@mail.com',
+    password: 'password',
+    link: '123xyz',
+    displayName: "testStudent",
+    teacher: false,
+    sentMessageIDs: [],
+    recievedMessageIDs: [],
+    classroomIDs: [],
+    active: false
+});
 
 module.exports = { mongoose, db, User, Message}

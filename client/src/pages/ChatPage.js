@@ -3,38 +3,38 @@ import { Container, Row, Col, InputGroup, FormControl, Button, Form, Card} from 
 import Message from "../components/Message.js"
 
 class ChatPage extends Component {
-    constructor(props) {
-        super(props);
+  constructor(props) {
+    super(props);
 
-        this.state = {
-            draftMessage: "",
-            messages: props.messages
-        }
-
-        this.handleMessageInput = this.handleMessageInput.bind(this)
+    this.state = {
+      draftMessage: "",
+      messages: props.messages
     }
 
-    handleMessageInput(e){
-        this.setState({draftMessage: e.target.value})
-    }
+    this.handleMessageInput = this.handleMessageInput.bind(this)
 
-    renderMessages(){
-        if (this.props.messages.length > 0){
-            var rows = [];
-            for(var i = 0; i < this.state.messages.length; i++){
-                rows.push(<Message key = {i} wasSent = {this.state.messages[i].wasSent} >
-                            <p>{this.state.messages[i].text}</p>
-                          </Message>);
-            }
-            return (
-                rows
-            );
-            return <p>{JSON.stringify(this.props.messages)}</p>
-        }
-        else {
-            return <p>no messages yet! {JSON.stringify(this.props)}</p>
-        }
-    }
+  }
+
+  componentDidMount(){
+    this.props.initChat()
+  }
+
+  handleMessageInput(e){
+    this.setState({draftMessage: e.target.value})
+  }
+
+  renderActiveUsers(){
+      return this.props.activeUsers.map((user)=>{
+          return <p>{user.displayName}</p>
+      })
+  }
+
+  renderMessages(){
+    return this.props.messages.map((message) => {
+      return <p>{message.user}: {message.text}</p>
+    })
+  }
+
     render() {
         return (
             <Container fluid className="vh-100 text-center" style={{display: "flex", flexDirection: "column"}} >
@@ -43,16 +43,19 @@ class ChatPage extends Component {
                     <Col>
                         <h1>Chatr</h1>
                     </Col>
-                    <Col style={{display:"flex", flexDirection: "column", justifyContent:"center"}}>
+                    <Col style={{display:"inline-block", flexDirection: "column", justifyContent:"right"}}>
+                        <p style={{display:"inline-block"}}>{this.props.user.displayName}</p>
                         <Button style={{alignSelf: "flex-end"}} variant="outline-danger" size="sm" type="submit" onClick={(e)=>{
                             localStorage.setItem('login', "")
                             this.props.loginHandler(false)
                         }}>Log Out</Button>
                     </Col>
                 </Row>
-                <Row style = {{flex: "1 1 auto"}}>
-                    <Col style = {{width: "10%", backgroundColor: "#ccc"}} />
-                    <Col style = {{display: "flex", flexDirection: "column", padding: "4pt 4pt 4pt 4pt"}}>
+                <Row className="align-items-bottom text-left">
+                    <Col md="auto">
+                        {this.renderActiveUsers()}
+                    </Col>
+                    <Col className="align-items-bottom text-left">
                         {this.renderMessages()}
                     </Col>
                     <Col style = {{width: "10%", backgroundColor: "#ccc"}} />

@@ -4,8 +4,13 @@ import LoginPage from "./pages/LoginPage.js";
 import "./App.css";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js';
+import io from "socket.io-client"
 
 const url = "http://localhost:5000/";
+
+// const socket = io(url, {autoConnect: false});
+
+//fetch(url + "login/" + localStorage.getItem('login')))
 
 class App extends Component {
     componentDidMount(){
@@ -27,19 +32,47 @@ class App extends Component {
     }
     constructor(props) {
         super(props);
+
         this.state = {
             apiResponse: "",
             loggedIn: false,
             loginError: "",
             email: "",
-            messages: [{text: "test message", wasSent: true}]
+            user: null,
+            messages: [],
+            activeUsers: []
         };
+
+        this.socket = null;
+
     }
+
+    initChat(){
+        this.socket = io(url, {
+            auth: {
+                token: this.state.user.auth.token
+            }
+        })
+
+        this.socket.on('messageFromServer', message => {
+            //console.log(message);
+            var updatedMessages = this.state.messages;
+            updatedMessages.push(message);
+            this.setState({messages: updatedMessages});
+        })
+
+        this.socket.on('activeUsers', users=>{
+            this.setState({activeUsers: users})
+        })
+
+    }
+
     updateLogin(loginSuccessful){
-        this.setState({loggedIn: loginSuccessful} )
+        this.setState({loggedIn: loginSuccessful})
         if(!loginSuccessful){
-            console.log(this.state.loggedIn);
-            this.setState({loginError: ""})
+            console.log(loginSuccessful);
+            this.setState({loginError: ""});
+            this.socket.disconnect()
         }
     }
 
@@ -50,41 +83,33 @@ class App extends Component {
             body: JSON.stringify({ 'email': email, 'password': password })
         }
         fetch(url + "users/login", requestOptions)
-            .then((res) => res.json())
-            .then((json) => {
-                if(json.text === "success"){
-                    this.setState({loggedIn: true})
-                    localStorage.setItem('login',json._id)
+            .then((res) =>{
+                if (res.ok){
+                    return res.json()
                 }
-                else if (json.text === "failure"){
-                    this.setState({loginError: "User not found"});
+                else if (res.status == 404){
+                    throw "Email or password not found"
                 }
-                else{
-                    this.setState({loginError: "Unspecified error"});
+                else {
+                    throw "Unspecified error"
                 }
             })
+            .then((user)=>{
+                console.log(user)
+                this.setState({user: user})
+                this.setState({loggedIn: true})
+                localStorage.setItem('login', user._id)
+            })
             .catch((err) => {
-                console.error(err);
-            });
+                console.log(err);
+                this.setState({loginError: err})
+            }
+        );
     }
 
-    sendMessage(text){
-        const requestOptions = {
-            method: 'Post',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({"sender": localStorage.getItem('login'), "recipients": fetch(url+"users/"), "contents": text})
-        }
-        /*fetch(url + "messages/", requestOptions)
-            .then((res) => res.json())
-            .then((json) => {
-                console.log(json);
-            })*/
-        this.state.messages.push({
-            'text': text,
-            'wasSent': Math.random() > 0.5
-            // name: this.state.email
-        })
-        console.log(this.state.messages)
+    sendMessage(text) {
+        // send messages to message to server-side socket
+        this.socket.emit('messageToServer', text);
     }
 
     render(){
@@ -94,6 +119,9 @@ class App extends Component {
                     messages={this.state.messages}
                     messageHandler={this.sendMessage.bind(this)}
                     loginHandler={this.updateLogin.bind(this)}
+                    initChat={this.initChat.bind(this)}
+                    user={this.state.user}
+                    activeUsers={this.state.activeUsers}
                 />
             );
         }
