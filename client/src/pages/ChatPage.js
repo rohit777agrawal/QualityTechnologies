@@ -1,39 +1,42 @@
 import React, { Component } from "react";
-import { Container, Row, Col, InputGroup, FormControl, Button, Form, Card} from 'react-bootstrap';
+import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal} from 'react-bootstrap';
 import Message from "../components/Message.js"
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 class ChatPage extends Component {
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      draftMessage: "",
-      messages: props.messages
+    constructor(props) {
+        super(props);
+        this.state = {
+            draftMessage: "",
+            showAccount: true,
+            messages: props.messages
+        }
+
+        this.handleMessageInput = this.handleMessageInput.bind(this)
+
     }
 
-    this.handleMessageInput = this.handleMessageInput.bind(this)
+    componentDidMount(){
+        this.setState({showAccount:false})
+        this.props.initChat()
+    }
 
-  }
+    handleMessageInput(e){
+        this.setState({draftMessage: e.target.value})
+    }
 
-  componentDidMount(){
-    this.props.initChat()
-  }
+    renderActiveUsers(){
+        return this.props.activeUsers.map((user, keyVal)=>{
+            return <p key = {keyVal}>{user.displayName}</p>
+        })
+    }
 
-  handleMessageInput(e){
-    this.setState({draftMessage: e.target.value})
-  }
-
-  renderActiveUsers(){
-      return this.props.activeUsers.map((user)=>{
-          return <p>{user.displayName}</p>
-      })
-  }
-
-  renderMessages(){
-    return this.props.messages.map((message) => {
-      return <p>{message.user}: {message.text}</p>
-    })
-  }
+    renderMessages(){
+        return this.props.messages.map((message, keyVal) => {
+            return <Message wasSentByCurrentUser={true} key={keyVal}>{message}</Message>
+        })
+    }
 
     render() {
         return (
@@ -43,19 +46,28 @@ class ChatPage extends Component {
                     <Col>
                         <h1>Chatr</h1>
                     </Col>
-                    <Col style={{display:"inline-block", flexDirection: "column", justifyContent:"right"}}>
-                        <p style={{display:"inline-block"}}>{this.props.user.displayName}</p>
-                        <Button style={{alignSelf: "flex-end"}} variant="outline-danger" size="sm" type="submit" onClick={(e)=>{
-                            localStorage.setItem('login', "")
-                            this.props.loginHandler(false)
-                        }}>Log Out</Button>
+                    <Col style={{display:"flex", alignItems: "center", justifyContent:"right"}}>
+                        <Dropdown>
+                            <Dropdown.Toggle id="dropdown-basic">{this.props.currentUser.displayName}</Dropdown.Toggle>
+                            <Dropdown.Menu style={{minWidth: "100%"}}>
+                                <Dropdown.Item onClick={()=>{this.setState({showAccount: true})}}>
+                                    <i className="bi bi-person-circle" /> Account
+                                </Dropdown.Item>
+                                <Dropdown.Item style={{color:"red"}} onClick={()=>{
+                                    localStorage.setItem('currentUser', "");
+                                    this.props.loginHandler(false);
+                                }}>
+                                    <i className="bi bi-power" /> Log Out
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
                     </Col>
                 </Row>
-                <Row className="align-items-bottom text-left">
+                <Row style={{flex: "1 1 auto"}} className="align-items-bottom text-left">
                     <Col md="auto">
                         {this.renderActiveUsers()}
                     </Col>
-                    <Col className="align-items-bottom text-left">
+                    <Col style = {{display:"flex", flexDirection: "column"}} className="align-items-bottom text-left">
                         {this.renderMessages()}
                     </Col>
                     <Col style = {{width: "10%", backgroundColor: "#ccc"}} />
@@ -76,7 +88,7 @@ class ChatPage extends Component {
                                 <Button variant="outline-secondary" id="button-addon2" type="submit" onClick={(e)=>{
                                     e.preventDefault();
                                     // this.state.draftMessage = ""
-                                    console.log(this.state.draftMessage)
+                                    //console.log(this.state.draftMessage)
                                     this.setState({draftMessage: ""})
                                     this.props.messageHandler(this.state.draftMessage)
                                 }}>
@@ -87,6 +99,22 @@ class ChatPage extends Component {
                     </Col>
                     <Col style = {{width: "10%"}} />
                 </Row>
+                <Modal show={this.state.showAccount} onHide={()=>{this.setState({showAccount: false})}}>
+                    <Modal.Header closeButton>
+                        <Modal.Title style={{textAlign: "center"}}>Account Settings</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        Woohoo, you're reading this text in a modal!
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={()=>{this.setState({showAccount: false})}}>
+                            Close
+                        </Button>
+                        <Button variant="primary" onClick={()=>{this.setState({showAccount: false})}}>
+                            Save Changes
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </Container>
         );
     }

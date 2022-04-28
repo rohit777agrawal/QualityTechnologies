@@ -14,6 +14,20 @@ router.get('/', function(req, res, next) {
     })
 })
 
+router.post('/teacher/', function(req, res, next) {
+    var user = new User({
+        name: req.body.displayName,
+        email: req.body.email,
+        password: req.body.password,
+        displayName: req.body.displayName,
+        isTeacher: true,
+    })
+    user.save()
+    .catch(err => {
+        res.status(400).send("Teacher Creation Error")
+    })
+})
+
 router.get("/:id", function(req, res, next) {
     User.findById(req.params.id, function(err, user) {
         res.json(user);

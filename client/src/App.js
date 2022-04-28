@@ -14,21 +14,27 @@ const url = "http://localhost:5000/";
 
 class App extends Component {
     componentDidMount(){
-        var id;
+        var user;
+        try{
+            user = JSON.parse(localStorage.getItem('currentUser'));
+        } catch(err) {
+            user = {} ;
+        }
         //Verify that a valid login is saved
-        if((id = localStorage.getItem('login'))!==''){
-            fetch(url + "users/" + id)
+        if(user !== null){
+            fetch(url + "users/" + user._id)
                 .then((res) => res.json())
                 .then((json) => {
-                    this.setState({loggedIn: json._id === id});
+                    //console.log(json);
+                    this.setState({loggedIn: json._id === user._id, currentUser: user});
                 })
                 .catch((err) => {
                     console.error(err);
                 })
         }
-        ["Tomorrow will bring something new, so leave today as a memory.", "He stomped on his fruit loops and thus became a cereal killer.", "Each person who knows you has a different perception of who you are.", "Lets all be unique together until we realise we are all the same.", "It was always dangerous to drive with him since he insisted the safety cones were a slalom course.", "You have every right to be angry, but that doesn't give you the right to be mean.", "Her hair was windswept as she rode in the black convertible."].forEach((message) => {
+        /*["Tomorrow will bring something new, so leave today as a memory.", "He stomped on his fruit loops and thus became a cereal killer.", "Each person who knows you has a different perception of who you are.", "Lets all be unique together until we realise we are all the same.", "It was always dangerous to drive with him since he insisted the safety cones were a slalom course.", "You have every right to be angry, but that doesn't give you the right to be mean.", "Her hair was windswept as she rode in the black convertible."].forEach((message) => {
             this.state.messages.push({text: message, wasSent: Math.random() > 0.5});
-        })
+        })*/
     }
     constructor(props) {
         super(props);
@@ -38,7 +44,7 @@ class App extends Component {
             loggedIn: false,
             loginError: "",
             email: "",
-            user: null,
+            currentUser: null,
             messages: [],
             activeUsers: []
         };
@@ -50,7 +56,7 @@ class App extends Component {
     initChat(){
         this.socket = io(url, {
             auth: {
-                token: this.state.user.auth.token
+                token: this.state.currentUser.auth.token
             }
         })
 
@@ -67,13 +73,32 @@ class App extends Component {
 
     }
 
-    updateLogin(loginSuccessful){
+    updateLoginState(loginSuccessful){
         this.setState({loggedIn: loginSuccessful})
         if(!loginSuccessful){
-            console.log(loginSuccessful);
+            //console.log(loginSuccessful);
             this.setState({loginError: ""});
             this.socket.disconnect()
         }
+    }
+
+    createNewLogin(userName, email, password){
+        const requestOptions = {
+            method: 'post',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({'displayName': userName, 'email': email, 'password': password})
+        }
+        fetch(url + "users/teacher/", requestOptions)
+            .then((res) => {
+                if(res.ok){
+                    return {success: true}
+                } else {
+                    throw new Error("Unspecified error");
+                }
+            })
+            .catch((err) => {
+                return {success: false, error: err}
+            })
     }
 
     submitLoginInfo(email, password){
@@ -86,25 +111,27 @@ class App extends Component {
             .then((res) =>{
                 if (res.ok){
                     return res.json()
-                }
-                else if (res.status == 404){
-                    throw "Email or password not found"
+                } else if (res.status === 404){
+                    throw new Error("Email or password not found");
                 }
                 else {
-                    throw "Unspecified error"
+                    throw new Error("Unspecified error");
                 }
             })
             .then((user)=>{
                 console.log(user)
-                this.setState({user: user})
-                this.setState({loggedIn: true})
-                localStorage.setItem('login', user._id)
+                this.setState({currentUser: user, loggedIn: true})
+                localStorage.setItem('currentUser', JSON.stringify(user))
             })
             .catch((err) => {
                 console.log(err);
-                this.setState({loginError: err})
+                this.setState({loginError: err.message})
             }
         );
+    }
+
+    setLoginError(errorMessage){
+        this.setState({loginError: errorMessage})
     }
 
     sendMessage(text) {
@@ -118,9 +145,9 @@ class App extends Component {
                 <ChatPage
                     messages={this.state.messages}
                     messageHandler={this.sendMessage.bind(this)}
-                    loginHandler={this.updateLogin.bind(this)}
+                    loginHandler={this.updateLoginState.bind(this)}
                     initChat={this.initChat.bind(this)}
-                    user={this.state.user}
+                    currentUser={this.state.currentUser}
                     activeUsers={this.state.activeUsers}
                 />
             );
@@ -130,6 +157,8 @@ class App extends Component {
                 <LoginPage
                     loginHandler={this.submitLoginInfo.bind(this)}
                     loginError={this.state.loginError}
+                    setLoginError={this.setLoginError.bind(this)}
+                    createNewLogin={this.createNewLogin.bind(this)}
                 />
             );
         }

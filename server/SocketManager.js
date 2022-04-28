@@ -5,7 +5,7 @@ class SocketManger {
   socketIDToUserID = {}
 
   constructor(server){
-      this.io = new Server(server, { /* options */ 
+      this.io = new Server(server, { /* options */
           cors: {
               origin: "http://localhost:3000",
               methods: ["GET", "POST"]
@@ -18,20 +18,28 @@ class SocketManger {
   setupConnections(){
 
     this.io.on("connection", (socket) => {
+        
+      const sendServerMessage = (message) => {
+        socket.emit('messageFromServer', {user: 'server', text: message, wasSentByServer: true});
+      }
+
+      const sendServerBroadcast = (message) => {
+        socket.broadcast.emit('messageFromServer', {user: 'server', text: message, wasSentByServer: true});
+      }
+
       const query  = User.where({ auth: {token: socket.handshake.auth.token} });
+
       query.findOne((err, user) => {
         if (user) {
           //save user ID
           this.socketIDToUserID[socket.id] = user._id
-
           // set user's online status
-          user.active = true
-          user.save()
 
+          user.active = true;
           // Welcome connectee
-          socket.emit('messageFromServer', {user: 'server', text: 'Welcome to Chatr, ' + user.displayName});
+          sendServerMessage('Welcome to Chatr, ' + user.displayName);
           // Broadcast to all users except connectee
-          socket.broadcast.emit("messageFromServer", {user: 'server', text: user.displayName + " has joined the chat"});
+          sendServerBroadcast(user.displayName + " has joined the chat");
           // inform all users of updated active users list
           User.find({
             '_id': { $in: Object.keys(this.socketIDToUserID).map(key=>this.socketIDToUserID[key])}
@@ -43,7 +51,7 @@ class SocketManger {
           socket.disconnect()
         }
       });
-        
+
       // On disconnect tell everyone disconnectee left
       socket.on('disconnect', () => {
         User.findById(this.socketIDToUserID[socket.id], (err, user)=>{
@@ -51,7 +59,7 @@ class SocketManger {
             console.log(err)
           }
           if (user){
-            this.io.emit("messageFromServer", {user: "server", text: user.displayName + " has left the chat"});
+            sendServerMessage(user.displayName + " has left the chat");
             user.active = false
             user.save()
             delete this.socketIDToUserID[socket.id]
@@ -67,7 +75,7 @@ class SocketManger {
           }
         })
       });
-    
+
       // Listen for chatMessage
       socket.on("messageToServer", (msg) => {
         User.findById(this.socketIDToUserID[socket.id], (err, user)=>{

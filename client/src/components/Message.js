@@ -1,10 +1,14 @@
 import React, { Component } from "react";
 
+const infoStyle = {
+
+}
+
 const messageStyle = {
     width: "fit-content",
     height: "fit-content",
     textAlign: "left",
-    padding: "8pt 12pt 0 12pt",
+    padding: "4pt 12pt",
     marginBottom: "4pt"
 }
 
@@ -24,9 +28,17 @@ const fromStyle = {
 
 class Message extends Component{
     render() {
+        var message = this.props.children;
+        if(message.wasSentByServer){
+            return(
+                <div style = {infoStyle}>
+                    {message.text}
+                </div>
+            )
+        }
         return (
-            <div style={Object.assign({}, messageStyle, this.props.wasSent ? toStyle : fromStyle)}>
-                {this.props.children}
+            <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
+                {message.user}: {message.text}
             </div>
             )
     }
