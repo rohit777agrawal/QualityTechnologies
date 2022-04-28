@@ -101,6 +101,25 @@ class App extends Component {
             })
     }
 
+    updateLoginInfo(changesDict){
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(changesDict)
+        }
+        fetch(url + "users/" + changesDict._id)
+            .then((res) => {
+                if(res.ok){
+                    return {success: true}
+                } else {
+                    throw new Error("Unspecified error");
+                }
+            })
+            .catch((err) => {
+                return {success: false, error: err}
+            })
+    }
+
     submitLoginInfo(email, password){
         const requestOptions = {
             method: 'POST',
@@ -149,6 +168,9 @@ class App extends Component {
                     initChat={this.initChat.bind(this)}
                     currentUser={this.state.currentUser}
                     activeUsers={this.state.activeUsers}
+                    loginError={this.state.loginError}
+                    setLoginError={this.setLoginError.bind(this)}
+                    updateLoginInfo={this.updateLoginInfo.bind(this)}
                 />
             );
         }

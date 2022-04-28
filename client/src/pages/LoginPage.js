@@ -41,10 +41,10 @@ class LoginPage extends Component {
             this.props.setLoginError("");
             try{
                 if(this.state.userName.match(userNameRegex)===null){
-                    throw new Error("Please try a better username")
+                    throw new Error("Please try a better username");
                 }
                 if(this.state.email.match(emailRegex)===null){
-                    throw new Error("Your email's not looking right")
+                    throw new Error("Your email's not looking right");
                 }
                 if(this.state.password.match(passwordRegex)===null){
                     throw new Error("Passwords must be 8 characters long, have one upper and lowercase letter, and one number");
@@ -52,7 +52,6 @@ class LoginPage extends Component {
                 this.props.createNewLogin(this.state.userName, this.state.email, this.state.password);
             } catch(error){
                 event.preventDefault();
-                console.log(error);
                 this.props.setLoginError(error.message);
             }
         }
@@ -66,11 +65,11 @@ class LoginPage extends Component {
                         <Col className="w-100">
                           <h1>{!this.state.createAccount?"Chatr":"Create a new Account"}</h1>
                           <Form className="" target="">
-                            <Form.Group hidden={!this.state.createAccount} className="mb-3" controlId="formBasicPassword">
+                            <Form.Group hidden={!this.state.createAccount} className="mb-3">
                                 <Form.Label>User Name</Form.Label>
                                 <Form.Control placeholder="User Name" onChange={(e)=>{this.handleUserNameInput(e)}}/>
                             </Form.Group>
-                            <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Group className="mb-3">
                               <Form.Label>Email address</Form.Label>
                               <Form.Control type="email" placeholder="Enter email"  onChange={(e)=>{this.handleEmailInput(e)}} />
                               <Form.Text className="text-muted">
@@ -83,10 +82,10 @@ class LoginPage extends Component {
                               <Form.Control type="password" placeholder="Password" onChange={(e)=>{this.handlePasswordInput(e)}}/>
                             </Form.Group>
                             <Button
-                                variant="secondary" style={{float:"left"}} hidden={this.state.createAccount}
+                                variant="secondary" style={{float:"left"}}
                                 onClick={(e)=>{this.setState({createAccount: !this.state.createAccount})}}
                             >
-                                Create Account
+                                {!this.state.createAccount?"Create Account":"Back"}
                             </Button>
                             <Button variant="primary" style={{float: "right"}}
                                 type="submit" onClick={(e) => {this.handleSubmit(e)}}
@@ -99,7 +98,6 @@ class LoginPage extends Component {
                     <Row >
                         <Col className="fixed-bottom">
                             <ErrorBox>{this.props.loginError}</ErrorBox>
-
                         </Col>
                     </Row>
                 </Container>

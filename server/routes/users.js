@@ -54,8 +54,10 @@ router.post("/login", function(req, res, next) {
 
 router.put("/:id", function(req, res, next) {
     User.findById(req.params.id, function(err, user) {
-        Object.assign(user, req.params.body);
+        var validKeys = Object.keys(user).filter(value=>Object(req.params.body).includes(value));
+        validKeys.forEach((key)=>{user[key] = req.params.body[key]});
         user.save();
+        res.json(user);
     })
 })
 

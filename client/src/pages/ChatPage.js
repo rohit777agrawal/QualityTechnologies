@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal} from 'react-bootstrap';
 import Message from "../components/Message.js"
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import ErrorBox from '../components/ErrorBox.js'
 
 class ChatPage extends Component {
 
@@ -10,6 +11,7 @@ class ChatPage extends Component {
         this.state = {
             draftMessage: "",
             showAccount: true,
+            newDisplayName: "",
             messages: props.messages
         }
 
@@ -28,7 +30,7 @@ class ChatPage extends Component {
 
     renderActiveUsers(){
         return this.props.activeUsers.map((user, keyVal)=>{
-            return <p key = {keyVal}>{user.displayName}</p>
+            return <Button variant="outline-info" style={{cursor:"default"}} key={keyVal}>{user.displayName}</Button>
         })
     }
 
@@ -38,19 +40,42 @@ class ChatPage extends Component {
         })
     }
 
+    handleDisplayNameInput(event){
+        this.setState({newDisplayName: event.target.value});
+    }
+
+    handleChangeSubmit(){
+        const displayNameRegex = /^[A-z0-9_-\s]{3,15}$/;
+        try{
+            if(this.state.newDisplayName.match(displayNameRegex)===null){
+                throw new Error("Usernames must be 3 to 15 characters long");
+            }
+            this.props.updateLoginInfo({displayName: this.state.newDisplayName, _id: this.props.currentUser._id});
+            this.setState({showAccount: false});
+        } catch(error){
+            this.props.setLoginError(error.message);
+        }
+    }
+
     render() {
         return (
-            <Container fluid className="vh-100 text-center" style={{display: "flex", flexDirection: "column"}} >
+            <Container fluid className="vh-100 text-center" style={{display: "flex", flexDirection: "column", overflow:"hidden", padding:0}} >
                 <Row style={{justifyContent: "center"}} className="h-10 bg-dark text-light sticky-top">
                     <Col />
                     <Col>
                         <h1>Chatr</h1>
                     </Col>
-                    <Col style={{display:"flex", alignItems: "center", justifyContent:"right"}}>
+                    <Col style={{display:"flex", alignItems: "center", justifyContent:"right", marginRight:"8px"}}>
+                        <Button style={{marginRight:"16px"}}>
+                            <i className="bi bi-bell"/>
+                        </Button>
                         <Dropdown>
                             <Dropdown.Toggle id="dropdown-basic">{this.props.currentUser.displayName}</Dropdown.Toggle>
                             <Dropdown.Menu style={{minWidth: "100%"}}>
-                                <Dropdown.Item onClick={()=>{this.setState({showAccount: true})}}>
+                                <Dropdown.Item onClick={()=>{
+                                        this.setState({showAccount: true});
+                                        this.props.setLoginError("");
+                                    }}>
                                     <i className="bi bi-person-circle" /> Account
                                 </Dropdown.Item>
                                 <Dropdown.Item style={{color:"red"}} onClick={()=>{
@@ -63,17 +88,16 @@ class ChatPage extends Component {
                         </Dropdown>
                     </Col>
                 </Row>
-                <Row style={{flex: "1 1 auto"}} className="align-items-bottom text-left">
-                    <Col md="auto">
+                <Row style={{flex: "1 1 auto", width:"100%", overflow:"auto", margin:0}} className="align-items-bottom text-left">
+                    <Col md="auto" style={{width: "10%", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>
                         {this.renderActiveUsers()}
                     </Col>
-                    <Col style = {{display:"flex", flexDirection: "column"}} className="align-items-bottom text-left">
+                    <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding:0}} className="align-items-bottom text-left">
                         {this.renderMessages()}
                     </Col>
-                    <Col style = {{width: "10%", backgroundColor: "#ccc"}} />
                 </Row>
                 <Row className="h-20 fixed-bottom">
-                    <Col style = {{width: "10%"}} />
+                    <Col/>
                     <Col>
                         <Form  style = {{backgroundColor: "#fff"}}  >
                             <InputGroup className="mb-3">
@@ -85,7 +109,7 @@ class ChatPage extends Component {
                                 value={this.state.draftMessage}
                                 onChange={this.handleMessageInput}
                                 />
-                                <Button variant="outline-secondary" id="button-addon2" type="submit" onClick={(e)=>{
+                                <Button variant="outline-secondary" disabled={this.state.draftMessage.replaceAll(/\s/g)==""} id="button-addon2" type="submit" onClick={(e)=>{
                                     e.preventDefault();
                                     // this.state.draftMessage = ""
                                     //console.log(this.state.draftMessage)
@@ -97,20 +121,26 @@ class ChatPage extends Component {
                             </InputGroup>
                         </Form>
                     </Col>
-                    <Col style = {{width: "10%"}} />
+                    <Col/>
                 </Row>
                 <Modal show={this.state.showAccount} onHide={()=>{this.setState({showAccount: false})}}>
                     <Modal.Header closeButton>
                         <Modal.Title style={{textAlign: "center"}}>Account Settings</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        Woohoo, you're reading this text in a modal!
+                        <Form>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Display Name</Form.Label>
+                                <Form.Control placeholder={this.props.currentUser.displayName} onChange={(e)=>{this.handleDisplayNameInput(e)}}/>
+                                <Form.Label style={{color:"#f44"}}>{this.props.loginError}</Form.Label>
+                            </Form.Group>
+                        </Form>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={()=>{this.setState({showAccount: false})}}>
                             Close
                         </Button>
-                        <Button variant="primary" onClick={()=>{this.setState({showAccount: false})}}>
+                        <Button variant="primary" onClick={()=>{this.handleChangeSubmit()}}>
                             Save Changes
                         </Button>
                     </Modal.Footer>
