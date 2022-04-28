@@ -84,19 +84,21 @@ class App extends Component {
 
     createNewLogin(userName, email, password){
         const requestOptions = {
-            method: 'post',
+            method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({'displayName': userName, 'email': email, 'password': password})
         }
         fetch(url + "users/teacher/", requestOptions)
             .then((res) => {
                 if(res.ok){
+                    console.log("createNewLogin ok")
                     return {success: true}
                 } else {
                     throw new Error("Unspecified error");
                 }
             })
             .catch((err) => {
+                console.log("createNewLogin error")
                 return {success: false, error: err}
             })
     }
@@ -107,17 +109,19 @@ class App extends Component {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(changesDict)
         }
-        fetch(url + "users/" + changesDict._id)
-            .then((res) => {
-                if(res.ok){
-                    return {success: true}
-                } else {
-                    throw new Error("Unspecified error");
-                }
-            })
-            .catch((err) => {
-                return {success: false, error: err}
-            })
+        return new Promise((resolve, reject) =>{
+            fetch(url + "users/" + changesDict["_id"], requestOptions)
+                .then((res)=> res.json())
+                .then((json)=>{
+                    console.log(json);
+                    this.setState({currentUser: json});
+                    localStorage.setItem('currentUser', JSON.stringify(json))
+                    resolve(json);
+                })
+                .catch((err) =>{
+                    reject(err);
+                })
+        })
     }
 
     submitLoginInfo(email, password){

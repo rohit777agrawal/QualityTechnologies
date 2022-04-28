@@ -44,14 +44,20 @@ class ChatPage extends Component {
         this.setState({newDisplayName: event.target.value});
     }
 
-    handleChangeSubmit(){
+    handleChangeSubmit(event){
         const displayNameRegex = /^[A-z0-9_-\s]{3,15}$/;
+        event.preventDefault();
         try{
             if(this.state.newDisplayName.match(displayNameRegex)===null){
                 throw new Error("Usernames must be 3 to 15 characters long");
             }
-            this.props.updateLoginInfo({displayName: this.state.newDisplayName, _id: this.props.currentUser._id});
-            this.setState({showAccount: false});
+            this.props.updateLoginInfo({displayName: this.state.newDisplayName, _id: this.props.currentUser._id})
+            .then(() => {
+                this.setState({showAccount: false});
+            })
+            .catch((err) => {
+                throw new Error(err);
+            })
         } catch(error){
             this.props.setLoginError(error.message);
         }
@@ -99,7 +105,7 @@ class ChatPage extends Component {
                 <Row className="h-20 fixed-bottom">
                     <Col/>
                     <Col>
-                        <Form  style = {{backgroundColor: "#fff"}}  >
+                        <Form style = {{backgroundColor: "#fff"}}  >
                             <InputGroup className="mb-3">
                             <FormControl
                                 placeholder="type a message and press enter"
@@ -128,22 +134,24 @@ class ChatPage extends Component {
                         <Modal.Title style={{textAlign: "center"}}>Account Settings</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <Form>
+                        <Form target="">
                             <Form.Group className="mb-3">
                                 <Form.Label>Display Name</Form.Label>
                                 <Form.Control placeholder={this.props.currentUser.displayName} onChange={(e)=>{this.handleDisplayNameInput(e)}}/>
                                 <Form.Label style={{color:"#f44"}}>{this.props.loginError}</Form.Label>
                             </Form.Group>
+                            <div style={{display:"flex", justifyContent:"space-evenly"}}>
+                            <Button variant="secondary" onClick={()=>{this.setState({showAccount: false})}}>
+                            Close
+                            </Button>
+                            <Button variant="primary" type="submit" onClick={(e)=>{
+                                this.handleChangeSubmit(e);
+                            }}>
+                                Save Changes
+                            </Button>
+                            </div>
                         </Form>
                     </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={()=>{this.setState({showAccount: false})}}>
-                            Close
-                        </Button>
-                        <Button variant="primary" onClick={()=>{this.handleChangeSubmit()}}>
-                            Save Changes
-                        </Button>
-                    </Modal.Footer>
                 </Modal>
             </Container>
         );
