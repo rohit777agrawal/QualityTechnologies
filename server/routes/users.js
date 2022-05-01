@@ -2,10 +2,10 @@ const { v4: uuidv4 } = require('uuid');
 var express = require("express");
 var router = express.Router();
 
-var {mongoose, db, User} = require('../database');
+var {mongoose, db, User: UserModel} = require('../database');
 
 router.get('/', function(req, res, next) {
-    User.find(function(err, users){
+    UserModel.find(function(err, users){
         if(err) {
             console.log(err);
         } else {
@@ -15,13 +15,13 @@ router.get('/', function(req, res, next) {
 })
 
 router.get("/:id", function(req, res, next) {
-    User.findById(req.params.id, function(err, user) {
+    UserModel.findById(req.params.id, function(err, user) {
         res.json(user);
     });
 });
 
 router.post("/login", function(req, res, next) {
-    const query  = User.where({ email: req.body.email, password: req.body.password });
+    const query  = UserModel.where({ email: req.body.email, password: req.body.password });
     query.findOne(function (err, user) {
         if (err) {
             res.status(500).json(err)
@@ -39,7 +39,7 @@ router.post("/login", function(req, res, next) {
 });
 
 router.put("/:id", function(req, res, next) {
-    User.findById(req.params.id, function(err, user) {
+    UserModel.findById(req.params.id, function(err, user) {
         Object.assign(user, req.params.body);
         user.save();
     })

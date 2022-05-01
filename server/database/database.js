@@ -43,17 +43,16 @@ var GroupSchema = new mongoose.Schema({
 
 
 
-var User = mongoose.model('User', UserSchema );
-var Message = mongoose.model('Message', MessageSchema );
-//var test_Teacher = new User({ email: 'teacher@mail.com', teacher: true, password: 'password' });
-//var test_Student = new User({ email: 'student@mail.com', teacher: false, password: 'password' });
+var UserModel = mongoose.model('User', UserSchema );
+var MessageModel = mongoose.model('Message', MessageSchema );
+var GroupModel = mongoose.model('Group', GroupSchema);
 
 function createUserIfMissing(userIn) {
-    const query  = User.where(userIn);
+    const query  = UserModel.where(userIn);
     query.findOne(function (err, user) {
         if (err) return handleError(err);
         if (!user) {
-            (new User(userIn)).save(function (err) {
+            (new UserModel(userIn)).save(function (err) {
                 if (err) return handleError(err);
             });
         }
@@ -86,4 +85,4 @@ createUserIfMissing({
     active: false
 });
 
-module.exports = { mongoose, db, User, Message}
+module.exports = { mongoose, db, UserModel, MessageModel, GroupModel}
