@@ -14,6 +14,20 @@ router.get('/', function(req, res, next) {
     })
 })
 
+router.post('/teacher/', function(req, res, next) {
+    var user = new User({
+        name: req.body.displayName,
+        email: req.body.email,
+        password: req.body.password,
+        displayName: req.body.displayName,
+        isTeacher: true,
+    })
+    user.save()
+    .catch(err => {
+        res.status(400).send("Teacher Creation Error")
+    })
+})
+
 router.get("/:id", function(req, res, next) {
     User.findById(req.params.id, function(err, user) {
         res.json(user);
@@ -40,8 +54,11 @@ router.post("/login", function(req, res, next) {
 
 router.put("/:id", function(req, res, next) {
     User.findById(req.params.id, function(err, user) {
-        Object.assign(user, req.params.body);
+        var oldDisplayName = {oldDisplayName: user["displayName"]};
+        var validKeys = Object.keys(user["_doc"]).filter(value=>Object.keys(req.body).includes(value));
+        validKeys.forEach((key)=>{user[key] = req.body[key]});
         user.save();
+        res.json(Object.assign({}, user._doc, oldDisplayName));
     })
 })
 

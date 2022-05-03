@@ -11,7 +11,12 @@ router.get("/:id", function(req, res, next) {
 
 //Send a message
 router.post("/", function(req, res, next) {
-    var message = new Message({sender: req.body.sender, recipients: req.body.recipients, contents: req.body.contents})
+    var message = new Message({
+        sender: req.body.sender,
+        recipients: req.body.recipients,
+        contents: req.body.contents,
+        sentTime: new Date()
+    })
     message.save()
         .then(message => {
             message.recipients.forEach((recipient) =>{
