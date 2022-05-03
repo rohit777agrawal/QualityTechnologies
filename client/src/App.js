@@ -61,7 +61,7 @@ class App extends Component {
         })
 
         this.socket.on('messageFromServer', message => {
-            console.log(message);
+            //console.log(message);
             var updatedMessages = this.state.messages;
             updatedMessages.push(message);
             this.setState({messages: updatedMessages});
@@ -91,7 +91,7 @@ class App extends Component {
         fetch(url + "users/teacher/", requestOptions)
             .then((res) => {
                 if(res.ok){
-                    console.log("createNewLogin ok")
+                    //console.log("createNewLogin ok")
                     return {success: true}
                 } else {
                     throw new Error("Unspecified error");
@@ -113,7 +113,7 @@ class App extends Component {
             fetch(url + "users/" + changesDict["_id"], requestOptions)
                 .then((res)=> res.json())
                 .then((json)=>{
-                    console.log(json);
+                    //console.log(json);
                     this.setState({currentUser: json});
                     localStorage.setItem('currentUser', JSON.stringify(json));
                     this.socket.emit("updateActiveUsers");
