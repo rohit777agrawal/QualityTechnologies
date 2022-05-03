@@ -40,13 +40,13 @@ class Message extends Component{
             case "image":
                 return (
                     <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
-                        <img src = {message.text}/>
+                        <img  alt=""  src = {message.text}/>
                     </div>
                 )
             case "link":
                 return (
                     <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
-                        <a style={{color: "#fff"}} target="_blank" href= {message.text}>{message.text}</a>
+                        <a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>
                     </div>
                 )
             default:

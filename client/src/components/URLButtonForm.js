@@ -4,7 +4,7 @@ import { OverlayTrigger, Form, FormControl, InputGroup, Button, Popover } from "
 class URLButtonForm extends Component{
     render(){
         return (
-            <OverlayTrigger trigger="click" placement="top" overlay = {
+            <OverlayTrigger trigger="click" show={this.props.show} onToggle={()=>{this.props.toggle()}} placement="top" overlay = {
                 <Popover id="popover-imageURL">
                     <Popover.Header as="h3">{this.props.type.charAt(0).toUpperCase() + this.props.type.slice(1)} url</Popover.Header>
                     <Popover.Body>

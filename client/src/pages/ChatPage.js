@@ -15,6 +15,8 @@ class ChatPage extends Component {
             newDisplayName: "",
             messages: props.messages,
             url: "",
+            showLink: false,
+            showImage: false,
             error: ""
         }
 
@@ -23,7 +25,7 @@ class ChatPage extends Component {
     }
 
     send(type){
-        const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/;
+        const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)/;
         if(this.state.url.match(urlRegex)){
             this.props.messageHandler(this.state.url, type)
             this.setState({url: "", error: ""});
@@ -50,6 +52,14 @@ class ChatPage extends Component {
 
     handleURLInput(e){
         this.setState({url: e.target.value});
+    }
+
+    toggleLink(){
+        this.setState({showImage: false, showLink: !this.state.showLink });
+    }
+
+    toggleImage(){
+        this.setState({showImage: !this.state.showImage, showLink: false });
     }
 
     renderActiveUsers(){
@@ -146,14 +156,18 @@ class ChatPage extends Component {
                                     url = {this.state.url}
                                     handleURLInput = {this.handleURLInput.bind(this)}
                                     send = {this.send.bind(this)}
-                                    type = "link">
+                                    type = "link"
+                                    toggle = {this.toggleLink.bind(this)}
+                                    show = {this.state.showLink}>
                                     <i className="bi bi-link-45deg"></i> Link
                                 </URLButtonForm>
                                 <URLButtonForm
                                     url = {this.state.url}
                                     handleURLInput = {this.handleURLInput.bind(this)}
                                     send = {this.send.bind(this)}
-                                    type = "image">
+                                    type = "image"
+                                    toggle = {this.toggleImage.bind(this)}
+                                    show = {this.state.showImage}>
                                     <i className="bi bi-card-image"></i> Image
                                 </URLButtonForm>
                                 <Button variant="outline-secondary" disabled={this.state.draftMessage.replaceAll(/\s/g)===""} id="button-addon2" onClick={(e)=>{
