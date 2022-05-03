@@ -43,6 +43,9 @@ class LoginPage extends Component {
                 if(this.state.userName.match(userNameRegex)===null){
                     throw new Error("Please try a better username");
                 }
+                if(this.state.userName === "server"){
+                    throw new Error("That username is invalid");
+                }
                 if(this.state.email.match(emailRegex)===null){
                     throw new Error("Your email's not looking right");
                 }
@@ -51,7 +54,7 @@ class LoginPage extends Component {
                 }
                 var res = this.props.createNewLogin(this.state.userName, this.state.email, this.state.password);
                 if(res.success){
-                    
+
                 }
             } catch(error){
                 event.preventDefault();

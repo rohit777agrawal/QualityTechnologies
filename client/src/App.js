@@ -117,9 +117,7 @@ class App extends Component {
                     this.setState({currentUser: json});
                     localStorage.setItem('currentUser', JSON.stringify(json));
                     this.socket.emit("updateActiveUsers");
-                    var updatedMessages = this.state.messages;
-                    updatedMessages.push({user:'server', text: json.oldDisplayName + " has changed their name to: " + json.displayName, wasSentByServer: true});
-                    this.setState({messages: updatedMessages});
+                    this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to: " + json.displayName);
                     resolve(json);
                 })
                 .catch((err) =>{
@@ -146,7 +144,7 @@ class App extends Component {
                 }
             })
             .then((user)=>{
-                console.log(user)
+                //console.log(user)
                 this.setState({currentUser: user, loggedIn: true})
                 localStorage.setItem('currentUser', JSON.stringify(user))
             })

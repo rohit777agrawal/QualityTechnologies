@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal} from 'react-bootstrap';
-import Message from "../components/Message.js"
+import Message from "../components/Message.js";
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import ErrorBox from '../components/ErrorBox.js'
 
 class ChatPage extends Component {
 
@@ -36,7 +35,7 @@ class ChatPage extends Component {
 
     renderMessages(){
         return this.props.messages.map((message, keyVal) => {
-            return <Message wasSentByCurrentUser={true} key={keyVal}>{message}</Message>
+            return <Message wasSentByCurrentUser={true} key={keyVal} message={message}></Message>
         })
     }
 
@@ -50,6 +49,9 @@ class ChatPage extends Component {
         try{
             if(this.state.newDisplayName.match(displayNameRegex)===null){
                 throw new Error("Usernames must be 3 to 15 characters long");
+            }
+            if(this.state.newDisplayName === "server"){
+                throw new Error("That user name is invalid");
             }
             this.props.updateLoginInfo({displayName: this.state.newDisplayName, _id: this.props.currentUser._id})
             .then(() => {
@@ -115,7 +117,7 @@ class ChatPage extends Component {
                                 value={this.state.draftMessage}
                                 onChange={this.handleMessageInput}
                                 />
-                                <Button variant="outline-secondary" disabled={this.state.draftMessage.replaceAll(/\s/g)==""} id="button-addon2" type="submit" onClick={(e)=>{
+                                <Button variant="outline-secondary" disabled={this.state.draftMessage.replaceAll(/\s/g)===""} id="button-addon2" type="submit" onClick={(e)=>{
                                     e.preventDefault();
                                     // this.state.draftMessage = ""
                                     //console.log(this.state.draftMessage)

@@ -28,8 +28,8 @@ const fromStyle = {
 
 class Message extends Component{
     render() {
-        var message = this.props.children;
-        if(message.wasSentByServer){
+        var message = this.props.message;
+        if(message.user === "server"){
             return(
                 <div style = {infoStyle}>
                     {message.text}

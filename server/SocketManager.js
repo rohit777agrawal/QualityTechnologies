@@ -20,11 +20,11 @@ class SocketManger {
     this.io.on("connection", (socket) => {
 
       const sendServerMessage = (message) => {
-        socket.emit('messageFromServer', {user: 'server', text: message, wasSentByServer: true});
+        socket.emit('messageFromServer', {user: 'server', text: message});
       }
 
       const sendServerBroadcast = (message) => {
-        socket.broadcast.emit('messageFromServer', {user: 'server', text: message, wasSentByServer: true});
+        socket.broadcast.emit('messageFromServer', {user: 'server', text: message});
       }
 
       const query  = User.where({ auth: {token: socket.handshake.auth.token} });
@@ -84,6 +84,10 @@ class SocketManger {
              console.log("broadcasting updated user list");
              this.io.emit('activeUsers', activeUsers)
           });
+      })
+
+      socket.on("sendServerMessage", (msg) => {
+          sendServerMessage(msg);
       })
 
       // Listen for chatMessage
