@@ -91,13 +91,13 @@ class SocketManger {
       })
 
       // Listen for chatMessage
-      socket.on("messageToServer", (msg) => {
+      socket.on("messageToServer", (msg, type) => {
         User.findById(this.socketIDToUserID[socket.id], (err, user)=>{
           if (err){
             console.log(err)
           }
           if (user){
-            this.io.emit('messageFromServer', {user: user.displayName, text: msg})
+            this.io.emit('messageFromServer', {user: user.displayName, text: msg, type: type})
           }
           else {
             console.log("Error: received message but no user found")

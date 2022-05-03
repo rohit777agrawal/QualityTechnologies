@@ -36,11 +36,26 @@ class Message extends Component{
                 </div>
             )
         }
-        return (
-            <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
-                {message.user}: {message.text}
-            </div>
-            )
+        switch(message.type){
+            case "image":
+                return (
+                    <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
+                        <img src = {message.text}/>
+                    </div>
+                )
+            case "link":
+                return (
+                    <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
+                        <a style={{color: "#fff"}} target="_blank" href= {message.text}>{message.text}</a>
+                    </div>
+                )
+            default:
+                return (
+                    <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
+                        {message.user}: {message.text}
+                    </div>
+                )
+        }
     }
 }
 

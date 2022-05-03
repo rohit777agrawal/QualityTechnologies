@@ -1,6 +1,8 @@
 import React, { Component } from "react";
-import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal} from 'react-bootstrap';
+import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal } from 'react-bootstrap';
+import ErrorBox from "../components/ErrorBox.js";
 import Message from "../components/Message.js";
+import URLButtonForm from "../components/URLButtonForm.js"
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 class ChatPage extends Component {
@@ -11,10 +13,29 @@ class ChatPage extends Component {
             draftMessage: "",
             showAccount: true,
             newDisplayName: "",
-            messages: props.messages
+            messages: props.messages,
+            url: "",
+            error: ""
         }
 
         this.handleMessageInput = this.handleMessageInput.bind(this)
+
+    }
+
+    send(type){
+        const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/;
+        if(this.state.url.match(urlRegex)){
+            this.props.messageHandler(this.state.url, type)
+            this.setState({url: "", error: ""});
+        } else {
+            let testURL = "http://" + this.state.url;
+            if(testURL.match(urlRegex)){
+                this.props.messageHandler(testURL, type)
+                this.setState({url: "", error: ""});
+            } else {
+                this.setState({error: "Invalid url"})
+            }
+        }
 
     }
 
@@ -25,6 +46,10 @@ class ChatPage extends Component {
 
     handleMessageInput(e){
         this.setState({draftMessage: e.target.value})
+    }
+
+    handleURLInput(e){
+        this.setState({url: e.target.value});
     }
 
     renderActiveUsers(){
@@ -107,7 +132,7 @@ class ChatPage extends Component {
                 <Row className="h-20 fixed-bottom">
                     <Col/>
                     <Col>
-                        <Form style = {{backgroundColor: "#fff"}}  >
+                        <Form style = {{backgroundColor: "#fff"}}>
                             <InputGroup className="mb-3">
                             <FormControl
                                 placeholder="type a message and press enter"
@@ -117,12 +142,23 @@ class ChatPage extends Component {
                                 value={this.state.draftMessage}
                                 onChange={this.handleMessageInput}
                                 />
-                                <Button variant="outline-secondary" disabled={this.state.draftMessage.replaceAll(/\s/g)===""} id="button-addon2" type="submit" onClick={(e)=>{
-                                    e.preventDefault();
-                                    // this.state.draftMessage = ""
-                                    //console.log(this.state.draftMessage)
-                                    this.setState({draftMessage: ""})
-                                    this.props.messageHandler(this.state.draftMessage)
+                                <URLButtonForm
+                                    url = {this.state.url}
+                                    handleURLInput = {this.handleURLInput.bind(this)}
+                                    send = {this.send.bind(this)}
+                                    type = "link">
+                                    <i className="bi bi-link-45deg"></i> Link
+                                </URLButtonForm>
+                                <URLButtonForm
+                                    url = {this.state.url}
+                                    handleURLInput = {this.handleURLInput.bind(this)}
+                                    send = {this.send.bind(this)}
+                                    type = "image">
+                                    <i className="bi bi-card-image"></i> Image
+                                </URLButtonForm>
+                                <Button variant="outline-secondary" disabled={this.state.draftMessage.replaceAll(/\s/g)===""} id="button-addon2" onClick={(e)=>{
+                                    this.props.messageHandler(this.state.draftMessage, "text");
+                                    this.setState({draftMessage: ""});
                                 }}>
                                     Send
                                 </Button>
@@ -130,6 +166,11 @@ class ChatPage extends Component {
                         </Form>
                     </Col>
                     <Col/>
+                </Row>
+                <Row >
+                    <Col className="fixed-bottom">
+                        <ErrorBox>{this.state.error}</ErrorBox>
+                    </Col>
                 </Row>
                 <Modal show={this.state.showAccount} onHide={()=>{this.setState({showAccount: false})}}>
                     <Modal.Header closeButton>

@@ -159,9 +159,9 @@ class App extends Component {
         this.setState({loginError: errorMessage})
     }
 
-    sendMessage(text) {
+    sendMessage(msg, type) {
         // send messages to message to server-side socket
-        this.socket.emit('messageToServer', text);
+        this.socket.emit('messageToServer', msg, type);
     }
 
     render(){

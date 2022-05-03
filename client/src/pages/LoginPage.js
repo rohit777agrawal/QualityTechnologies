@@ -40,16 +40,16 @@ class LoginPage extends Component {
         } else {
             this.props.setLoginError("");
             try{
-                if(this.state.userName.match(userNameRegex)===null){
+                if(this.state.userName.match(userNameRegex) === null){
                     throw new Error("Please try a better username");
                 }
                 if(this.state.userName === "server"){
                     throw new Error("That username is invalid");
                 }
-                if(this.state.email.match(emailRegex)===null){
+                if(this.state.email.match(emailRegex) === null){
                     throw new Error("Your email's not looking right");
                 }
-                if(this.state.password.match(passwordRegex)===null){
+                if(this.state.password.match(passwordRegex) === null){
                     throw new Error("Passwords must be 8 characters long, have one upper and lowercase letter, and one number");
                 }
                 var res = this.props.createNewLogin(this.state.userName, this.state.email, this.state.password);
