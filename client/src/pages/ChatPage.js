@@ -42,6 +42,7 @@ class ChatPage extends Component {
     }
 
     componentDidMount(){
+        document.title = "Chatr Chat Window";
         this.setState({showAccount:false})
         this.props.initChat()
     }
@@ -83,10 +84,14 @@ class ChatPage extends Component {
         event.preventDefault();
         try{
             if(this.state.newDisplayName.match(displayNameRegex)===null){
-                throw new Error("Usernames must be 3 to 15 characters long");
+                if(this.state.newDisplayName.length < 3 || this.state.newDisplayName.length > 15){
+                    throw new Error("Usernames must be 3 to 15 characters long.");
+                } else {
+                    throw new Error("Usernames cannot have special characters.")
+                }
             }
             if(this.state.newDisplayName === "server"){
-                throw new Error("That user name is invalid");
+                throw new Error("That user name is invalid.");
             }
             this.props.updateLoginInfo({displayName: this.state.newDisplayName, _id: this.props.currentUser._id})
             .then(() => {
@@ -170,7 +175,8 @@ class ChatPage extends Component {
                                     show = {this.state.showImage}>
                                     <i className="bi bi-card-image"></i> Image
                                 </URLButtonForm>
-                                <Button variant="outline-secondary" disabled={this.state.draftMessage.replaceAll(/\s/g)===""} id="button-addon2" onClick={(e)=>{
+                                <Button variant="outline-secondary" type="submit" disabled={this.state.draftMessage.replaceAll(/\s/g)===""} id="button-addon2" onClick={(e)=>{
+                                    e.preventDefault();
                                     this.props.messageHandler(this.state.draftMessage, "text");
                                     this.setState({draftMessage: ""});
                                 }}>

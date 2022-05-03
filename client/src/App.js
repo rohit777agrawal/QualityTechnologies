@@ -117,7 +117,7 @@ class App extends Component {
                     this.setState({currentUser: json});
                     localStorage.setItem('currentUser', JSON.stringify(json));
                     this.socket.emit("updateActiveUsers");
-                    this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to: " + json.displayName);
+                    this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to " + json.displayName);
                     resolve(json);
                 })
                 .catch((err) =>{

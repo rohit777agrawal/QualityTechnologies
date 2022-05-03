@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 
 const infoStyle = {
+    color: "#333",
+}
 
+const bottomLine = {
+    textAlign: "right",
+    fontSize: "10pt",
+    marginRight: "4pt"
 }
 
 const messageStyle = {
@@ -39,21 +45,30 @@ class Message extends Component{
         switch(message.type){
             case "image":
                 return (
-                    <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
-                        {message.user}: <br /><img  alt=""  src = {message.text}/>
-                    </div>
+                    <>
+                        <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
+                            <img  alt=""  src = {message.text}/>
+                        </div>
+                        <span style={Object.assign({}, infoStyle, bottomLine)}>{message.user}</span>
+                    </>
                 )
             case "link":
                 return (
-                    <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
-                        {message.user}: <a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>
-                    </div>
+                    <>
+                        <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
+                            <a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>
+                            </div>
+                            <span style={Object.assign({}, infoStyle, bottomLine)}>{message.user}</span>
+                    </>
                 )
             default:
                 return (
-                    <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
-                        {message.user}: {message.text}
-                    </div>
+                    <>
+                        <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
+                            {message.text}
+                        </div>
+                        <span style={Object.assign({}, infoStyle, bottomLine)}>{message.user}</span>
+                    </>
                 )
         }
     }
