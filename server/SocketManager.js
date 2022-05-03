@@ -18,7 +18,7 @@ class SocketManger {
   setupConnections(){
 
     this.io.on("connection", (socket) => {
-        
+
       const sendServerMessage = (message) => {
         socket.emit('messageFromServer', {user: 'server', text: message, wasSentByServer: true});
       }
@@ -75,6 +75,16 @@ class SocketManger {
           }
         })
       });
+
+      //Update updateActiveUsers
+      socket.on('updateActiveUsers', ()=>{
+          User.find({
+            '_id': { $in: Object.keys(this.socketIDToUserID).map(key=>this.socketIDToUserID[key])}
+          }, (err, activeUsers) => {
+             console.log("broadcasting updated user list");
+             this.io.emit('activeUsers', activeUsers)
+          });
+      })
 
       // Listen for chatMessage
       socket.on("messageToServer", (msg) => {

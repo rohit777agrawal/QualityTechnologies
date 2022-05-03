@@ -54,10 +54,11 @@ router.post("/login", function(req, res, next) {
 
 router.put("/:id", function(req, res, next) {
     User.findById(req.params.id, function(err, user) {
+        var oldDisplayName = {oldDisplayName: user["displayName"]};
         var validKeys = Object.keys(user["_doc"]).filter(value=>Object.keys(req.body).includes(value));
         validKeys.forEach((key)=>{user[key] = req.body[key]});
         user.save();
-        res.json(user);
+        res.json(Object.assign({}, user._doc, oldDisplayName));
     })
 })
 

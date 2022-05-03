@@ -61,7 +61,7 @@ class App extends Component {
         })
 
         this.socket.on('messageFromServer', message => {
-            //console.log(message);
+            console.log(message);
             var updatedMessages = this.state.messages;
             updatedMessages.push(message);
             this.setState({messages: updatedMessages});
@@ -115,7 +115,11 @@ class App extends Component {
                 .then((json)=>{
                     console.log(json);
                     this.setState({currentUser: json});
-                    localStorage.setItem('currentUser', JSON.stringify(json))
+                    localStorage.setItem('currentUser', JSON.stringify(json));
+                    this.socket.emit("updateActiveUsers");
+                    var updatedMessages = this.state.messages;
+                    updatedMessages.push({user:'server', text: json.oldDisplayName + " has changed their name to: " + json.displayName, wasSentByServer: true});
+                    this.setState({messages: updatedMessages});
                     resolve(json);
                 })
                 .catch((err) =>{
