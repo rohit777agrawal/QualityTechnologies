@@ -206,7 +206,7 @@ class Database {
                     .then((groups)=>{
                         if (groups){
                             var groupIDs = groups.map(group=>group._id)
-                            return MessageModel.find({groupID: {$in: groupIDs}, $not: {senderID: userID}})
+                            return MessageModel.find({groupID: {$in: groupIDs}, senderID: {$ne: userID}})
                         }
                         else {
                             return []
@@ -227,7 +227,7 @@ class Database {
 }
 
 var db = new Database('mongodb+srv://CrazyArtOrange:city-oaf-handshake@cluster0.son2o.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
-db.getMessagesByReceiver('626d923cc291a6ad47c18c9a')
+db.getMessagesByReceiver('626b18bd1a242edc74b21d9e')
     .then((res)=>{
         console.log(res)
     })
