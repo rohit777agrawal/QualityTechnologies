@@ -177,8 +177,18 @@ class Message extends Component{
                 )
             default:
                 return (
-                    this.messageTemplate(message.text)
+                    this.messageTemplate(
+                        message.text.split("\n").map((item, key)=>{
+                            return(
+                                <span key={key}>
+                                    {item}
+                                    <br/>
+                                </span>
+                            )
+                        }
+                    )
                 )
+            )
         }
     }
 }

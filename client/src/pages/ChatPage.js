@@ -48,6 +48,19 @@ class ChatPage extends Component {
         document.title = "Chatr Chat Window";
         this.setState({showAccount:false})
         this.props.initChat()
+        this.messageForm.addEventListener("submit", (event)=>{
+            event.preventDefault();
+            if(this.state.draftMessage){
+                this.props.messageHandler(this.state.draftMessage, "text");
+                this.setState({draftMessage: ""});
+            }
+        })
+        this.textArea.addEventListener("keypress", (event)=>{
+            if(event.charCode === 13 && event.shiftKey === false){
+                event.target.form.dispatchEvent(new Event("submit", {bubbles: true, cancelable: true}));
+                event.preventDefault(); // Prevents the addition of a new line in the text field (not needed in a lot of cases)
+            }
+        })
     }
 
     handleMessageInput(e){
@@ -169,16 +182,18 @@ class ChatPage extends Component {
                     <Col md="auto" style={{width: "10%", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>
                         {this.renderActiveUsers()}
                     </Col>
-                    <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding: "0 0 48pt 0"}} className="align-items-bottom text-left">
+                    <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding: "0 4px 48pt 4px"}} className="align-items-bottom text-left">
                         {this.renderMessages()}
                     </Col>
                 </Row>
                 <Row className="h-20 fixed-bottom">
                     <Col/>
                     <Col>
-                        <Form style = {{backgroundColor: "#fff"}}>
+                        <Form ref={(ref)=>{this.messageForm = ref;}} style = {{backgroundColor: "#fff"}}>
                             <InputGroup className="mb-3">
                             <FormControl
+                                ref={(ref)=>{this.textArea = ref;}}
+                                as="textarea"
                                 placeholder="type a message and press enter"
                                 aria-label="message box"
                                 aria-describedby="basic-addon2"
@@ -221,11 +236,7 @@ class ChatPage extends Component {
                                     show = {this.state.showImage}>
                                     <i className="bi bi-card-image"/>
                                 </URLButtonForm>
-                                <Button variant="outline-secondary" type="submit" disabled={this.state.draftMessage.replaceAll(/\s/g)===""} id="button-addon2" onClick={(e)=>{
-                                    e.preventDefault();
-                                    this.props.messageHandler(this.state.draftMessage, "text");
-                                    this.setState({draftMessage: ""});
-                                }}>
+                                <Button variant="outline-secondary" type="submit" disabled={this.state.draftMessage.replaceAll(/\s/g)===""} id="button-addon2">
                                     Send
                                 </Button>
                             </InputGroup>
