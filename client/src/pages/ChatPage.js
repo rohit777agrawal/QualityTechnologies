@@ -134,6 +134,7 @@ class ChatPage extends Component {
                     </Col>
                     <Col style={{display:"flex", alignItems: "center", justifyContent:"right", marginRight:"8px"}}>
                         <ToggleSwitch
+                            style={{marginRight: "16px"}}
                             show={this.props.currentUser.isTeacher}
                             toggled={this.state.allowChat}
                             onToggle={()=>{this.setState({allowChat: !this.state.allowChat})}}

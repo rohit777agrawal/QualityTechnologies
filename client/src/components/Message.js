@@ -36,7 +36,7 @@ const infoStyle = {
 const bottomLine = {
     display: "flex",
     fontSize: "10pt",
-    margin: "0 4pt 0 0",
+    margin: "0 4pt",
     opacity: 1,
 }
 
@@ -77,6 +77,7 @@ class Message extends Component{
                 mainDiv: Object.assign({}, {float: "right"}, mainDiv),
                 chatBubble: Object.assign({}, messageStyle, blueChatBubble),
                 bottomLine: Object.assign({}, infoStyle, bottomLine, {alignSelf: "flex-end",}),
+                slackCounter: {marginRight: "8px"},
                 selectorParentDiv: {height: 0, width:"100%", alignSelf: "flex-end"},
                 selectorDiv: {position:"absolute", right: "0px"},
                 side: "right"
@@ -86,6 +87,7 @@ class Message extends Component{
                 mainDiv: Object.assign({}, {float: "left"}, mainDiv),
                 chatBubble: Object.assign({}, messageStyle, greyChatBubble),
                 bottomLine: Object.assign({}, infoStyle, bottomLine, {alignSelf: "flex-start",}),
+                slackCounter: {marginLeft: "8px"},
                 selectorParentDiv: {height: 0, width: "100%", alignSelf: "flex-start"},
                 selectorDiv: {position:"absolute"},
                 side: "left",
@@ -95,6 +97,40 @@ class Message extends Component{
 
     messageTemplate(contents) {
         const style = this.styleTemplate();
+        const BottomLine = ({
+            style = style,
+            parent = this
+        }) => {
+            if(parent.props.currentUser === parent.props.message.user){
+                return(
+                    <>
+                        <SlackCounter
+                            style={style.slackCounter}
+                            counters = {parent.props.message.reactions}
+                            user={parent.props.currentUser}
+                            onSelect={(emoji)=>{this.react(emoji)}}
+                            onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
+                            side={style.side}
+                        />
+                        {parent.props.message.user}
+                    </>
+                )
+            } else {
+                return(
+                    <>
+                        {parent.props.message.user}
+                        <SlackCounter
+                            style={style.slackCounter}
+                            counters = {parent.props.message.reactions}
+                            user={parent.props.currentUser}
+                            onSelect={(emoji)=>{this.react(emoji)}}
+                            onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
+                            side={style.side}
+                        />
+                    </>
+                )
+            }
+        }
         return(
             <>
                 <div>
@@ -103,15 +139,9 @@ class Message extends Component{
                             {contents}
                         </div>
                         <div style={style.bottomLine}>
-                            {this.props.message.user}
-                        </div>
-                        <div style={style.bottomLine}>
-                            <SlackCounter
-                                counters = {this.props.message.reactions}
-                                user={this.props.currentUser}
-                                onSelect={(emoji)=>{this.react(emoji)}}
-                                onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
-                                side={style.side}
+                            <BottomLine
+                                style={style}
+                                parent={this}
                             />
                         </div>
                     </div>

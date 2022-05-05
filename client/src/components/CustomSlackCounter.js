@@ -3,6 +3,7 @@ import { CounterObject, groupBy, Hover, HoverStyle, SlackCounterGroup} from '@ch
 import SlackCSS from "./SlackCSS.js";
 
 export const defaultProps= {
+    style: {},
     counters: [
         {
             emoji: '👍',
@@ -24,6 +25,7 @@ export const defaultProps= {
 };
 
 export const SlackCounter = ({
+    style = defaultProps.style,
     counters = defaultProps.counters,
     user = defaultProps.user,
     onSelect = defaultProps.onSelect,
@@ -35,7 +37,7 @@ export const SlackCounter = ({
       return (
         <>
           <SlackCSS/>
-          <Hover style={counterStyle}>
+          <Hover style={Object.assign({}, counterStyle, style)}>
             <HoverStyle hoverStyle={addStyleHover} style={addStyle} onClick={onAdd}>
                 <SlackCounterGroup emoji={''} />
             </HoverStyle>
@@ -62,7 +64,7 @@ export const SlackCounter = ({
       return (
         <>
           <SlackCSS/>
-          <Hover style={counterStyle}>
+          <Hover style={Object.assign({}, counterStyle, style)}>
             {Object.keys(groups).map((emoji) => {
               const names = groups[emoji].map(({ by }: CounterObject) => {
                 return user === by ? "You": by;
@@ -95,12 +97,12 @@ const counterStyle = {
 const addStyle = {
   cursor: 'pointer',
   fontFamily: 'Slack',
-  paddingLeft: '8px',
+  padding: '0 2px',
   opacity: '1',
   transition: 'opacity 0.1s ease-in-out',
 };
 const groupStyle = {
-  marginRight: '4px',
+  margin: '0 1px',
 };
 const addStyleHover = {
   opacity: '1',
