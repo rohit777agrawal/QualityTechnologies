@@ -20,11 +20,11 @@ class SocketManger {
     this.io.on("connection", (socket) => {
 
       const sendServerMessage = (message) => {
-        socket.emit('messageFromServer', {user: 'server', text: message});
+        socket.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
       }
 
       const sendServerBroadcast = (message) => {
-        socket.broadcast.emit('messageFromServer', {user: 'server', text: message});
+        socket.broadcast.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
       }
 
       const query  = User.where({ auth: {token: socket.handshake.auth.token} });
@@ -76,6 +76,10 @@ class SocketManger {
         })
       });
 
+      socket.on('messageUpdateToServer', (message)=>{
+          this.io.emit("messageUpdateFromServer", message);
+      })
+
       //Update updateActiveUsers
       socket.on('updateActiveUsers', ()=>{
           User.find({
@@ -97,7 +101,7 @@ class SocketManger {
             console.log(err)
           }
           if (user){
-            this.io.emit('messageFromServer', {user: user.displayName, text: msg, type: type})
+            this.io.emit('messageFromServer', {user: user.displayName, text: msg, reactions: [], type: type, date: new Date()})
           }
           else {
             console.log("Error: received message but no user found")

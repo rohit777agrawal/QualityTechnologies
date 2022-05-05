@@ -18,7 +18,7 @@ export const SlackCounter = ({
             </HoverStyle>
             {Object.keys(groups).map((emoji) => {
               const names = groups[emoji].map(({ by }: CounterObject) => {
-                return by;
+                return by === user ? "You" : by;
               });
               return (
                 <div style={groupStyle} key={emoji}>

@@ -58,11 +58,24 @@ class App extends Component {
             }
         })
 
-        this.socket.on('messageFromServer', message => {
+        this.socket.on('messageFromServer', (message) => {
             //console.log(message);
-            var updatedMessages = this.state.messages;
+            let updatedMessages = this.state.messages;
             updatedMessages.push(message);
             this.setState({messages: updatedMessages});
+        })
+
+        this.socket.on("messageUpdateFromServer", (message) => {
+            let updatedMessages = this.state.messages;
+            console.log(updatedMessages);
+            for(let i = 0; i < updatedMessages.length; i++){
+                if(updatedMessages[i].user === message.user && updatedMessages[i].date === message.date){
+                    updatedMessages[i] = message;
+                    this.setState({messages: updatedMessages});
+                    console.log(updatedMessages);
+                    break;
+                }
+            }
         })
 
         this.socket.on('activeUsers', users=>{
@@ -177,6 +190,7 @@ class App extends Component {
                     loginError={this.state.loginError}
                     setLoginError={this.setLoginError.bind(this)}
                     updateLoginInfo={this.updateLoginInfo.bind(this)}
+                    socket={this.socket}
                 />
             );
         }

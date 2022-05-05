@@ -18,7 +18,7 @@ class ChatPage extends Component {
             url: "",
             showLink: false,
             showImage: false,
-            error: ""
+            error: "",
         }
 
         this.handleMessageInput = this.handleMessageInput.bind(this)
@@ -60,7 +60,7 @@ class ChatPage extends Component {
         this.setState({
             showEmoji: !this.state.showEmoji,
             showLink: false,
-            showImage: false
+            showImage: false,
         });
     }
 
@@ -68,7 +68,7 @@ class ChatPage extends Component {
         this.setState({
             showEmoji: false,
             showLink: !this.state.showLink,
-            showImage: false
+            showImage: false,
         });
     }
 
@@ -76,7 +76,7 @@ class ChatPage extends Component {
         this.setState({
             showEmoji: false,
             showLink: false,
-            showImage: !this.state.showImage
+            showImage: !this.state.showImage,
         });
     }
 
@@ -88,7 +88,7 @@ class ChatPage extends Component {
 
     renderMessages(){
         return this.props.messages.map((message, keyVal) => {
-            return <Message currentUser={this.props.currentUser.displayName} key={keyVal} message={message}></Message>
+            return <Message socket={this.props.socket} currentUser={this.props.currentUser.displayName} key={keyVal} message={message}></Message>
         })
     }
 

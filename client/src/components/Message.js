@@ -44,13 +44,12 @@ class Message extends Component{
     constructor(props){
         super(props);
         this.state = {
-            reactions: [],
             showSelector: false,
         }
     }
 
     react(emoji){
-        let updatedReactions = this.state.reactions;
+        let updatedReactions = this.props.message.reactions;
         let newReaction = {
             emoji: emoji,
             by: this.props.currentUser,
@@ -67,7 +66,9 @@ class Message extends Component{
         } else {
             updatedReactions.splice(indexOf,1);
         }
-        this.setState({reactions: updatedReactions});
+        let newMessage = this.props.message;
+        newMessage.reactions = updatedReactions;
+        this.props.socket.emit("messageUpdateToServer", newMessage);
     }
 
     styleTemplate(){
@@ -106,7 +107,7 @@ class Message extends Component{
                         </div>
                         <div style={style.bottomLine}>
                             <SlackCounter
-                                counters = {this.state.reactions}
+                                counters = {this.props.message.reactions}
                                 user={this.props.currentUser}
                                 onSelect={(emoji)=>{this.react(emoji)}}
                                 onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}

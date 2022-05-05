@@ -41,6 +41,7 @@ var MessageSchema = new mongoose.Schema({
     groupID: String,
     contents: String,
     messageType: String,
+    reactions: [Object],
     sentTime: Date
 })
 
