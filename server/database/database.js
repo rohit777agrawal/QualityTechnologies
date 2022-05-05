@@ -31,6 +31,7 @@ var MessageSchema = new mongoose.Schema({
     senderID: String,
     groupID: String,
     contents: String,
+    messageType: String,
     sentTime: Date
 })
 
@@ -59,8 +60,8 @@ function createUserIfMissing(userIn) {
     });
 }
 
-createUserIfMissing({ 
-    name: 'test teacher', 
+createUserIfMissing({
+    name: 'test teacher',
     email: 'teacher@mail.com',
     password: 'password',
     link: "",
@@ -72,7 +73,7 @@ createUserIfMissing({
     active: false
 });
 
-createUserIfMissing({ 
+createUserIfMissing({
     name: 'test student',
     email: 'student@mail.com',
     password: 'password',

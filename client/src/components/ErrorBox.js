@@ -10,7 +10,7 @@ const errorStyle = {
 class ErrorBox extends Component{
     render() {
         return (
-            <div hidden={this.props.children===""} className="alert alert-danger alert-dismissible fade show" style={errorStyle}>
+            <div hidden={this.props.children===""} className="alert alert-danger alert-dismissible fade show" style={Object.assign({}, this.props.style, errorStyle)}>
                 <strong>Error!</strong> {this.props.children}
             </div>
             )
