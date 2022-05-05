@@ -126,10 +126,24 @@ class App extends Component {
                 .then((res)=> res.json())
                 .then((json)=>{
                     console.log(json);
-                    this.setState({currentUser: json});
                     localStorage.setItem('currentUser', JSON.stringify(json));
                     this.socket.emit("updateActiveUsers");
                     this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to " + json.displayName);
+                    let newMessages = this.state.messages;
+                    console.log(newMessages);
+                    for(let i = 0; i < newMessages.length; i++){
+                        if(newMessages[i].reactions){
+                            for(let j = 0; j < newMessages[i].reactions.length; j++){
+                                if(newMessages[i].reactions[j].by === json.oldDisplayName){
+                                    newMessages[i].reactions[j].by = json.displayName;
+                                }
+                            }
+                        }
+                        if(newMessages[i].user === json.oldDisplayName){
+                            newMessages[i].user = json.displayName;
+                        }
+                    }
+                    this.setState({currentUser: json, messages: newMessages});
                     resolve(json);
                 })
                 .catch((err) =>{

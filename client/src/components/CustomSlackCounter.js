@@ -2,12 +2,33 @@ import React from 'react';
 import { CounterObject, groupBy, Hover, HoverStyle, SlackCounterGroup} from '@charkour/react-reactions/';
 import SlackCSS from "./SlackCSS.js";
 
+export const defaultProps= {
+    counters: [
+        {
+            emoji: '👍',
+            by: 'Case Sandberg',
+        },
+        {
+            emoji: '👎',
+            by: 'Charlie!!!!!',
+        },
+    ],
+    user: 'Charlie',
+    onSelect: (emoji) => {
+        console.log(emoji);
+    },
+    onAdd: () => {
+        console.log('add');
+    },
+    side: "right"
+};
+
 export const SlackCounter = ({
-  counters = defaultProps.counters,
-  user = defaultProps.user,
-  onSelect = defaultProps.onSelect,
-  onAdd = defaultProps.onAdd,
-  side = defaultProps.side,
+    counters = defaultProps.counters,
+    user = defaultProps.user,
+    onSelect = defaultProps.onSelect,
+    onAdd = defaultProps.onAdd,
+    side = defaultProps.side,
 }) => {
   const groups = groupBy(counters, 'emoji');
   if(side === "left"){
@@ -67,26 +88,6 @@ export const SlackCounter = ({
   }
 };
 
-export const defaultProps= {
-  counters: [
-    {
-      emoji: '👍',
-      by: 'Case Sandberg',
-    },
-    {
-      emoji: '👎',
-      by: 'Charlie!!!!!',
-    },
-  ],
-  user: 'Charlie',
-  onSelect: (emoji) => {
-    console.log(emoji);
-  },
-  onAdd: () => {
-    console.log('add');
-  },
-  sude: "right"
-};
 
 const counterStyle = {
   display: 'flex',

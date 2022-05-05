@@ -41,15 +41,16 @@ router.post("/login", function(req, res, next) {
     query.findOne(function (err, user) {
         if (err) {
             res.status(500).json(err)
-        };
-        if (user) {
-            user.auth = {token: uuidv4()};
-            user.save().then(res.status(200).json(user))
-            console.log("Found user '" + req.body.email + "' with password '" + req.body.password + "'");
-        }
-        else {
-            res.status(404).json({text: "failure"});
-            console.log("User " + req.body.email + " with password " + req.body.password + " does not exist")
+        } else {
+            if (user) {
+                user.auth = {token: uuidv4()};
+                user.save().then(res.status(200).json(user))
+                console.log("Found user '" + req.body.email + "' with password '" + req.body.password + "'");
+            }
+            else {
+                res.status(404).json({text: "failure"});
+                console.log("User " + req.body.email + " with password " + req.body.password + " does not exist")
+            }
         }
     });
 });

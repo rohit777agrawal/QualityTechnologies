@@ -3,7 +3,8 @@ import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, M
 import Picker from "emoji-picker-react";
 import ErrorBox from "../components/ErrorBox.js";
 import Message from "../components/Message.js";
-import URLButtonForm from "../components/URLButtonForm.js"
+import ToggleSwitch from "../components/ToggleSwitch.js";
+import URLButtonForm from "../components/URLButtonForm.js";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 class ChatPage extends Component {
@@ -13,6 +14,7 @@ class ChatPage extends Component {
         this.state = {
             draftMessage: "",
             showAccount: true,
+            allowChat: true,
             newDisplayName: "",
             messages: props.messages,
             url: "",
@@ -131,6 +133,15 @@ class ChatPage extends Component {
                         <h1>Chatr</h1>
                     </Col>
                     <Col style={{display:"flex", alignItems: "center", justifyContent:"right", marginRight:"8px"}}>
+                        <ToggleSwitch
+                            show={this.props.currentUser.isTeacher}
+                            toggled={this.state.allowChat}
+                            onToggle={()=>{this.setState({allowChat: !this.state.allowChat})}}
+                            name="allowChat"
+                            style={{container:{width: "48px", height: "24px", marginLeft: "4px", marginRight:"16px"}}}
+                        >
+                        Allow Chat
+                        </ToggleSwitch>
                         <Button style={{marginRight:"16px"}}>
                             <i className="bi bi-bell"/>
                         </Button>
