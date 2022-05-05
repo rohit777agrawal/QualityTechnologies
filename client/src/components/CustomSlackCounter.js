@@ -1,5 +1,6 @@
 import React from 'react';
 import { CounterObject, groupBy, Hover, HoverStyle, SlackCounterGroup} from '@charkour/react-reactions/';
+import SlackCSS from "./SlackCSS.js";
 
 export const SlackCounter = ({
   counters = defaultProps.counters,
@@ -12,6 +13,7 @@ export const SlackCounter = ({
   if(side === "left"){
       return (
         <>
+          <SlackCSS/>
           <Hover style={counterStyle}>
             <HoverStyle hoverStyle={addStyleHover} style={addStyle} onClick={onAdd}>
                 <SlackCounterGroup emoji={''} />
@@ -38,6 +40,7 @@ export const SlackCounter = ({
   } else {
       return (
         <>
+          <SlackCSS/>
           <Hover style={counterStyle}>
             {Object.keys(groups).map((emoji) => {
               const names = groups[emoji].map(({ by }: CounterObject) => {

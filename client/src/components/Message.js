@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { SlackCounter } from "./CustomSlackCounter.js"
-import { SlackSelector } from "@charkour/react-reactions";
+import Picker from "emoji-picker-react";
 const isEqual = require("lodash/isEqual");
 const mainDiv = {
     display: "flex",
@@ -118,7 +118,9 @@ class Message extends Component{
                 </div>
                 <div style={style.selectorParentDiv}>
                     <div style={style.selectorDiv} hidden={!this.state.showSelector}>
-                        <SlackSelector onSelect={(emoji)=>{this.react(emoji)}}/>
+                    <Picker native={true} onEmojiClick={(event, emojiObject) => {
+                        this.react(emojiObject.emoji);
+                    }}/>
                     </div>
                 </div>
             </>

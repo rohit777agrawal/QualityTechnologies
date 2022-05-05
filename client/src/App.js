@@ -67,12 +67,10 @@ class App extends Component {
 
         this.socket.on("messageUpdateFromServer", (message) => {
             let updatedMessages = this.state.messages;
-            console.log(updatedMessages);
             for(let i = 0; i < updatedMessages.length; i++){
                 if(updatedMessages[i].user === message.user && updatedMessages[i].date === message.date){
                     updatedMessages[i] = message;
                     this.setState({messages: updatedMessages});
-                    console.log(updatedMessages);
                     break;
                 }
             }
