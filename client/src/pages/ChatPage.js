@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal } from 'react-bootstrap';
+import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal, OverlayTrigger, Popover} from 'react-bootstrap';
+import Picker from "emoji-picker-react";
 import ErrorBox from "../components/ErrorBox.js";
 import Message from "../components/Message.js";
 import URLButtonForm from "../components/URLButtonForm.js"
@@ -55,23 +56,39 @@ class ChatPage extends Component {
         this.setState({url: e.target.value});
     }
 
+    toggleEmoji(){
+        this.setState({
+            showEmoji: !this.state.showEmoji,
+            showLink: false,
+            showImage: false
+        });
+    }
+
     toggleLink(){
-        this.setState({showImage: false, showLink: !this.state.showLink });
+        this.setState({
+            showEmoji: false,
+            showLink: !this.state.showLink,
+            showImage: false
+        });
     }
 
     toggleImage(){
-        this.setState({showImage: !this.state.showImage, showLink: false });
+        this.setState({
+            showEmoji: false,
+            showLink: false,
+            showImage: !this.state.showImage
+        });
     }
 
     renderActiveUsers(){
         return this.props.activeUsers.map((user, keyVal)=>{
-            return <Button variant="outline-info" style={{cursor:"default"}} key={keyVal}>{user.displayName}</Button>
+            return <Button variant="outline-info" style={{cursor:"default", margin:"2pt 0"}} key={keyVal}>{user.displayName}</Button>
         })
     }
 
     renderMessages(){
         return this.props.messages.map((message, keyVal) => {
-            return <Message wasSentByCurrentUser={true} key={keyVal} message={message}></Message>
+            return <Message currentUser={this.props.currentUser.displayName} key={keyVal} message={message}></Message>
         })
     }
 
@@ -140,7 +157,7 @@ class ChatPage extends Component {
                     <Col md="auto" style={{width: "10%", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>
                         {this.renderActiveUsers()}
                     </Col>
-                    <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding:0}} className="align-items-bottom text-left">
+                    <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding: "0 0 48pt 0"}} className="align-items-bottom text-left">
                         {this.renderMessages()}
                     </Col>
                 </Row>
@@ -157,6 +174,23 @@ class ChatPage extends Component {
                                 value={this.state.draftMessage}
                                 onChange={this.handleMessageInput}
                                 />
+                                <OverlayTrigger trigger="click" show={this.state.showEmoji} onToggle={()=>{this.toggleEmoji()}} placement="top" overlay = {
+                                    <Popover id="popover-Emoji">
+                                        <Popover.Header as="h3">Pick an Emoji</Popover.Header>
+                                        <Popover.Body style={{padding:"2px"}}>
+                                            <Picker pickerStyle={{
+                                                border: 0,
+                                                boxShadow: 0
+                                            }}  native={true} onEmojiClick={(event, emojiObject) => {
+                                                this.setState({draftMessage: this.state.draftMessage+emojiObject.emoji});
+                                            }}/>
+                                        </Popover.Body>
+                                    </Popover>
+                                }>
+                                    <Button variant="outline-secondary" id="button-addon2">
+                                        <i className="bi bi-emoji-smile"/>
+                                    </Button>
+                                </OverlayTrigger>
                                 <URLButtonForm
                                     url = {this.state.url}
                                     handleURLInput = {this.handleURLInput.bind(this)}
@@ -164,7 +198,7 @@ class ChatPage extends Component {
                                     type = "link"
                                     toggle = {this.toggleLink.bind(this)}
                                     show = {this.state.showLink}>
-                                    <i className="bi bi-link-45deg"></i> Link
+                                    <i className="bi bi-link-45deg"/>
                                 </URLButtonForm>
                                 <URLButtonForm
                                     url = {this.state.url}
@@ -173,7 +207,7 @@ class ChatPage extends Component {
                                     type = "image"
                                     toggle = {this.toggleImage.bind(this)}
                                     show = {this.state.showImage}>
-                                    <i className="bi bi-card-image"></i> Image
+                                    <i className="bi bi-card-image"/>
                                 </URLButtonForm>
                                 <Button variant="outline-secondary" type="submit" disabled={this.state.draftMessage.replaceAll(/\s/g)===""} id="button-addon2" onClick={(e)=>{
                                     e.preventDefault();

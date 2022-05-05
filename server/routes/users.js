@@ -15,6 +15,7 @@ router.get('/', function(req, res, next) {
 })
 
 router.post('/teacher/', function(req, res, next) {
+    const emailQuery = User.where({email: req.body.email});
     var user = new User({
         name: req.body.displayName,
         email: req.body.email,
@@ -22,9 +23,10 @@ router.post('/teacher/', function(req, res, next) {
         displayName: req.body.displayName,
         isTeacher: true,
     })
-    user.save()
-    .catch(err => {
-        res.status(400).send("Teacher Creation Error")
+    User.on('index', (err)=>{
+        user.save().catch(err => {
+            res.status(400).send("Teacher Creation Error")
+        })
     })
 })
 

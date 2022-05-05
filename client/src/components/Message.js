@@ -1,13 +1,11 @@
 import React, { Component } from "react";
-
-const infoStyle = {
-    color: "#333",
-}
-
-const bottomLine = {
-    textAlign: "right",
-    fontSize: "10pt",
-    marginRight: "4pt"
+import { SlackCounter } from "./CustomSlackCounter.js"
+import { SlackSelector } from "@charkour/react-reactions";
+const isEqual = require("lodash/isEqual");
+const mainDiv = {
+    display: "flex",
+    flexDirection: "column",
+    height: "fit-content",
 }
 
 const messageStyle = {
@@ -18,23 +16,116 @@ const messageStyle = {
     marginBottom: "4pt"
 }
 
-const toStyle = {
+const blueChatBubble = {
+    alignSelf:"flex-end",
     backgroundColor: "#55f",
     color: "#fff",
-    alignSelf: "flex-end",
-    borderRadius: "16pt 16pt 0 16pt"
-}
+    borderRadius: "16pt 16pt 0 16pt"}
 
-const fromStyle = {
+const greyChatBubble = {
+    alignSelf: "flex-start",
     backgroundColor: "#ccc",
     color: "#000",
-    alignSelf: "flex-start",
     borderRadius: "16pt 16pt 16pt 0"
 }
 
+const infoStyle = {
+    color: "#333",
+}
+
+const bottomLine = {
+    display: "flex",
+    fontSize: "10pt",
+    margin: "0 4pt 0 0",
+    opacity: 1,
+}
+
 class Message extends Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            reactions: [],
+            showSelector: false,
+        }
+    }
+
+    react(emoji){
+        let updatedReactions = this.state.reactions;
+        let newReaction = {
+            emoji: emoji,
+            by: this.props.currentUser,
+        }
+        let indexOf = -1;
+        for(let i = 0; i < updatedReactions.length; i++){
+            if(isEqual(newReaction, updatedReactions[i])){
+                indexOf = i;
+                break;
+            }
+        }
+        if(indexOf === -1){
+            updatedReactions.push(newReaction);
+        } else {
+            updatedReactions.splice(indexOf,1);
+        }
+        this.setState({reactions: updatedReactions});
+    }
+
+    styleTemplate(){
+        if(this.props.currentUser === this.props.message.user){
+            return {
+                mainDiv: Object.assign({}, {float: "right"}, mainDiv),
+                chatBubble: Object.assign({}, messageStyle, blueChatBubble),
+                bottomLine: Object.assign({}, infoStyle, bottomLine, {alignSelf: "flex-end",}),
+                selectorParentDiv: {height: 0, width:"100%", alignSelf: "flex-end"},
+                selectorDiv: {position:"absolute", right: "0px"},
+                side: "right"
+            }
+        } else {
+            return {
+                mainDiv: Object.assign({}, {float: "left"}, mainDiv),
+                chatBubble: Object.assign({}, messageStyle, greyChatBubble),
+                bottomLine: Object.assign({}, infoStyle, bottomLine, {alignSelf: "flex-start",}),
+                selectorParentDiv: {height: 0, width: "100%", alignSelf: "flex-start"},
+                selectorDiv: {position:"absolute"},
+                side: "left",
+            }
+        }
+    }
+
+    messageTemplate(contents) {
+        const style = this.styleTemplate();
+        return(
+            <>
+                <div>
+                    <div style={style.mainDiv}>
+                        <div style={style.chatBubble}>
+                            {contents}
+                        </div>
+                        <div style={style.bottomLine}>
+                            {this.props.message.user}
+                        </div>
+                        <div style={style.bottomLine}>
+                            <SlackCounter
+                                counters = {this.state.reactions}
+                                user={this.props.currentUser}
+                                onSelect={(emoji)=>{this.react(emoji)}}
+                                onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
+                                side={style.side}
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div style={style.selectorParentDiv}>
+                    <div style={style.selectorDiv} hidden={!this.state.showSelector}>
+                        <SlackSelector onSelect={(emoji)=>{this.react(emoji)}}/>
+                    </div>
+                </div>
+            </>
+        )
+    }
+
     render() {
-        var message = this.props.message;
+        const message = this.props.message;
         if(message.user === "server"){
             return(
                 <div style = {infoStyle}>
@@ -45,30 +136,15 @@ class Message extends Component{
         switch(message.type){
             case "image":
                 return (
-                    <>
-                        <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
-                            <img  alt=""  src = {message.text}/>
-                        </div>
-                        <span style={Object.assign({}, infoStyle, bottomLine)}>{message.user}</span>
-                    </>
+                    this.messageTemplate(<img  alt=""  src = {message.text}/>)
                 )
             case "link":
                 return (
-                    <>
-                        <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
-                            <a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>
-                            </div>
-                            <span style={Object.assign({}, infoStyle, bottomLine)}>{message.user}</span>
-                    </>
+                    this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>)
                 )
             default:
                 return (
-                    <>
-                        <div style={Object.assign({}, messageStyle, this.props.wasSentByCurrentUser ? toStyle : fromStyle)}>
-                            {message.text}
-                        </div>
-                        <span style={Object.assign({}, infoStyle, bottomLine)}>{message.user}</span>
-                    </>
+                    this.messageTemplate(message.text)
                 )
         }
     }
