@@ -97,9 +97,13 @@ class Message extends Component{
 
     messageTemplate(contents) {
         const style = this.styleTemplate();
+        const defaultBottomLineProps = {
+            style: {},
+            parent: {}
+        }
         const BottomLine = ({
-            style = style,
-            parent = this
+            style = defaultBottomLineProps.style,
+            parent = defaultBottomLineProps.parent
         }) => {
             if(parent.props.currentUser === parent.props.message.user){
                 return(
