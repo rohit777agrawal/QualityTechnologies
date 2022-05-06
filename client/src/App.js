@@ -21,7 +21,8 @@ class App extends Component {
             user = {} ;
         }
         //Verify that a valid login is saved
-        if(user !== null){
+        if(user){
+            console.log(user)
             fetch(url + "users/" + user._id)
                 .then((res) => res.json())
                 .then((json) => {

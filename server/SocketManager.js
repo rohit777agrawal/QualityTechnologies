@@ -1,6 +1,6 @@
 var { Server } = require("socket.io");
 // var { User, Message } = require('./database');
-var db = require('./DatabaseAccesser')
+const db = require('./DatabaseAccesser')
 
 class SocketManger {
   socketIDToUserID = {}
@@ -19,7 +19,7 @@ class SocketManger {
   setupConnections(){
 
     this.io.on("connection", (socket) => {
-
+      console.log("Establishing socket connection with ", socket.id)
       const sendServerMessage = (message) => {
         socket.emit('messageFromServer', {user: 'server', text: message});
       }
@@ -30,6 +30,7 @@ class SocketManger {
 
       db.getUserByAuthToken(socket.handshake.auth.token)
         .then((user)=>{
+          console.log("Retrieved user", user._id, "associated with socket", socket.id)
           if (user) {
             //save user ID
             this.socketIDToUserID[socket.id] = user._id
@@ -51,16 +52,20 @@ class SocketManger {
             socket.disconnect()
           }
         })
+        .catch((err)=>{console.log(err)})
 
       // On disconnect tell everyone disconnectee left
       socket.on('disconnect', () => {
-        db.getUserById(this.socketIDToUserID[socket.id])
+        db.getUserByID(this.socketIDToUserID[socket.id])
           .then((user)=>{
             if (user){
               sendServerMessage(user.displayName + " has left the chat");
+
               user.active = false
               db.updateUser(user)
+
               delete this.socketIDToUserID[socket.id]
+
               db.getUsersByID(Object.values(this.socketIDToUserID))
                 .then((activeUsers)=>{
                   console.log("broadcasting updated user list");
@@ -71,6 +76,7 @@ class SocketManger {
               console.log("Error: received disconnect signal but no user found")
             }
           })
+          .catch(err=>console.log(err))
         
       });
 
