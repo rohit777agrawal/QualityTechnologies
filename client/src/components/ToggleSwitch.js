@@ -3,7 +3,7 @@ import React from "react";
 export const defaultProps = {
     children: null,
     name: "ToggleSwitch",
-    show: true,
+    show: false,
     disabled: false,
     toggled: false,
     onToggle: (toggled) => {
@@ -73,19 +73,23 @@ export const ToggleSwitch = ({
     Object.keys(defaultStyle).forEach((key) => {
         style[key] = Object.assign({}, defaultStyle[key], style[key])
     });
-    return(
-        <div hidden={!show}>
-            {children}
-            <label
-                {...props}
-                style = {Object.assign({}, style.container, disabled ? style.containerDisabled : {} )}
-                onClick={() => {if(!disabled){onToggle()}}}
-            >
-                <input type="hidden" name={name} value={toggled}/>
-                <span style={Object.assign({}, style.track, toggled ? style.trackChecked : {})}/>
-                <span style={Object.assign({}, style.button, toggled ? style.buttonChecked : {})}/>
-            </label>
-        </div>
-    )
+    if(show){
+        return(
+            <div>
+                {children}
+                <label
+                    {...props}
+                    style = {Object.assign({}, style.container, disabled ? style.containerDisabled : {} )}
+                    onClick={() => {if(!disabled){onToggle()}}}
+                    >
+                    <input type="hidden" name={name} value={toggled}/>
+                    <span style={Object.assign({}, style.track, toggled ? style.trackChecked : {})}/>
+                    <span style={Object.assign({}, style.button, toggled ? style.buttonChecked : {})}/>
+                </label>
+            </div>
+        )
+    } else {
+        return null;
+    }
 }
 export default ToggleSwitch;

@@ -4,6 +4,8 @@ var { User, Message } = require('./database');
 class SocketManger {
   socketIDToUserID = {}
 
+  allowGlobalChat = false;
+
   constructor(server){
       this.io = new Server(server, { /* options */
           cors: {
@@ -45,6 +47,7 @@ class SocketManger {
           // set user's online status
 
           user.active = true;
+          this.io.emit("setAllowChatFromServer", this.allowGlobalChat);
           // Welcome connectee
           sendServerMessageToUser('Welcome to Chatr, ' + user.displayName);
           // Broadcast to all users except connectee
@@ -86,6 +89,11 @@ class SocketManger {
           this.io.emit("updatedUserFromServer",
             oldDisplayName,
             newDisplayName);
+      })
+
+      socket.on("toggleAllowChatToServer", ()=>{
+          this.allowGlobalChat = !this.allowGlobalChat;
+          this.io.emit("setAllowChatFromServer", this.allowGlobalChat);
       })
 
       // Listen for chatMessage

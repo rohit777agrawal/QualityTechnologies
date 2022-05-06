@@ -44,7 +44,8 @@ class App extends Component {
             email: "",
             currentUser: null,
             messages: [],
-            activeUsers: []
+            activeUsers: [],
+            allowChat: true,
         };
 
         this.socket = null;
@@ -56,6 +57,10 @@ class App extends Component {
             auth: {
                 token: this.state.currentUser.auth.token
             }
+        })
+
+        this.socket.on("setAllowChatFromServer", (allowChat) => {
+            this.setState({allowChat: allowChat});
         })
 
         this.socket.on("activeUsers", (activeUsers) => {
@@ -209,6 +214,7 @@ class App extends Component {
                     loginError={this.state.loginError}
                     setLoginError={this.setLoginError.bind(this)}
                     updateLoginInfo={this.updateLoginInfo.bind(this)}
+                    allowChat={this.state.allowChat}
                     socket={this.socket}
                 />
             );

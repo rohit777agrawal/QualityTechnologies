@@ -14,7 +14,6 @@ class ChatPage extends Component {
         this.state = {
             draftMessage: "",
             showAccount: true,
-            allowChat: true,
             newDisplayName: "",
             messages: props.messages,
             url: "",
@@ -148,8 +147,10 @@ class ChatPage extends Component {
                     <Col style={{display:"flex", alignItems: "center", justifyContent:"right", marginRight:"8px"}}>
                         <ToggleSwitch
                             show={this.props.currentUser.isTeacher}
-                            toggled={this.state.allowChat}
-                            onToggle={()=>{this.setState({allowChat: !this.state.allowChat})}}
+                            toggled={this.props.allowChat}
+                            onToggle={()=>{
+                                this.props.socket.emit("toggleAllowChatToServer");
+                            }}
                             name="allowChat"
                             style={{container:{width: "48px", height: "24px", marginLeft: "4px", marginRight:"16px"}}}
                         >
@@ -191,6 +192,7 @@ class ChatPage extends Component {
                         <Form ref={(ref)=>{this.messageForm = ref;}} style = {{backgroundColor: "#fff"}}>
                             <InputGroup className="mb-3">
                             <FormControl
+                                disabled={!(this.props.allowChat || this.props.currentUser.isTeacher)}
                                 ref={(ref)=>{this.textArea = ref;}}
                                 as="textarea"
                                 placeholder="type a message and press enter"
