@@ -18,45 +18,20 @@ router.get('/', function(req, res, next) {
         })
 })
 
-router.post('/teacher/', function(req, res, next) {
-    var user = {
-        name: req.displayName,
-        email: req.email,
-        password: req.email,
-        link: '',
-        displayName: req.displayName,
-        isTeacher: true,
-        sentMessageIDs: [],
-        recievedMessageIDs: [],
-        groupIDs: [],
-        active: false,
-        auth: {
-            token: ''
-        }
-    }
-    db.createTeacher(user)
-    .then((user)=>{
-        res.status(200).json(user)
-    })
-    .catch(err => {
-        res.status(400).send("Teacher Creation Error")
-    })
-})
-
 router.get("/:id", function(req, res, next) {
-        db.getUserByID(req.params.id)
-            .then((user)=>{
-                if (user) {
-                    res.status(200).json(user)
-                }
-                else {
-                    res.status(404)
-                }
-            })
-            .catch((err)=>{
-                console.log(err)
-                res.status(500)
-            })
+    db.getUserByID(req.params.id)
+        .then((user)=>{
+            if (user) {
+                res.status(200).json(user)
+            }
+            else {
+                res.status(404)
+            }
+        })
+        .catch((err)=>{
+            console.log(err)
+            res.status(500)
+        })
 });
 
 router.post("/login", function(req, res, next) {
@@ -83,19 +58,86 @@ router.post("/login", function(req, res, next) {
         })
 });
 
-router.put("/:id", function(req, res, next) {
-    var updatedUser = req.body.params
-    db.getUserByID(req.params.id)
-        .then((user) => {
-            if (user._id === updatedUser._id) {
-                db.updateUser(updatedUser)
-                .then((user)=>{
-                    res.status(200).json(user)
-                })
+router.post('/:id/logout', function(req, res, next) {
+    db.resetUserAuthentication(req.params.id)
+    .then((user)=>{
+            console.log(user)
+            if (user) {
+                res.status(200).json(user)
             }
             else {
-                res.status(300).json("changing user ID is not allowed")
+                res.status(404)
             }
+        })
+})
+
+router.post('/teacher/', function(req, res, next) {
+    db.createTeacher(req.body.email, req.body.password, req.body.displayName)
+    .then((user)=>{
+        if (user) {
+            res.status(200).json(user)
+        }
+        else {
+            res.status(400).send("User with that email already exists")
+        }
+    })
+    .catch(err => {
+        res.status(400).send("Teacher Creation Error")
+    })
+})
+
+router.post('/student', function(req, res, next){
+    db.createStudent(req.body.displayName, req.body.groupID)
+    .then((user)=>{
+        if (user) {
+            res.status(200).json(user)
+        }
+        else {
+            res.status(500).send("Error")
+        }
+    })
+    .catch(err => {
+        console.log(err)
+        res.status(400).send("Student Creation Error")
+    })
+})
+
+router.put("/:id", function(req, res, next) {
+    var updatedUser = req.body
+    if (req.params.id === updatedUser._id){
+        db.getUserByID(req.params.id)
+            .then((user) => {
+                if (user) {
+                    db.updateUser(updatedUser)
+                    .then((user)=>{
+                        res.status(200).json(user)
+                    })
+                }
+                else {
+                    res.status(404).send("User does not exist")
+                }
+            })
+    }
+    else {
+        res.status(400).send("Changing user ID is not allowed")
+    }
+})
+
+router.delete('/:id', function(req, res, next){
+    console.log("here")
+    db.deleteUser(req.params.id)
+        .then((count)=>{
+            console.log(count)
+            if (count > 0) {
+                res.status(200).send("deleted " + count + " user(s)")
+            }
+            else {
+                res.status(404).send("User not found")
+            }
+        })
+        .catch((err)=>{
+            console.log(err)
+            res.status(500).send(err)
         })
 })
 
