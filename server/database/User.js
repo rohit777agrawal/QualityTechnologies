@@ -23,6 +23,9 @@ class User {
 
     constructor(userIn){
         this.validateUser(userIn)
+        if (userIn.isTeacher ){
+
+        }
         let defaults = {
             name: null,
             email: null,
@@ -46,6 +49,8 @@ class User {
             user.displayName = user.name;
         }
 
+        // if 
+
     }
 
     validateUser(userIn){
@@ -59,4 +64,42 @@ class User {
             throw 'missing email or password'
         }
     }
+
+    static async getUser(user){
+        const query = UserModel.where(user)
+        let user = await query.findOne(function (err, user) {
+            if (err) {
+                console.log(err);
+                return null;
+            };
+            if (user) {
+                return user;
+            }
+            else {
+                return null;
+            }
+        });
+        return user;
+    }
+
+    static async createUser(user){
+        return User.getUser(user)
+            .then(user => {
+                if (user){
+                    throw 'User already exists'
+                }
+                else {
+                    new UserModel(userIn).save(()=>{
+                        if (err){
+                            throw err
+                        }
+                        else {
+                            
+                        }
+                    })
+                }
+            })
+    }
+
+    static
 }

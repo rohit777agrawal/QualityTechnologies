@@ -1,37 +1,33 @@
 var express = require("express");
 var router = express.Router();
 
-var {mongoose, db, Message, User} = require('../database');
+var db = require('../DatabaseAccesser');
 
 router.get("/:id", function(req, res, next) {
-    Message.findById(req.params.id, function(err, message){
-        res.json(message);
-    });
+    db.getMessageByID(req.params.id)
+    .then((message)=>{
+        if (message){
+            res.status(200).json(message)
+        }
+        else {
+            res.status(404)
+        }
+    })
 });
 
 //Send a message
 router.post("/", function(req, res, next) {
-    var message = new Message({
-        sender: req.body.sender,
-        recipients: req.body.recipients,
-        contents: req.body.contents,
-        sentTime: new Date()
-    })
-    message.save()
-        .then(message => {
-            message.recipients.forEach((recipient) =>{
-                console.log(recipient);
-                var query = User.findById(recipient, function(err, user){
-                    user.messageIds.push(message._id);
-                    user.save();
-                });
-            });
-            res.status(201).json(message);
-        })
-        .catch(err => {
-            res.status(400).send("Message send failed");
+    db.createMessage(req.body.contents, req.body.senderID, req.body.groupID)
+        .then((message)=>{
+            if (message){
+                res.status.json(200).json(message)
+            }
+            else {
+                res.status(300)
+            }
         })
 });
+
 //Delete a message
 router.delete("/:id", function(req, res, next) {
     Message.findByIdAndDelete(req.params.id, function(err, message){
@@ -46,6 +42,15 @@ router.delete("/:id", function(req, res, next) {
         });
         res.status(204);
     });
+    db.deleteMessage(req.params.id)
+        .then((count)=>{
+            if (count) {
+                res.status(200).json('Deleted ' + count + ' message(s)')
+            }
+            else {
+                res.status(404)
+            }
+        })
 });
 
 module.exports = router;
