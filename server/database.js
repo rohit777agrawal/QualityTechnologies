@@ -12,10 +12,19 @@ var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 var UserSchema = new mongoose.Schema({
-    name: String,
-    email: String,
+    name: {
+        type: String,
+        unique: true
+    },
+    email: {
+        type: String,
+        unique: true
+    },
     password: String,
-    link: String,
+    link: {
+        type: String,
+        unique: true
+    },
     displayName: String,
     isTeacher: Boolean,
     sentMessageIDs: [String],
@@ -32,6 +41,7 @@ var MessageSchema = new mongoose.Schema({
     groupID: String,
     contents: String,
     messageType: String,
+    reactions: [Object],
     sentTime: Date
 })
 

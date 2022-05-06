@@ -26,15 +26,13 @@ class App extends Component {
                 .then((res) => res.json())
                 .then((json) => {
                     //console.log(json);
+                    localStorage.setItem('currentUser', JSON.stringify(user))
                     this.setState({loggedIn: json._id === user._id, currentUser: user});
                 })
                 .catch((err) => {
                     console.error(err);
                 })
         }
-        /*["Tomorrow will bring something new, so leave today as a memory.", "He stomped on his fruit loops and thus became a cereal killer.", "Each person who knows you has a different perception of who you are.", "Lets all be unique together until we realise we are all the same.", "It was always dangerous to drive with him since he insisted the safety cones were a slalom course.", "You have every right to be angry, but that doesn't give you the right to be mean.", "Her hair was windswept as she rode in the black convertible."].forEach((message) => {
-            this.state.messages.push({text: message, wasSent: Math.random() > 0.5});
-        })*/
     }
     constructor(props) {
         super(props);
@@ -60,11 +58,22 @@ class App extends Component {
             }
         })
 
-        this.socket.on('messageFromServer', message => {
+        this.socket.on('messageFromServer', (message) => {
             //console.log(message);
-            var updatedMessages = this.state.messages;
+            let updatedMessages = this.state.messages;
             updatedMessages.push(message);
             this.setState({messages: updatedMessages});
+        })
+
+        this.socket.on("messageUpdateFromServer", (message) => {
+            let updatedMessages = this.state.messages;
+            for(let i = 0; i < updatedMessages.length; i++){
+                if(updatedMessages[i].user === message.user && updatedMessages[i].date === message.date){
+                    updatedMessages[i] = message;
+                    this.setState({messages: updatedMessages});
+                    break;
+                }
+            }
         })
 
         this.socket.on('activeUsers', users=>{
@@ -88,19 +97,22 @@ class App extends Component {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({'displayName': userName, 'email': email, 'password': password})
         }
-        fetch(url + "users/teacher/", requestOptions)
-            .then((res) => {
-                if(res.ok){
-                    //console.log("createNewLogin ok")
-                    return {success: true}
-                } else {
-                    throw new Error("Unspecified error");
-                }
-            })
-            .catch((err) => {
-                console.log("createNewLogin error")
-                return {success: false, error: err}
-            })
+        return new Promise((resolve, reject) =>{
+            fetch(url + "users/teacher/", requestOptions)
+                .then((res) => {
+                    console.log(res);
+                    if(res.ok){
+                        //console.log("createNewLogin ok")
+                        resolve({success: true});
+                    } else {
+                        throw new Error("Unspecified error");
+                    }
+                })
+                .catch((err) => {
+                    console.log("createNewLogin error")
+                    reject({success: false, error: err});
+                })
+        })
     }
 
     updateLoginInfo(changesDict){
@@ -113,11 +125,25 @@ class App extends Component {
             fetch(url + "users/" + changesDict["_id"], requestOptions)
                 .then((res)=> res.json())
                 .then((json)=>{
-                    //console.log(json);
-                    this.setState({currentUser: json});
+                    console.log(json);
                     localStorage.setItem('currentUser', JSON.stringify(json));
                     this.socket.emit("updateActiveUsers");
                     this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to " + json.displayName);
+                    let newMessages = this.state.messages;
+                    console.log(newMessages);
+                    for(let i = 0; i < newMessages.length; i++){
+                        if(newMessages[i].reactions){
+                            for(let j = 0; j < newMessages[i].reactions.length; j++){
+                                if(newMessages[i].reactions[j].by === json.oldDisplayName){
+                                    newMessages[i].reactions[j].by = json.displayName;
+                                }
+                            }
+                        }
+                        if(newMessages[i].user === json.oldDisplayName){
+                            newMessages[i].user = json.displayName;
+                        }
+                    }
+                    this.setState({currentUser: json, messages: newMessages});
                     resolve(json);
                 })
                 .catch((err) =>{
@@ -163,7 +189,6 @@ class App extends Component {
         // send messages to message to server-side socket
         this.socket.emit('messageToServer', msg, type);
     }
-
     render(){
         if (this.state.loggedIn){
             return (
@@ -177,6 +202,7 @@ class App extends Component {
                     loginError={this.state.loginError}
                     setLoginError={this.setLoginError.bind(this)}
                     updateLoginInfo={this.updateLoginInfo.bind(this)}
+                    socket={this.socket}
                 />
             );
         }
