@@ -58,6 +58,10 @@ class App extends Component {
             }
         })
 
+        this.socket.on("activeUsers", (activeUsers) => {
+            this.setState({activeUsers: activeUsers});
+        })
+
         this.socket.on('messageFromServer', (message) => {
             //console.log(message);
             let updatedMessages = this.state.messages;
@@ -76,8 +80,27 @@ class App extends Component {
             }
         })
 
-        this.socket.on('activeUsers', users=>{
-            this.setState({activeUsers: users})
+        this.socket.on('updatedUserFromServer', (oldDisplayName, newDisplayName)=>{
+            let newMessages = this.state.messages;
+            for(let i = 0; i < newMessages.length; i++){
+                if(newMessages[i].reactions){
+                    for(let j = 0; j < newMessages[i].reactions.length; j++){
+                        if(newMessages[i].reactions[j].by === oldDisplayName){
+                            newMessages[i].reactions[j].by = newDisplayName;
+                        }
+                    }
+                }
+                if(newMessages[i].user === oldDisplayName){
+                    newMessages[i].user = newDisplayName;
+                }
+            }
+            this.state.messages.push({
+                user: "server",
+                text: oldDisplayName + " has changed their name to: " + newDisplayName,
+                date: new Date(),
+                reactions: []
+            })
+            this.setState({messages: newMessages});
         })
 
     }
@@ -125,25 +148,9 @@ class App extends Component {
             fetch(url + "users/" + changesDict["_id"], requestOptions)
                 .then((res)=> res.json())
                 .then((json)=>{
-                    console.log(json);
                     localStorage.setItem('currentUser', JSON.stringify(json));
-                    this.socket.emit("updateActiveUsers");
-                    this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to " + json.displayName);
-                    let newMessages = this.state.messages;
-                    console.log(newMessages);
-                    for(let i = 0; i < newMessages.length; i++){
-                        if(newMessages[i].reactions){
-                            for(let j = 0; j < newMessages[i].reactions.length; j++){
-                                if(newMessages[i].reactions[j].by === json.oldDisplayName){
-                                    newMessages[i].reactions[j].by = json.displayName;
-                                }
-                            }
-                        }
-                        if(newMessages[i].user === json.oldDisplayName){
-                            newMessages[i].user = json.displayName;
-                        }
-                    }
-                    this.setState({currentUser: json, messages: newMessages});
+                    this.socket.emit("updatedUserToServer", json.oldDisplayName, json.displayName);
+                    this.setState({currentUser: json});
                     resolve(json);
                 })
                 .catch((err) =>{

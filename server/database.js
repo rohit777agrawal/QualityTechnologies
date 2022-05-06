@@ -59,8 +59,12 @@ var Message = mongoose.model('Message', MessageSchema );
 //var test_Teacher = new User({ email: 'teacher@mail.com', teacher: true, password: 'password' });
 //var test_Student = new User({ email: 'student@mail.com', teacher: false, password: 'password' });
 
+function handleError(err){
+    console.log(err);
+}
+
 function createUserIfMissing(userIn) {
-    const query  = User.where(userIn);
+    const query = User.where(userIn);
     query.findOne(function (err, user) {
         if (err) return handleError(err);
         if (!user) {

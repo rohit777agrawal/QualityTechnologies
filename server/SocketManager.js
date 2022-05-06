@@ -15,11 +15,20 @@ class SocketManger {
       this.setupConnections()
   }
 
+  ioEmitActiveUsers(){
+      User.find({
+        '_id': { $in: Object.keys(this.socketIDToUserID).map(key=>this.socketIDToUserID[key])}
+      }, (err, activeUsers) => {
+          console.log("broadcasting updated user list");
+          this.io.emit("activeUsers", activeUsers);
+      });
+  }
+
   setupConnections(){
 
     this.io.on("connection", (socket) => {
 
-      const sendServerMessage = (message) => {
+      const sendServerMessageToUser = (message) => {
         socket.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
       }
 
@@ -37,15 +46,11 @@ class SocketManger {
 
           user.active = true;
           // Welcome connectee
-          sendServerMessage('Welcome to Chatr, ' + user.displayName);
+          sendServerMessageToUser('Welcome to Chatr, ' + user.displayName);
           // Broadcast to all users except connectee
           sendServerBroadcast(user.displayName + " has joined the chat");
           // inform all users of updated active users list
-          User.find({
-            '_id': { $in: Object.keys(this.socketIDToUserID).map(key=>this.socketIDToUserID[key])}
-          }, (err, activeUsers) => {
-             this.io.emit('activeUsers', activeUsers)
-          });
+          this.ioEmitActiveUsers();
         }
         else {
           socket.disconnect()
@@ -59,16 +64,12 @@ class SocketManger {
             console.log(err)
           }
           if (user){
-            sendServerMessage(user.displayName + " has left the chat");
+            this.io.emit(user.displayName + " has left the chat");
             user.active = false
             user.save()
             delete this.socketIDToUserID[socket.id]
-            User.find({
-              '_id': { $in: Object.keys(this.socketIDToUserID).map(key=>this.socketIDToUserID[key])}
-            }, (err, activeUsers) => {
-               console.log("broadcasting updated user list");
-               this.io.emit('activeUsers', activeUsers)
-            });
+            // inform all users of updated active users list
+            this.ioEmitActiveUsers();
           }
           else {
             console.log("Error: received disconnect signal but no user found")
@@ -80,18 +81,11 @@ class SocketManger {
           this.io.emit("messageUpdateFromServer", message);
       })
 
-      //Update updateActiveUsers
-      socket.on('updateActiveUsers', ()=>{
-          User.find({
-            '_id': { $in: Object.keys(this.socketIDToUserID).map(key=>this.socketIDToUserID[key])}
-          }, (err, activeUsers) => {
-             console.log("broadcasting updated user list");
-             this.io.emit('activeUsers', activeUsers)
-          });
-      })
-
-      socket.on("sendServerMessage", (msg) => {
-          sendServerMessage(msg);
+      socket.on("updatedUserToServer", (oldDisplayName, newDisplayName)=>{
+          this.ioEmitActiveUsers();
+          this.io.emit("updatedUserFromServer",
+            oldDisplayName,
+            newDisplayName);
       })
 
       // Listen for chatMessage
