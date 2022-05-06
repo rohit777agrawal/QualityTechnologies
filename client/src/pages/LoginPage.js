@@ -52,10 +52,13 @@ class LoginPage extends Component {
                 if(this.state.password.match(passwordRegex) === null){
                     throw new Error("Passwords must be 8 characters long, have one upper and lowercase letter, and one number");
                 }
-                var res = this.props.createNewLogin(this.state.userName, this.state.email, this.state.password);
-                if(res.success){
-
-                }
+                this.props.createNewLogin(this.state.userName, this.state.email, this.state.password)
+                    .then((res)=> (res.json()))
+                    .then((json) => {
+                        if(!json.success){
+                            throw json.error;
+                        }
+                    })
             } catch(error){
                 event.preventDefault();
                 this.props.setLoginError(error.message);

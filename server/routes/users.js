@@ -19,6 +19,7 @@ router.get('/', function(req, res, next) {
 })
 
 router.post('/teacher/', function(req, res, next) {
+    const emailQuery = User.where({email: req.body.email});
     var user = new User({
         name: req.displayName,
         email: req.email,

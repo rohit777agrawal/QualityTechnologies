@@ -21,11 +21,11 @@ class SocketManger {
     this.io.on("connection", (socket) => {
       console.log("Establishing socket connection with ", socket.id)
       const sendServerMessage = (message) => {
-        socket.emit('messageFromServer', {user: 'server', text: message});
+        socket.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
       }
 
       const sendServerBroadcast = (message) => {
-        socket.broadcast.emit('messageFromServer', {user: 'server', text: message});
+        socket.broadcast.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
       }
 
       db.getUserByAuthToken(socket.handshake.auth.token)
@@ -79,6 +79,10 @@ class SocketManger {
           .catch(err=>console.log(err))
         
       });
+
+      socket.on('messageUpdateToServer', (message)=>{
+          this.io.emit("messageUpdateFromServer", message);
+      })
 
       //Update updateActiveUsers
       socket.on('updateActiveUsers', ()=>{
