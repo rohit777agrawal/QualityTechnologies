@@ -19,8 +19,7 @@ router.get('/', function(req, res, next) {
 })
 
 router.post('/teacher/', function(req, res, next) {
-    const emailQuery = User.where({email: req.body.email});
-    var user = new User({
+    var user = {
         name: req.displayName,
         email: req.email,
         password: req.email,
@@ -34,7 +33,7 @@ router.post('/teacher/', function(req, res, next) {
         auth: {
             token: ''
         }
-    })
+    }
     db.createTeacher(user)
     .then((user)=>{
         res.status(200).json(user)
