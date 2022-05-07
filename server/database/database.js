@@ -37,9 +37,10 @@ var UserSchema = new mongoose.Schema({
 })
 
 var MessageSchema = new mongoose.Schema({
+    contents: String,
+    displayName: String,
     senderID: String,
     groupID: String,
-    contents: String,
     messageType: String,
     reactions: [Object],
     sentTime: Date
@@ -70,6 +71,18 @@ function createUserIfMissing(userIn) {
     });
 }
 
+function createGroupIfMissing(messageIn) {
+    const query = MessageModel.where(messageIn);
+    query.findOne(function (err, message) {
+        if (err) return handleError(err);
+        if (!message) {
+            (new MessageModel(messageIn)).save(function (err) {
+                if (err) return handleError(err);
+            });
+        }
+    });
+}
+
 createUserIfMissing({
     name: 'test teacher',
     email: 'teacher@mail.com',
@@ -94,6 +107,16 @@ createUserIfMissing({
     recievedMessageIDs: [],
     classroomIDs: [],
     active: false
+});
+
+
+createGroupIfMissing({
+    teacherID: "",
+    userIDs: [],
+    parentGroupID: "",
+    childGroupIDs: [],
+    name: "Test Group",
+    active: true
 });
 
 module.exports = { mongoose, db, UserModel, MessageModel, GroupModel}

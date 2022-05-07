@@ -17,9 +17,12 @@ var UserSchema = new mongoose.Schema({
 })
 
 var MessageSchema = new mongoose.Schema({
+    contents: String,
+    displayName: String,
     senderID: String,
     groupID: String,
-    contents: String,
+    messageType: String,
+    reactions: [Object],
     sentTime: Date
 })
 
@@ -251,11 +254,14 @@ class DatabaseAccessor {
                     })
     }
 
-    createMessage(contents, userID, groupID){
+    createMessage(contents, displayName, senderID, groupID, messageType){
         var newMessage = {
-            senderID: userID,
-            groupID: groupID,
             contents: contents,
+            displayName: displayName,
+            senderID: senderID,
+            groupID: groupID,
+            messageType: messageType,
+            reactions: [],
             sentTime: Date.now()
         }
         return new MessageModel(newMessage).save()

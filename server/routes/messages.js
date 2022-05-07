@@ -17,7 +17,7 @@ router.get("/:id", function(req, res, next) {
 
 //Send a message
 router.post("/", function(req, res, next) {
-    db.createMessage(req.body.contents, req.body.senderID, req.body.groupID)
+    db.createMessage(req.body.contents, req.body.senderID, req.body.groupID, req.body.messageType)
         .then((message)=>{
             if (message){
                 res.status.json(200).json(message)

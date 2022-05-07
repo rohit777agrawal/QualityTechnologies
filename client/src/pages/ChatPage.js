@@ -103,7 +103,7 @@ class ChatPage extends Component {
 
     renderMessages(){
         return this.props.messages.map((message, keyVal) => {
-            return <Message socket={this.props.socket} currentUser={this.props.currentUser.displayName} key={keyVal} message={message}></Message>
+            return <Message socket={this.props.socket} currentUserDN={this.props.currentUser.displayName} key={keyVal} message={message}></Message>
         })
     }
 

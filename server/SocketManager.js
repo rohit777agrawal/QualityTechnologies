@@ -19,6 +19,10 @@ class SocketManger {
   setupConnections(){
 
     this.io.on("connection", (socket) => {
+      socket.on('join',(groupID) => {
+        socket.join(groupID)
+      })
+
       console.log("Establishing socket connection with ", socket.id)
       const sendServerMessage = (message) => {
         socket.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
@@ -85,7 +89,7 @@ class SocketManger {
       })
 
       //Update updateActiveUsers
-      socket.on('updateActiveUsers', ()=>{
+      socket.on('updateActiveUsers', () => {
         db.getUsersByID(Object.values(this.socketIDToUserID))
           .then((activeUsers)=>{
             console.log("broadcasting updated user list");
@@ -98,16 +102,27 @@ class SocketManger {
       })
 
       // Listen for chatMessage
-      socket.on("messageToServer", (msg, type) => {
-        db.getUserByID(this.socketIDToUserID[socket.id])
-          .then((user)=>{
-            if (user){
-              this.io.emit('messageFromServer', {user: user.displayName, text: msg, type: type})
-            }
-            else {
-              console.log("Error: received message but no user found")
-            }
+      socket.on("messageToServer", (contents, displayName, senderID, groupID, messageType) => {
+        // Add message to database
+        db.createMessage(contents, displayName, senderID, groupID, messageType)
+          .then((message) => {
+            //this.io.to(message.groupID).emit('messageFromServer', message) // TODO: migrate to group
+            this.io.emit('messageFromServer', message)
           })
+        
+        //db.getUserByID(this.socketIDToUserID[socket.id])    // TODO: Delete
+        //  .then((user)=>{
+        //    if (user){
+        //      db.createMessage(contents, displayName, senderID, groupID, messageType)
+        //        .then((message) => {
+        //          this.io.emit('messageFromServer', user.displayName, message)
+
+        //        })
+        //    }
+        //    else {
+        //      console.log("Error: received message but no user found")
+        //    }
+        //  })
       })
       
     });

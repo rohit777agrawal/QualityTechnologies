@@ -12,6 +12,7 @@ const url = "http://localhost:5000/";
 
 //fetch(url + "login/" + localStorage.getItem('login')))
 
+
 class App extends Component {
     componentDidMount(){
         var user;
@@ -44,6 +45,7 @@ class App extends Component {
             loginError: "",
             email: "",
             currentUser: null,
+            currentGroup: null,
             messages: [],
             activeUsers: []
         };
@@ -60,13 +62,13 @@ class App extends Component {
         })
 
         this.socket.on('messageFromServer', (message) => {
-            //console.log(message);
+            //console.log(message
             let updatedMessages = this.state.messages;
             updatedMessages.push(message);
             this.setState({messages: updatedMessages});
         })
 
-        this.socket.on("messageUpdateFromServer", (message) => {
+        this.socket.on("messageUpdateFromServer", (message) => {    //TODO: Migrate to message
             let updatedMessages = this.state.messages;
             for(let i = 0; i < updatedMessages.length; i++){
                 if(updatedMessages[i].user === message.user && updatedMessages[i].date === message.date){
@@ -129,7 +131,7 @@ class App extends Component {
                     console.log(json);
                     localStorage.setItem('currentUser', JSON.stringify(json));
                     this.socket.emit("updateActiveUsers");
-                    this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to " + json.displayName);
+                    this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to " + json.displayName);  // TODO: Transfer to Message
                     let newMessages = this.state.messages;
                     console.log(newMessages);
                     for(let i = 0; i < newMessages.length; i++){
@@ -188,7 +190,9 @@ class App extends Component {
 
     sendMessage(msg, type) {
         // send messages to message to server-side socket
-        this.socket.emit('messageToServer', msg, type);
+        console.log("Test:")
+        console.log(this.state.currentUser)
+        this.socket.emit('messageToServer', msg, this.state.currentUser.displayName, this.state.currentUser._id, this.state.currentGroup?._id, type);
     }
     render(){
         if (this.state.loggedIn){
