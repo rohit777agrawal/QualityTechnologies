@@ -14,7 +14,7 @@ const url = "http://localhost:5000/";
 
 class App extends Component {
     componentDidMount(){
-        var user;
+        let user;
         try{
             user = JSON.parse(localStorage.getItem('currentUser'));
         } catch(err) {
@@ -102,7 +102,6 @@ class App extends Component {
             this.state.messages.push({
                 user: "server",
                 text: oldDisplayName + " has changed their name to: " + newDisplayName,
-                date: new Date(),
                 reactions: []
             })
             this.setState({messages: newMessages});

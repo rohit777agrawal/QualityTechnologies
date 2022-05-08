@@ -88,7 +88,8 @@ class SocketManger {
           this.ioEmitActiveUsers();
           this.io.emit("updatedUserFromServer",
             oldDisplayName,
-            newDisplayName);
+            newDisplayName,
+          );
       })
 
       socket.on("toggleAllowChatToServer", ()=>{

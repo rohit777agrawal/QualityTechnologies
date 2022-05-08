@@ -42,6 +42,7 @@ var MessageSchema = new mongoose.Schema({
     contents: String,
     messageType: String,
     reactions: [Object],
+    deletedForStudents: Boolean,
     sentTime: Date
 })
 

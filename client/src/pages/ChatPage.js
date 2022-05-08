@@ -195,7 +195,8 @@ class ChatPage extends Component {
                                 disabled={!(this.props.allowChat || this.props.currentUser.isTeacher)}
                                 ref={(ref)=>{this.textArea = ref;}}
                                 as="textarea"
-                                placeholder="type a message and press enter"
+                                placeholder={(this.props.allowChat || this.props.currentUser.isTeacher)?
+                                    "type a message and press enter" : "The teacher has disabled chatting for the moment."}
                                 aria-label="message box"
                                 aria-describedby="basic-addon2"
                                 id="draftMessage"
