@@ -19,22 +19,7 @@ router.get('/', function(req, res, next) {
 })
 
 router.post('/teacher/', function(req, res, next) {
-    var user = {
-        name: req.displayName,
-        email: req.email,
-        password: req.email,
-        link: '',
-        displayName: req.displayName,
-        isTeacher: true,
-        sentMessageIDs: [],
-        recievedMessageIDs: [],
-        groupIDs: [],
-        active: false,
-        auth: {
-            token: ''
-        }
-    }
-    db.createTeacher(user)
+    db.createTeacher(req.body.name, req.body.email, req.body.password)
     .then((user)=>{
         res.status(200).json(user)
     })
@@ -65,7 +50,7 @@ router.post("/login", function(req, res, next) {
             if (user) {
                 if (user.password === req.body.password) {
                     user.auth = {token: uuidv4()};
-    
+
                     db.updateUser(user)
                         .then((user)=>{
                             res.status(200).json(user)
