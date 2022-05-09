@@ -45,8 +45,7 @@ class App extends Component {
             loginError: "",
             email: "",
             currentUser: null,
-            currentGroup: null,
-            messages: [],
+            messages: {},           // Dictonary of arrays
             activeUsers: []
         };
 
@@ -61,19 +60,30 @@ class App extends Component {
             }
         })
 
+        //if (this.state.currentUser.groupIDs === [] ) { //TODO: have user join groups that he is part of
+        //    
+        //} else {
+
+        //    // Join all groups user is part of
+        //    for (const groupID of this.state.currentUser.groupIDs)
+        //        this.socket.emit("joinGroup", groupID)
+        //}
+
+
+
+
         this.socket.on('messageFromServer', (message) => {
-            //console.log(message
-            let updatedMessages = this.state.messages;
+            let updatedMessages = this.state.messages[message.groupID];     // Grab current groups messages
             updatedMessages.push(message);
-            this.setState({messages: updatedMessages});
+            this.messages.setState({[message.groupID]: updatedMessages});
         })
 
-        this.socket.on("messageUpdateFromServer", (message) => {    //TODO: Migrate to message
-            let updatedMessages = this.state.messages;
-            for(let i = 0; i < updatedMessages.length; i++){
-                if(updatedMessages[i].user === message.user && updatedMessages[i].date === message.date){
-                    updatedMessages[i] = message;
-                    this.setState({messages: updatedMessages});
+        this.socket.on("messageUpdateFromServer", (message) => {
+            let updatedMessages = this.state.messages[message.groupID];
+            for(let updatedMsg in updatedMessages){
+                if(updatedMsg.displayName === message.displayName && updatedMsg.sentTime === message.sentTime){
+                    updatedMsg = message;
+                    this.messages.setState({[message.groupID]: updatedMessages});
                     break;
                 }
             }
@@ -118,7 +128,7 @@ class App extends Component {
         })
     }
 
-    updateLoginInfo(changesDict){
+    updateLoginInfo(changesDict){   // TODO: Migrate to new message
         const requestOptions = {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
@@ -132,22 +142,26 @@ class App extends Component {
                     localStorage.setItem('currentUser', JSON.stringify(json));
                     this.socket.emit("updateActiveUsers");
                     this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to " + json.displayName);  // TODO: Transfer to Message
-                    let newMessages = this.state.messages;
-                    console.log(newMessages);
-                    for(let i = 0; i < newMessages.length; i++){
-                        if(newMessages[i].reactions){
-                            for(let j = 0; j < newMessages[i].reactions.length; j++){
-                                if(newMessages[i].reactions[j].by === json.oldDisplayName){
-                                    newMessages[i].reactions[j].by = json.displayName;
+
+                    for (const groupID in this.state.currentUser.groupIDs){
+                        let newMessages = this.state.messages[groupID];
+                        console.log(newMessages);
+                        for(let newMsg in newMessages) {
+                            if(newMsg.reactions){
+                                for(let reacty in newMsg.reactions) {
+                                    if(reacty.by === json.oldDisplayName){
+                                        reacty.by = json.displayName;
+                                    }
                                 }
                             }
+                            if(newMsg.user === json.oldDisplayName){
+                                newMsg.user = json.displayName;
+                            }
                         }
-                        if(newMessages[i].user === json.oldDisplayName){
-                            newMessages[i].user = json.displayName;
-                        }
+                        this.setState({currentUser: json, messages: newMessages});
+                        resolve(json);
                     }
-                    this.setState({currentUser: json, messages: newMessages});
-                    resolve(json);
+
                 })
                 .catch((err) =>{
                     reject(err);
@@ -188,12 +202,18 @@ class App extends Component {
         this.setState({loginError: errorMessage})
     }
 
-    sendMessage(msg, type) {
+    sendMessage(content, messageType, groupID) { // NOTE: Either need to get
         // send messages to message to server-side socket
-        console.log("Test:")
-        console.log(this.state.currentUser)
-        this.socket.emit('messageToServer', msg, this.state.currentUser.displayName, this.state.currentUser._id, this.state.currentGroup?._id, type);
+        this.socket.emit('messageToServer', content, this.state.currentUser.displayName, this.state.currentUser._id, groupID, messageType);
     }
+
+    joinGroups() {  // join all groups in user
+        for (const groupID of this.state.currentUser.groupIDs)
+            this.socket.emit("joinGroup", groupID)
+    }
+
+
+
     render(){
         if (this.state.loggedIn){
             return (

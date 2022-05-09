@@ -19,48 +19,57 @@ class SocketManger {
   setupConnections(){
 
     this.io.on("connection", (socket) => {
-      socket.on('join',(groupID) => {
-        socket.join(groupID)
-      })
+      
+
+      socket.on()
 
       console.log("Establishing socket connection with ", socket.id)
-      const sendServerMessage = (message) => {
-        socket.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
+
+      const sendServerMessage = (content, groupID) => {
+        socket.emit('messageFromServer', {groupID: groupID, displayName: 'server', content: content, timeSent: new Date()});
       }
 
-      const sendServerBroadcast = (message) => {
-        socket.broadcast.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
+      const sendServerBroadcast = (content, groupID) => {
+        socket.broadcast.emit('messageFromServer', {groupID: groupID, displayName: 'server', content: content, timeSent: new Date()});
       }
 
-      db.getUserByAuthToken(socket.handshake.auth.token)
-        .then((user)=>{
-          console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
-          if (user) {
-            //save user ID
-            this.socketIDToUserID[socket.id] = user._id
-            // set user's online status
+      socket.on('joinGroup',(groupID) => {  // Used
+        socket.join(groupID)
 
-            user.active = true;
-            db.updateUser(user)
-            // Welcome connectee
-            sendServerMessage('Welcome to Chatr, ' + user.displayName);
-            // Broadcast to all users except connectee
-            sendServerBroadcast(user.displayName + " has joined the chat");
-            // inform all users of updated active users list
-            db.getUsersByID(Object.values(this.socketIDToUserID))
-              .then((activeUsers)=>{
-                this.io.emit('activeUsers', activeUsers)
-              })
-          }
-          else {
-            socket.disconnect()
-          }
-        })
-        .catch((err)=>{console.log(err)})
+        db.getUserByAuthToken(socket.handshake.auth.token)
+          .then((user)=>{
+            console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id, "linked to group", groupID)
+            if (user) {
+              //save user ID
+              this.socketIDToUserID[socket.id] = user._id
+              // set user's online status
+
+              user.active = true;
+              db.updateUser(user)
+              // Welcome connectee
+              sendServerMessage('Welcome to Chatr, ' + user.displayName, groupID);
+              // Broadcast to all users except connectee
+              sendServerBroadcast(user.displayName + " has joined the chat", groupID);
+              // inform all users of updated active users list
+              db.getUsersByID(Object.values(this.socketIDToUserID))
+                .then((activeUsers)=>{
+                  this.io.emit('activeUsers', activeUsers)    // TODO: activeUsers needs to be have groups enabled (similar to how I turned messages to a dictionary instead of list)
+                })
+            }
+            else {
+              socket.disconnect()
+            }
+          })
+          .catch((err)=>{console.log(err)})
+      })
+
+      socket.on('leaveGroup',(groupID) => {
+        socket.leave(groupID)
+      })
 
       // On disconnect tell everyone disconnectee left
       socket.on('disconnect', () => {
-        db.getUserByID(this.socketIDToUserID[socket.id])
+        db.getUserByID(this.socketIDToUserID[socket.id])    // TODO figure out how to make rooms work with this
           .then((user)=>{
             if (user){
               sendServerMessage(user.displayName + " has left the chat");
@@ -97,8 +106,8 @@ class SocketManger {
           })
       })
 
-      socket.on("sendServerMessage", (msg) => {
-          sendServerMessage(msg);
+      socket.on("sendServerMessage", (content, groupID) => {
+          sendServerMessage(content);
       })
 
       // Listen for chatMessage
@@ -106,8 +115,7 @@ class SocketManger {
         // Add message to database
         db.createMessage(contents, displayName, senderID, groupID, messageType)
           .then((message) => {
-            //this.io.to(message.groupID).emit('messageFromServer', message) // TODO: migrate to group
-            this.io.emit('messageFromServer', message)
+            this.io.to(message.groupID).emit('messageFromServer', message)
           })
         
         //db.getUserByID(this.socketIDToUserID[socket.id])    // TODO: Delete

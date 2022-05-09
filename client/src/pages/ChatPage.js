@@ -7,6 +7,8 @@ import ToggleSwitch from "../components/ToggleSwitch.js";
 import URLButtonForm from "../components/URLButtonForm.js";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+const TEMPGROUP = "godIHateJavascript"
+
 class ChatPage extends Component {
 
     constructor(props) {
@@ -29,13 +31,13 @@ class ChatPage extends Component {
 
     send(type){
         const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)/;
-        if(this.state.url.match(urlRegex)){
-            this.props.messageHandler(this.state.url, type)
+        if(this.state.url.match(urlRegex)){                                 // Not really sure what this is doing so just going to make it work
+            this.props.messageHandler(this.state.url, type, TEMPGROUP)      // TODO: Migrate this to work with groups
             this.setState({url: "", error: ""});
         } else {
             let testURL = "http://" + this.state.url;
             if(testURL.match(urlRegex)){
-                this.props.messageHandler(testURL, type)
+                this.props.messageHandler(testURL, type, TEMPGROUP)         // TODO: ^
                 this.setState({url: "", error: ""});
             } else {
                 this.setState({error: "Invalid url"})
@@ -51,7 +53,7 @@ class ChatPage extends Component {
         this.messageForm.addEventListener("submit", (event)=>{
             event.preventDefault();
             if(this.state.draftMessage){
-                this.props.messageHandler(this.state.draftMessage, "text");
+                this.props.messageHandler(this.state.draftMessage, "text", TEMPGROUP);
                 this.setState({draftMessage: ""});
             }
         })
@@ -102,7 +104,8 @@ class ChatPage extends Component {
     }
 
     renderMessages(){
-        return this.props.messages.map((message, keyVal) => {
+        console.log(this.props.messages)
+        return this.props.messages[TEMPGROUP]?.map((message, keyVal) => {
             return <Message socket={this.props.socket} currentUserDN={this.props.currentUser.displayName} key={keyVal} message={message}></Message>
         })
     }
