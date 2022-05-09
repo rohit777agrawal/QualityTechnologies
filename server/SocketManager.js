@@ -27,9 +27,7 @@ class SocketManger {
   }
 
   setupConnections(){
-
     this.io.on("connection", (socket) => {
-
       const sendServerMessageToUser = (message) => {
         socket.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
       }
@@ -38,27 +36,28 @@ class SocketManger {
         socket.broadcast.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
       }
 
-      const query  = User.where({ auth: {token: socket.handshake.auth.token} });
-
-      query.findOne((err, user) => {
-        if (user) {
-          //save user ID
-          this.socketIDToUserID[socket.id] = user._id
-          // set user's online status
-
-          user.active = true;
-          this.io.emit("setAllowChatFromServer", this.allowGlobalChat);
-          // Welcome connectee
-          sendServerMessageToUser('Welcome to Chatr, ' + user.displayName);
-          // Broadcast to all users except connectee
-          sendServerBroadcast(user.displayName + " has joined the chat");
-          // inform all users of updated active users list
-          this.ioEmitActiveUsers();
-        }
-        else {
-          socket.disconnect()
-        }
-      });
+      db.getUserByAuthToken(socket.handshake.auth.token)
+        .then((user)=>{
+          console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
+          if (user) {
+            //save user ID
+            this.socketIDToUserID[socket.id] = user._id
+            // set user's online status
+            user.active = true;
+            db.updateUser(user)
+            // Welcome connectee
+            sendServerMessage('Welcome to Chatr, ' + user.displayName);
+            // Broadcast to all users except connectee
+            sendServerBroadcast(user.displayName + " has joined the chat");
+            // inform all users of updated active users list
+            db.getUsersByID(Object.values(this.socketIDToUserID))
+              .then((activeUsers)=>{
+                this.io.emit('activeUsers', activeUsers)
+              })
+            } else {
+              socket.disconnect()
+            }
+          });
 
       // On disconnect tell everyone disconnectee left
       socket.on('disconnect', () => {
