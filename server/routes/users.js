@@ -18,6 +18,16 @@ router.get('/', function(req, res, next) {
         })
 })
 
+router.post('/teacher/', function(req, res, next) {
+    db.createTeacher(req.body.name, req.body.email, req.body.password)
+    .then((user)=>{
+        res.status(200).json(user)
+    })
+    .catch(err => {
+        res.status(400).send("Teacher Creation Error")
+    })
+})
+
 router.get("/:id", function(req, res, next) {
     db.getUserByID(req.params.id)
         .then((user)=>{
@@ -40,7 +50,7 @@ router.post("/login", function(req, res, next) {
             if (user) {
                 if (user.password === req.body.password) {
                     user.auth = {token: uuidv4()};
-    
+
                     db.updateUser(user)
                         .then((user)=>{
                             res.status(200).json(user)

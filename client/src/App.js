@@ -92,11 +92,11 @@ class App extends Component {
         }
     }
 
-    createNewLogin(userName, email, password){
+    createNewLogin(name, email, password){
         const requestOptions = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({'displayName': userName, 'email': email, 'password': password})
+            body: JSON.stringify({'name': name, 'email': email, 'password': password})
         }
         return new Promise((resolve, reject) =>{
             fetch(url + "users/teacher/", requestOptions)
