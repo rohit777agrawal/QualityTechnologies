@@ -21,7 +21,8 @@ class App extends Component {
             user = {} ;
         }
         //Verify that a valid login is saved
-        if(user !== null){
+        if(user){
+            console.log(user)
             fetch(url + "users/" + user._id)
                 .then((res) => res.json())
                 .then((json) => {
@@ -118,11 +119,11 @@ class App extends Component {
         }
     }
 
-    createNewLogin(userName, email, password){
+    createNewLogin(name, email, password){
         const requestOptions = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({'displayName': userName, 'email': email, 'password': password})
+            body: JSON.stringify({'name': name, 'email': email, 'password': password})
         }
         return new Promise((resolve, reject) =>{
             fetch(url + "users/teacher/", requestOptions)

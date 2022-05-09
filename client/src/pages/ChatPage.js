@@ -169,7 +169,7 @@ class ChatPage extends Component {
                                     <i className="bi bi-person-circle" /> Account
                                 </Dropdown.Item>
                                 <Dropdown.Item style={{color:"red"}} onClick={()=>{
-                                    localStorage.setItem('currentUser', "");
+                                    delete localStorage.currentUser;
                                     this.props.loginHandler(false);
                                 }}>
                                     <i className="bi bi-power" /> Log Out
