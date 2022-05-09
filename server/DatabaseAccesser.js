@@ -70,7 +70,7 @@ class DatabaseAccessor {
         return UserModel.findOne({ auth: {token: authToken} })
     }
 
-    createTeacher(email, password, displayName){
+    createTeacher(name, email, password){
         return this.getUserByEmail(email)
             .then((user)=>{
                 if (user){
@@ -79,10 +79,10 @@ class DatabaseAccessor {
                 }
                 else {
                     var user = {
+                        name: name,
                         email: email,
                         password: password,
-                        displayName: displayName,
-                        name: '', 
+                        displayName: name,
                         link: '',
                         isTeacher: true,
                         sentMessageIDs: [],

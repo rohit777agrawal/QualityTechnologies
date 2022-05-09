@@ -34,7 +34,7 @@ router.post('/teacher/', function(req, res, next) {
             token: ''
         }
     }
-    db.createTeacher(user)
+    db.createTeacher(req.body.name, req.body.email, req.body.password);
     .then((user)=>{
         res.status(200).json(user)
     })
@@ -65,7 +65,7 @@ router.post("/login", function(req, res, next) {
             if (user) {
                 if (user.password === req.body.password) {
                     user.auth = {token: uuidv4()};
-    
+
                     db.updateUser(user)
                         .then((user)=>{
                             res.status(200).json(user)

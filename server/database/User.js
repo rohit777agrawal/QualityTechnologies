@@ -23,9 +23,6 @@ class User {
 
     constructor(userIn){
         this.validateUser(userIn)
-        if (userIn.isTeacher ){
-
-        }
         let defaults = {
             name: null,
             email: null,
@@ -48,9 +45,6 @@ class User {
         if (!user.displayName){
             user.displayName = user.name;
         }
-
-        // if 
-
     }
 
     validateUser(userIn){
@@ -94,12 +88,10 @@ class User {
                             throw err
                         }
                         else {
-                            
+
                         }
                     })
                 }
             })
     }
-
-    static
 }
