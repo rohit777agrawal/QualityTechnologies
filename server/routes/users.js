@@ -3,7 +3,7 @@ var express = require("express");
 var router = express.Router();
 
 // var {mongoose, db, User: UserModel} = require('../database/database');
-var db = require('../DatabaseAccesser')
+var db = require('../DatabaseAccesser');
 
 router.get('/', function(req, res, next) {
 
@@ -43,6 +43,16 @@ router.get("/:id", function(req, res, next) {
             res.status(500)
         })
 });
+
+router.get('/:id/groups', function(req, res, next){
+    db.getGroupsByUser(req.params.id)
+    .then((groups)=>{
+        res.status(200).json(groups)
+    })
+    .catch((err)=>{
+        res.status(500).send(err)
+    })
+})
 
 router.post("/login", function(req, res, next) {
     db.getUserByEmail(req.body.email)
