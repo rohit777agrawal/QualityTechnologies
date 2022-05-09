@@ -1,6 +1,9 @@
 import React, { Component } from "react";
-import ChatPage from './pages/ChatPage.js';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ChatPage from "./pages/ChatPage.js";
 import LoginPage from "./pages/LoginPage.js";
+import Error404 from "./pages/Error404.js";
+import NoPage from "./pages/NoPage.js";
 import "./App.css";
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -13,25 +16,34 @@ const url = "http://localhost:5000/";
 //fetch(url + "login/" + localStorage.getItem('login')))
 
 class App extends Component {
+    validateUser(id){
+        return new Promise((resolve, reject)=>{
+            fetch(url + "users/" + id)
+                .then((res) => res.json())
+                .then((json) => {
+                    localStorage.setItem('currentUser', JSON.stringify(json));
+                    this.setState({loggedIn: true, currentUser: json});
+                    resolve(json)
+                })
+                .catch((err) => {
+                    console.log(err);
+                    reject(err);
+                })
+        })
+    }
+
     componentDidMount(){
+        //validate the current user
         let user;
         try{
             user = JSON.parse(localStorage.getItem('currentUser'));
         } catch(err) {
-            user = {} ;
+            console.log("No valid user saved")
         }
-        //Verify that a valid login is saved
         if(user){
-            console.log(user)
-            fetch(url + "users/" + user._id)
-                .then((res) => res.json())
-                .then((json) => {
-                    //console.log(json);
-                    localStorage.setItem('currentUser', JSON.stringify(user))
-                    this.setState({loggedIn: json._id === user._id, currentUser: user});
-                })
+            this.validateUser(user._id)
                 .catch((err) => {
-                    console.error(err);
+                    console.log(err);
                 })
         }
     }
@@ -201,34 +213,49 @@ class App extends Component {
         // send messages to message to server-side socket
         this.socket.emit('messageToServer', msg, type);
     }
+
     render(){
-        if (this.state.loggedIn){
-            return (
-                <ChatPage
-                    messages={this.state.messages}
-                    messageHandler={this.sendMessage.bind(this)}
-                    loginHandler={this.updateLoginState.bind(this)}
-                    initChat={this.initChat.bind(this)}
-                    currentUser={this.state.currentUser}
-                    activeUsers={this.state.activeUsers}
-                    loginError={this.state.loginError}
-                    setLoginError={this.setLoginError.bind(this)}
-                    updateLoginInfo={this.updateLoginInfo.bind(this)}
-                    allowChat={this.state.allowChat}
-                    socket={this.socket}
-                />
-            );
-        }
-        else {
-            return (
+      return(
+        <BrowserRouter>
+          <Routes>
+            <Route index element={
                 <LoginPage
-                    loginHandler={this.submitLoginInfo.bind(this)}
-                    loginError={this.state.loginError}
-                    setLoginError={this.setLoginError.bind(this)}
-                    createNewLogin={this.createNewLogin.bind(this)}
+                  allowAccountCreation={false}
+                  loginHandler={this.submitLoginInfo.bind(this)}
+                  loginError={this.state.loginError}
+                  setLoginError={this.setLoginError.bind(this)}
+                  createNewLogin={this.createNewLogin.bind(this)}
                 />
-            );
-        }
+            }/>
+            <Route path="login" element={
+                <LoginPage
+                allowAccountCreation={true}
+                loginHandler={this.submitLoginInfo.bind(this)}
+                loginError={this.state.loginError}
+                setLoginError={this.setLoginError.bind(this)}
+                createNewLogin={this.createNewLogin.bind(this)}
+                />
+            }/>
+            <Route path="chat" element={
+              <ChatPage
+                  messages={this.state.messages}
+                  messageHandler={this.sendMessage.bind(this)}
+                  loginHandler={this.updateLoginState.bind(this)}
+                  initChat={this.initChat.bind(this)}
+                  currentUser={this.state.currentUser}
+                  activeUsers={this.state.activeUsers}
+                  loginError={this.state.loginError}
+                  setLoginError={this.setLoginError.bind(this)}
+                  updateLoginInfo={this.updateLoginInfo.bind(this)}
+                  allowChat={this.state.allowChat}
+                  socket={this.socket}
+              />
+            }/>
+            <Route path="error404" element={<Error404/>}/>
+            <Route path="*" element={<NoPage validateUser={this.validateUser.bind(this)}/>}/>
+          </Routes>
+        </BrowserRouter>
+      )
     }
 }
 
