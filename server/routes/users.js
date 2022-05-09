@@ -19,22 +19,7 @@ router.get('/', function(req, res, next) {
 })
 
 router.post('/teacher/', function(req, res, next) {
-    var user = {
-        name: req.displayName,
-        email: req.email,
-        password: req.email,
-        link: '',
-        displayName: req.displayName,
-        isTeacher: true,
-        sentMessageIDs: [],
-        recievedMessageIDs: [],
-        groupIDs: [],
-        active: false,
-        auth: {
-            token: ''
-        }
-    }
-    db.createTeacher(req.body.name, req.body.email, req.body.password);
+    db.createTeacher(req.body.name, req.body.email, req.body.password)
     .then((user)=>{
         res.status(200).json(user)
     })

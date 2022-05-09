@@ -30,7 +30,7 @@ class SocketManger {
 
       db.getUserByAuthToken(socket.handshake.auth.token)
         .then((user)=>{
-          console.log("Retrieved user", user._id, "associated with socket", socket.id)
+          console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
           if (user) {
             //save user ID
             this.socketIDToUserID[socket.id] = user._id
@@ -77,7 +77,7 @@ class SocketManger {
             }
           })
           .catch(err=>console.log(err))
-        
+
       });
 
       socket.on('messageUpdateToServer', (message)=>{
@@ -109,7 +109,7 @@ class SocketManger {
             }
           })
       })
-      
+
     });
   }
 

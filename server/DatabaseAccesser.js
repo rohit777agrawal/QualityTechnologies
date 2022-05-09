@@ -1,10 +1,19 @@
 var mongoose = require('mongoose');
 
 var UserSchema = new mongoose.Schema({
-    name: String,
-    email: String,
+    name: {
+        type: String,
+        unique: true
+    },
+    email: {
+        type: String,
+        unique: true
+    },
     password: String,
-    link: String,
+    link: {
+        type: String,
+        unique: true
+    },
     displayName: String,
     isTeacher: Boolean,
     sentMessageIDs: [String],
@@ -24,12 +33,12 @@ var MessageSchema = new mongoose.Schema({
 })
 
 var GroupSchema = new mongoose.Schema({
+    name: String,
+    active: Boolean,
     teacherID: String,
     userIDs: [String],
     parentGroupID: String,
     childGroupIDs: [String],
-    name: String,
-    active: Boolean
 })
 
 var UserModel = mongoose.model('User', UserSchema );
