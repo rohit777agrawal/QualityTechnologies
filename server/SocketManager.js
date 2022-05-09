@@ -27,7 +27,11 @@ class SocketManger {
   }
 
   setupConnections(){
+<<<<<<< HEAD
     this.io.on("connection", (socket) => {
+=======
+      this.io.on("connection", (socket) => {
+>>>>>>> 3d9b654c3c8424378a3bddb7c3c443c272dba1f8
       const sendServerMessageToUser = (message) => {
         socket.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
       }
@@ -38,6 +42,7 @@ class SocketManger {
 
       db.getUserByAuthToken(socket.handshake.auth.token)
         .then((user)=>{
+<<<<<<< HEAD
           console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
           if (user) {
             //save user ID
@@ -58,6 +63,29 @@ class SocketManger {
               socket.disconnect()
             }
           });
+=======
+            console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
+            if (user) {
+                //save user ID
+                this.socketIDToUserID[socket.id] = user._id
+                // set user's online status
+
+                user.active = true;
+                db.updateUser(user)
+                // Welcome connectee
+                sendServerMessage('Welcome to Chatr, ' + user.displayName);
+                // Broadcast to all users except connectee
+                sendServerBroadcast(user.displayName + " has joined the chat");
+                // inform all users of updated active users list
+                db.getUsersByID(Object.values(this.socketIDToUserID))
+                .then((activeUsers)=>{
+                    this.io.emit('activeUsers', activeUsers)
+                })
+            } else {
+                    socket.disconnect()
+                }
+      });
+>>>>>>> 3d9b654c3c8424378a3bddb7c3c443c272dba1f8
 
       // On disconnect tell everyone disconnectee left
       socket.on('disconnect', () => {
