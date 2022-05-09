@@ -248,7 +248,7 @@ class DatabaseAccessor {
             .then((res)=>{return res.deletedCount})
     }
 
-    getMessages(){
+    getAllMessages(){
         return MessageModel.find()
     }
 
@@ -276,7 +276,7 @@ class DatabaseAccessor {
                         }
                     })
     }
-
+    
     createMessage(contents, userID, groupID){
         var newMessage = {
             senderID: userID,
