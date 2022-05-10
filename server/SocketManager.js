@@ -48,26 +48,25 @@ class SocketManger {
 
       db.getUserByAuthToken(socket.handshake.auth.token)
         .then((user) => {
-          console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
-          if (user) {
-            //save user ID
-            this.socketIDToUserID[socket.id] = user._id
-            // set user's online status
-
-            user.active = true;
-            db.updateUser(user)
-            // Welcome connectee
-            sendServerMessage('Welcome to Chatr, ' + user.displayName);
-            // Broadcast to all users except connectee
-            sendServerBroadcast(user.displayName + " has joined the chat");
-            // inform all users of updated active users list
-            db.getUsersByID(Object.values(this.socketIDToUserID))
-              .then((activeUsers) => {
-                this.io.emit('activeUsers', activeUsers)
-              })
-          } else {
-            socket.disconnect()
-          }
+            console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
+            if (user) {
+                //save user ID
+                this.socketIDToUserID[socket.id] = user._id
+                // set user's online status
+                user.active = true;
+                db.updateUser(user)
+                // Welcome connectee
+                sendServerMessage('Welcome to Chatr, ' + user.displayName);
+                // Broadcast to all users except connectee
+                sendServerBroadcast(user.displayName + " has joined the chat");
+                // inform all users of updated active users list
+                db.getUsersByID(Object.values(this.socketIDToUserID))
+                .then((activeUsers) => {
+                    this.io.emit('activeUsers', activeUsers)
+                })
+            } else {
+                socket.disconnect()
+            }
         })
         .catch((err) => {
           console.log(err)

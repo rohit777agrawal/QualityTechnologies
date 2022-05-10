@@ -74,17 +74,14 @@ router.post("/login", function(req, res, next) {
 });
 
 router.put("/:id", function(req, res, next) {
-  var updatedUser = req.body.params
-  db.getUserByID(req.params.id)
-    .then((user) => {
-      if (user._id === updatedUser._id) {
-        db.updateUser(updatedUser)
-          .then((user) => {
-            res.status(200).json(user)
-          })
-      } else {
-        res.status(300).json("changing user ID is not allowed")
-      }
+    let updatedUser = req.body;
+    console.log("\n", "req", req.body);
+    db.getUserByID(req.params.id)
+        .then((user) => {
+            db.updateUser(updatedUser)
+                .then((user) => {
+                    res.status(200).json(user)
+                })
     })
 })
 

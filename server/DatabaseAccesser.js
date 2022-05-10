@@ -132,12 +132,16 @@ class DatabaseAccessor {
     }
 
     updateUser(updatedUser){
-        return this.getUserByID(updatedUser._id)
+        if(updatedUser._doc){
+            updatedUser = updatedUser._doc;
+        }
+        const {_id, ...changes} = updatedUser;
+        return this.getUserByID(_id)
             .then((user)=>{
                 if (user){
-                    for(var prop in user){
-                        user[prop] = updatedUser[prop]
-                    }
+                    Object.keys(user._doc).filter(key => key in changes).forEach(key=>{
+                        user[key] = changes[key];
+                    })
                     return user.save()
                 }
                 else {

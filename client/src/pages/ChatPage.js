@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal, OverlayTrigger, Popover, Table} from 'react-bootstrap';
-import { useNavigate } from "react-router-dom";
+import { Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal, OverlayTrigger, Popover, Table} from 'react-bootstrap';
+import TemplatePage from "./TemplatePage.js";
 import Picker from "emoji-picker-react";
 import ErrorBox from "../components/ErrorBox.js";
 import Message from "../components/Message.js";
@@ -14,8 +14,6 @@ class ChatPage extends Component {
         super(props);
         this.state = {
             draftMessage: "",
-            showAccount: true,
-            newDisplayName: "",
             messages: props.messages,
             url: "",
             showLink: false,
@@ -46,7 +44,6 @@ class ChatPage extends Component {
 
     componentDidMount(){
         document.title = "Chatr Chat Window";
-        this.setState({showAccount:false})
         this.props.initChat()
         this.messageForm.addEventListener("submit", (event)=>{
             event.preventDefault();
@@ -107,78 +104,19 @@ class ChatPage extends Component {
         })
     }
 
-    handleDisplayNameInput(event){
-        this.setState({newDisplayName: event.target.value});
-    }
-
-    handleChangeSubmit(event){
-        const displayNameRegex = /^[A-z0-9_-\s]{3,15}$/;
-        event.preventDefault();
-        try{
-            if(this.state.newDisplayName.match(displayNameRegex)===null){
-                if(this.state.newDisplayName.length < 3 || this.state.newDisplayName.length > 15){
-                    throw new Error("Usernames must be 3 to 15 characters long.");
-                } else {
-                    throw new Error("Usernames cannot have special characters.")
-                }
-            }
-            if(this.state.newDisplayName === "server"){
-                throw new Error("That user name is invalid.");
-            }
-            this.props.updateLoginInfo({displayName: this.state.newDisplayName, _id: this.props.currentUser._id})
-            .then(() => {
-                this.setState({showAccount: false});
-            })
-            .catch((err) => {
-                throw new Error(err);
-            })
-        } catch(error){
-            this.props.setLoginError(error.message);
-        }
-    }
-
     render() {
+        console.log(this.props.currentUser);
         return (
-            <Container fluid className="vh-100 text-center" style={{display: "flex", flexDirection: "column", overflow:"hidden", padding:0}} >
-                <Row style={{justifyContent: "center"}} className="h-10 bg-dark text-light sticky-top">
-                    <Col />
-                    <Col>
-                        <h1>Chatr</h1>
-                    </Col>
-                    <Col style={{display:"flex", alignItems: "center", justifyContent:"right", marginRight:"8px"}}>
-                        <ToggleSwitch
-                            show={this.props.currentUser.isTeacher}
-                            toggled={this.props.allowChat}
-                            onToggle={()=>{
-                                this.props.socket.emit("toggleAllowChatToServer");
-                            }}
-                            name="allowChat"
-                            style={{container:{width: "48px", height: "24px", marginLeft: "4px", marginRight:"16px"}}}
-                        >
-                        Allow Chat
-                        </ToggleSwitch>
-                        <Button style={{marginRight:"16px"}}>
-                            <i className="bi bi-bell"/>
-                        </Button>
-                        <Dropdown>
-                            <Dropdown.Toggle id="dropdown-basic">{this.props.currentUser.displayName}</Dropdown.Toggle>
-                            <Dropdown.Menu style={{minWidth: "100%"}}>
-                                <Dropdown.Item onClick={()=>{
-                                        this.setState({showAccount: true});
-                                        this.props.setLoginError("");
-                                    }}>
-                                    <i className="bi bi-person-circle" /> Account
-                                </Dropdown.Item>
-                                <Dropdown.Item style={{color:"red"}} onClick={()=>{
-                                    delete localStorage.currentUser;
-                                    this.props.loginHandler(false);
-                                }}>
-                                    <i className="bi bi-power" /> Log Out
-                                </Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </Col>
-                </Row>
+            <TemplatePage
+                parent = {this}
+                currentUser = {this.props.currentUser}
+                showSwitch = {this.props.currentUser.isTeacher}
+                allowChat = {this.props.allowChat}
+                socket = {this.props.socket}
+                setLoginError = {this.props.setLoginError}
+                loginHandler = {this.props.loginHandler}
+                updateLoginInfo = {this.props.updateLoginInfo}
+            >
                 <Row style={{flex: "1 1 auto", width:"100%", overflow:"auto", margin:0}} className="align-items-bottom text-left">
                     <Col md="auto" style={{width: "10%", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>
                         {this.renderActiveUsers()}
@@ -247,36 +185,7 @@ class ChatPage extends Component {
                     </Col>
                     <Col/>
                 </Row>
-                <Row >
-                    <Col className="fixed-bottom">
-                        <ErrorBox>{this.state.error}</ErrorBox>
-                    </Col>
-                </Row>
-                <Modal show={this.state.showAccount} onHide={()=>{this.setState({showAccount: false})}}>
-                    <Modal.Header closeButton>
-                        <Modal.Title style={{textAlign: "center"}}>Account Settings</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form target="">
-                            <Form.Group className="mb-3">
-                                <Form.Label>Display Name</Form.Label>
-                                <Form.Control placeholder={this.props.currentUser.displayName} onChange={(e)=>{this.handleDisplayNameInput(e)}}/>
-                                <Form.Label style={{color:"#f44"}}>{this.props.loginError}</Form.Label>
-                            </Form.Group>
-                            <div style={{display:"flex", justifyContent:"space-evenly"}}>
-                            <Button variant="secondary" onClick={()=>{this.setState({showAccount: false})}}>
-                            Close
-                            </Button>
-                            <Button variant="primary" type="submit" onClick={(e)=>{
-                                this.handleChangeSubmit(e);
-                            }}>
-                                Save Changes
-                            </Button>
-                            </div>
-                        </Form>
-                    </Modal.Body>
-                </Modal>
-            </Container>
+            </TemplatePage>
         );
     }
 }
