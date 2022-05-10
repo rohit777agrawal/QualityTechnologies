@@ -117,19 +117,21 @@ class App extends Component {
     }
 
     updateLoginInfo(changesDict){
+        console.log(changesDict)
         const requestOptions = {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(changesDict)
         }
         return new Promise((resolve, reject) =>{
-            fetch(url + "users/" + changesDict["_id"], requestOptions)
+            const oldName = this.state.currentUser.displayName
+            fetch(url + "users/" + this.state.currentUser._id, requestOptions)
                 .then((res)=> res.json())
                 .then((json)=>{
                     console.log(json);
                     localStorage.setItem('currentUser', JSON.stringify(json));
                     this.socket.emit("updateActiveUsers");
-                    this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to " + json.displayName);
+                    this.socket.emit("sendServerMessage", oldName + " has changed their name to " + json.displayName);
                     let newMessages = this.state.messages;
                     console.log(newMessages);
                     for(let i = 0; i < newMessages.length; i++){

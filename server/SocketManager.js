@@ -36,8 +36,7 @@ class SocketManger {
             this.socketIDToUserID[socket.id] = user._id
             // set user's online status
 
-            user.active = true;
-            db.updateUser(user)
+            db.updateUser(user._id, {active: true})
             // Welcome connectee
             sendServerMessage('Welcome to Chatr, ' + user.displayName);
             // Broadcast to all users except connectee
@@ -61,8 +60,7 @@ class SocketManger {
             if (user){
               sendServerMessage(user.displayName + " has left the chat");
 
-              user.active = false
-              db.updateUser(user)
+              db.updateUser(user._id, {active: false})
 
               delete this.socketIDToUserID[socket.id]
 

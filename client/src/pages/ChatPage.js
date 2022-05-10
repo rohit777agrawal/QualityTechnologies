@@ -125,7 +125,7 @@ class ChatPage extends Component {
             if(this.state.newDisplayName === "server"){
                 throw new Error("That user name is invalid.");
             }
-            this.props.updateLoginInfo({displayName: this.state.newDisplayName, _id: this.props.currentUser._id})
+            this.props.updateLoginInfo({displayName: this.state.newDisplayName})
             .then(() => {
                 this.setState({showAccount: false});
             })

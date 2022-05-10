@@ -134,6 +134,7 @@ class DatabaseAccessor {
     }
 
     updateUser(userID, updatedProps){
+        console.log("updating user", userID, updatedProps)
         return this.getUserByID(userID)
             .then((user)=>{
                 if (user){
