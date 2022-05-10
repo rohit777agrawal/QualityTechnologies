@@ -1,3 +1,4 @@
+const { json } = require('express');
 var mongoose = require('mongoose');
 
 var UserSchema = new mongoose.Schema({
@@ -68,11 +69,11 @@ class DatabaseAccessor {
     }
 
     getUsersByID(userIDs){
-        return UserModel.find({_id: {$in: userIDs}});
+        return UserModel.find({_id: {$in: userIDs}})
     }
 
     getUserByEmail(email){
-        return UserModel.findOne({email: email});
+        return UserModel.findOne({email: email})
     }
 
     getUserByAuthToken(authToken) {
@@ -81,9 +82,8 @@ class DatabaseAccessor {
 
     createTeacher(name, email, password){
         return this.getUserByEmail(email)
-            .then((user)=>{
+        .then((user)=>{
                 if (user){
-                    console.log('User with that email already exists')
                     return null
                 }
                 else {
@@ -91,8 +91,9 @@ class DatabaseAccessor {
                         name: name,
                         email: email,
                         password: password,
-                        displayName: name,
-                        link: '',
+                        displayName: displayName,
+                        name: displayName, 
+                        link: null,
                         isTeacher: true,
                         sentMessageIDs: [],
                         recievedMessageIDs: [],
@@ -110,10 +111,10 @@ class DatabaseAccessor {
 
     createStudent(displayName, groupID){
         var user = {
-            name: '',
-            email: '',
-            password: '',
-            link: '',
+            name: displayName,
+            email: null,
+            password: null,
+            link: null,
             displayName: displayName,
             isTeacher: false,
             sentMessageIDs: [],
@@ -121,7 +122,7 @@ class DatabaseAccessor {
             groupIDs: [groupID],
             active: false,
             auth: {
-                token: ''
+                token: null
             }
         }
         return new UserModel(user).save()
@@ -129,15 +130,31 @@ class DatabaseAccessor {
                 student.link = student._id
                 return student.save()
             })
+
     }
 
-    updateUser(updatedUser){
-        return this.getUserByID(updatedUser._id)
+    updateUser(userID, updatedProps){
+        return this.getUserByID(userID)
             .then((user)=>{
                 if (user){
-                    for(var prop in user){
-                        user[prop] = updatedUser[prop]
+                    for(var prop in updatedProps){
+                        user[prop] = updatedProps[prop]
                     }
+                    return user.save()
+                }
+                else {
+                    console.log("User does not exist")
+                    return null
+                }
+            })
+    }
+
+    resetUserAuthentication(userID){
+        return this.getUserByID(userID)
+            .then((user)=>{
+                if (user) {
+                    user.auth.token = ''
+                    user.active = false
                     return user.save()
                 }
                 else {
@@ -210,12 +227,12 @@ class DatabaseAccessor {
             })
     }
 
-    updateGroup(updatedGroup){
-        return this.getGroupByID(updatedGroup._id)
+    updateGroup(groupID, updatedProps){
+        return this.getGroupByID(groupID)
             .then((group)=>{
                 if (group){
-                    for(var prop in updatedGroup){
-                        group[prop] = updatedGroup[prop]
+                    for(var prop in updatedProps){
+                        group[prop] = updatedProps[prop]
                     }
                     return group.save()
                 }
@@ -231,7 +248,7 @@ class DatabaseAccessor {
             .then((res)=>{return res.deletedCount})
     }
 
-    getMessages(){
+    getAllMessages(){
         return MessageModel.find()
     }
 
@@ -259,7 +276,7 @@ class DatabaseAccessor {
                         }
                     })
     }
-
+    
     createMessage(contents, userID, groupID){
         var newMessage = {
             senderID: userID,
@@ -270,10 +287,10 @@ class DatabaseAccessor {
         return new MessageModel(newMessage).save()
     }
 
-    updateMessage(updatedMessage) {
-        return this.getMessageByID(message._id)
+    updateMessage(messageID, contents) {
+        return this.getMessageByID(messageID)
             .then((message)=>{
-                message.contents = updatedMessage.contents
+                message.contents = contents
                 return message.save()
             })
     }
