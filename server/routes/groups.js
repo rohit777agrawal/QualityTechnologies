@@ -84,8 +84,9 @@ router.post('/', function(req, res, next){
 })
 
 router.put('/:id', function(req, res, next){
-    if (req.params.id === req.body._id){
-        db.updateGroup(req.body)
+    var updatedProps = req.body
+    if (!Object.keys(updatedProps).includes('_id')){
+        db.updateGroup(req.params.id, updatedProps)
         .then((group)=>{
             if (group) {
                 res.status(200).json(group)

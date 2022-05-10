@@ -123,20 +123,17 @@ router.post('/student', function(req, res, next){
 })
 
 router.put("/:id", function(req, res, next) {
-    var updatedUser = req.body
-    if (req.params.id === updatedUser._id){
-        db.getUserByID(req.params.id)
-            .then((user) => {
-                if (user) {
-                    db.updateUser(updatedUser)
-                    .then((user)=>{
-                        res.status(200).json(user)
-                    })
-                }
-                else {
-                    res.status(404).send("User does not exist")
-                }
-            })
+    var updatedProps = req.body
+    if (!Object.keys(updatedProps).includes('_id')){
+        db.updateUser(req.params.id, updatedProps)
+        .then((user) => {
+            if (user) {
+                res.status(200).json(user)
+            }
+            else {
+                res.status(404).send("User does not exist")
+            }
+        })
     }
     else {
         res.status(400).send("Changing user ID is not allowed")

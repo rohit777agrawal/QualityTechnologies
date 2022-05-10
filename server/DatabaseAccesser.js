@@ -133,12 +133,12 @@ class DatabaseAccessor {
 
     }
 
-    updateUser(updatedUser){
-        return this.getUserByID(updatedUser._id)
+    updateUser(userID, updatedProps){
+        return this.getUserByID(userID)
             .then((user)=>{
                 if (user){
-                    for(var prop in updatedUser){
-                        user[prop] = updatedUser[prop]
+                    for(var prop in updatedProps){
+                        user[prop] = updatedProps[prop]
                     }
                     return user.save()
                 }
@@ -227,12 +227,12 @@ class DatabaseAccessor {
             })
     }
 
-    updateGroup(updatedGroup){
-        return this.getGroupByID(updatedGroup._id)
+    updateGroup(groupID, updatedProps){
+        return this.getGroupByID(groupID)
             .then((group)=>{
                 if (group){
-                    for(var prop in updatedGroup){
-                        group[prop] = updatedGroup[prop]
+                    for(var prop in updatedProps){
+                        group[prop] = updatedProps[prop]
                     }
                     return group.save()
                 }
@@ -287,10 +287,10 @@ class DatabaseAccessor {
         return new MessageModel(newMessage).save()
     }
 
-    updateMessage(updatedMessage) {
-        return this.getMessageByID(message._id)
+    updateMessage(messageID, contents) {
+        return this.getMessageByID(messageID)
             .then((message)=>{
-                message.contents = updatedMessage.contents
+                message.contents = contents
                 return message.save()
             })
     }

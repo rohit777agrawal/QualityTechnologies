@@ -36,17 +36,15 @@ router.post("/", function(req, res, next) {
 });
 
 router.put('/:id', function(req, res, next){
-    if (req.params.id === req.body._id) {
-        db.updateMessage(req.body)
-        .then((message)=>{
-            if (message) {
-                res.status(200).json(message)
-            }
-            else {
-                res.status(404).send("No message found with id " + req.params.id)
-            }
-        })
-    } 
+    db.updateMessage(req.params.id, req.body.contents)
+    .then((message)=>{
+        if (message) {
+            res.status(200).json(message)
+        }
+        else {
+            res.status(404).send("No message found with id " + req.params.id)
+        }
+    })
 })
 
 //Delete a message
