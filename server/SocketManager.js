@@ -20,18 +20,19 @@ class SocketManger {
 
     this.io.on("connection", (socket) => {
       console.log("Establishing socket connection with ", socket.id)
+
       const sendServerMessage = (message) => {
-        socket.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
+        socket.emit('message', {text: message, date: new Date(), type: "info"});
       }
 
       const sendServerBroadcast = (message) => {
-        socket.broadcast.emit('messageFromServer', {user: 'server', text: message, date: new Date()});
+        socket.broadcast.emit('message', {user: 'server', text: message, date: new Date(), type: "info"});
       }
 
       db.getUserByAuthToken(socket.handshake.auth.token)
         .then((user)=>{
-          console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
           if (user) {
+            console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
             //save user ID
             this.socketIDToUserID[socket.id] = user._id
             // set user's online status
@@ -78,29 +79,37 @@ class SocketManger {
 
       });
 
-      socket.on('messageUpdateToServer', (message)=>{
-          this.io.emit("messageUpdateFromServer", message);
+      // Edit a message, add a reaction, etc
+      socket.on('updateMessage', (message)=>{
+        this.io.emit("updateMessage", message);
+      })
+
+      // Change a username
+      socket.on('updateUser', (oldName, newName)=>{
+        db.updateUser(this.socketIDToUserID[socket.id], {displayName: newName})
+        .then((user)=>{
+          if (user) {
+            sendServerBroadcast(oldName + " has changed their name to " + newName)
+            this.updateActiveUsers()
+          }
+          else {
+
+          }
+        })
+
       })
 
       //Update updateActiveUsers
       socket.on('updateActiveUsers', ()=>{
-        db.getUsersByID(Object.values(this.socketIDToUserID))
-          .then((activeUsers)=>{
-            console.log("broadcasting updated user list");
-            this.io.emit('activeUsers', activeUsers)
-          })
-      })
-
-      socket.on("sendServerMessage", (msg) => {
-          sendServerMessage(msg);
+        this.updateActiveUsers()
       })
 
       // Listen for chatMessage
-      socket.on("messageToServer", (msg, type) => {
+      socket.on("message", (msg, type) => {
         db.getUserByID(this.socketIDToUserID[socket.id])
           .then((user)=>{
             if (user){
-              this.io.emit('messageFromServer', {user: user.displayName, text: msg, type: type})
+              this.io.emit('message', {user: user.displayName, text: msg, type: type})
             }
             else {
               console.log("Error: received message but no user found")
@@ -109,6 +118,14 @@ class SocketManger {
       })
 
     });
+  }
+
+  updateActiveUsers(){
+    db.getUsersByID(Object.values(this.socketIDToUserID))
+    .then((activeUsers)=>{
+      console.log("broadcasting updated user list");
+      this.io.emit('activeUsers', activeUsers)
+    })
   }
 
 }

@@ -30,6 +30,7 @@ var MessageSchema = new mongoose.Schema({
     senderID: String,
     groupID: String,
     contents: String,
+    type: String,
     sentTime: Date
 })
 
