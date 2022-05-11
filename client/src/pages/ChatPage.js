@@ -1,14 +1,14 @@
 import React, { Component } from "react";
-import { Row, Col, InputGroup, FormControl, Button, Form, OverlayTrigger, Popover } from 'react-bootstrap';
+import { Row, Col, InputGroup, FormControl, Button, Form, OverlayTrigger, Popover, Dropdown} from 'react-bootstrap';
 import TemplatePage from "./TemplatePage.js";
 import Picker from "emoji-picker-react";
 import Message from "../components/Message.js";
 import URLButtonForm from "../components/URLButtonForm.js";
 import ErrorBox from "../components/ErrorBox.js";
+import NavigateLink from "../components/NavigateLink";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 class ChatPage extends Component {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -20,9 +20,7 @@ class ChatPage extends Component {
             showImage: false,
             error: "",
         }
-
         this.handleMessageInput = this.handleMessageInput.bind(this)
-
     }
 
     sendURLMessage(type){
@@ -94,7 +92,12 @@ class ChatPage extends Component {
 
     renderActiveUsers(){
         return this.props.activeUsers.map((user, keyVal)=>{
-            return <Button variant="outline-info" style={{cursor:"default", margin:"2pt 0"}} key={keyVal}>{user.displayName}</Button>
+            return (<Button
+                variant="outline-info"
+                style={{cursor:"default", margin:"2pt 0"}}
+                key={keyVal}>
+                    {user.displayName}
+                </Button>)
         })
     }
 
@@ -104,7 +107,8 @@ class ChatPage extends Component {
                 socket={this.props.socket}
                 currentUser={this.props.currentUser.displayName}
                 key={keyVal}
-                message={message}/>
+                message={message}
+                />
         })
     }
 
@@ -116,6 +120,15 @@ class ChatPage extends Component {
                 showSwitch = {this.props.currentUser.isTeacher}
                 allowChat = {this.props.allowChat}
                 socket = {this.props.socket}
+                additionalDropDownItems = {
+                    this.props.currentUser.isTeacher
+                    ? (<NavigateLink to="/group">
+                            <Dropdown.Item>
+                                <i className="bi bi-people-fill"/> Groups
+                            </Dropdown.Item>
+                        </NavigateLink>)
+                    : (null)
+                }
                 setLoginError = {this.props.setLoginError}
                 loginHandler = {this.props.loginHandler}
                 updateLoginInfo = {this.props.updateLoginInfo}

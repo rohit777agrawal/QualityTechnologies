@@ -20,6 +20,7 @@ const defaultProps = {
             console.log("socketEmit", val)
         }
     },
+    additionalDropDownItems: null,
     setLoginError: (val) => {
         console.log("setLoginError", val);
     },
@@ -38,6 +39,7 @@ const TemplatePage = ({
     allowChat = defaultProps.allowChat,
     children = defaultProps.children,
     socket = defaultProps.socket,
+    additionalDropDownItems = defaultProps.additionalDropDownItems,
     setLoginError = defaultProps.setLoginError,
     loginHandler = defaultProps.setLoginHandler,
     updateLoginInfo = defaultProps.updateLoginInfo,
@@ -80,12 +82,14 @@ const TemplatePage = ({
         setShowAccount(false);
     }, [])
 
+    console.log(currentUser);
+
     return(
         <Container fluid className="vh-100 text-center" style={{display: "flex", flexDirection: "column", overflow:"hidden", padding:0}} >
             <Row style={{justifyContent: "center"}} className="h-10 bg-dark text-light sticky-top">
-                <Col />
+                <Col/>
                 <Col>
-                    <h1>Chatr</h1>
+                    <h1 style={{cursor:"default"}}>Chatr</h1>
                 </Col>
                 <Col style={{display:"flex", alignItems: "center", justifyContent:"right", marginRight:"8px"}}>
                     <ToggleSwitch
@@ -97,7 +101,7 @@ const TemplatePage = ({
                         name="allowChat"
                         style={{container:{width: "48px", height: "24px", marginLeft: "4px", marginRight:"16px"}}}
                     >
-                    Allow Chat
+                    <span onClick={()=>{socket.emit("toggleAllowChatToServer")}}>Allow Chat</span>
                     </ToggleSwitch>
                     <Button style={{marginRight:"16px"}}>
                         <i className="bi bi-bell"/>
@@ -111,6 +115,7 @@ const TemplatePage = ({
                                 }}>
                                 <i className="bi bi-person-circle" /> Account
                             </Dropdown.Item>
+                            {additionalDropDownItems}
                             <Dropdown.Item style={{color:"red"}} onClick={()=>{
                                 delete localStorage.currentUser;
                                 loginHandler(false);

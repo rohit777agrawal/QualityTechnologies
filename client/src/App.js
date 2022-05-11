@@ -218,6 +218,7 @@ class App extends Component {
     }
 
     render() {
+        console.log(this.state.currentUser)
         return (<BrowserRouter>
             <Routes>
                 <Route index="index" element={
@@ -260,15 +261,18 @@ class App extends Component {
                         : (<Navigate replace="replace" to="/"/>)
                 }/>
                 <Route path="group" element={
-                    this.state.currentUser && this.state.loggedIn && this.state.currentUser.isTeacher
-                        ? (<GroupPage
+                    this.state.currentUser
+                    ? (<GroupPage
                             currentUser={this.state.currentUser}
                             allowChat={this.state.allowChat}
                             socket={this.socket}
                             setLoginError={this.setLoginError.bind(this)}
                             loginHandler={this.updateLoginState.bind(this)}
-                            groups={this.state.groups}/>)
-                        : (<Navigate replace="replace" to="/chat"/>)
+                            groups={this.state.groups}
+                            parent={this}
+                        />)
+                    : (<Navigate replace="replace" to="/"/>)
+
                 }/>
                 <Route path="error404" element={<Error404/>}/>
                 <Route path="*" element={<NoPage validateUser = {

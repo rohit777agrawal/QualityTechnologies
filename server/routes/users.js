@@ -92,6 +92,8 @@ router.put("/:id", function(req, res, next) {
                     res.status(200).json(user)
                 })
     })
+})
+
 router.post('/:id/logout', function(req, res, next) {
     db.resetUserAuthentication(req.params.id)
     .then((user)=>{
