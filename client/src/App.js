@@ -130,8 +130,9 @@ class App extends Component {
                 .then((json)=>{
                     console.log(json);
                     localStorage.setItem('currentUser', JSON.stringify(json));
-                    this.socket.emit("updateActiveUsers");
-                    this.socket.emit("message", oldName + " has changed their name to " + json.displayName);
+                    // this.socket.emit("updateUser", oldName, json.displayName, ())
+                    this.socket.emit("updateUser", oldName, json.displayName);
+                    // this.socket.emit("message", oldName + " has changed their name to " + json.displayName);
                     let newMessages = this.state.messages;
                     console.log(newMessages);
                     for(let i = 0; i < newMessages.length; i++){

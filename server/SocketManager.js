@@ -22,17 +22,17 @@ class SocketManger {
       console.log("Establishing socket connection with ", socket.id)
 
       const sendServerMessage = (message) => {
-        socket.emit('message', {text: message, date: new Date(), type: "info"});
+        socket.emit('message', {text: message, date: new Date(), type: "server"});
       }
 
       const sendServerBroadcast = (message) => {
-        socket.broadcast.emit('message', {user: 'server', text: message, date: new Date(), type: "info"});
+        socket.broadcast.emit('message', {text: message, date: new Date(), type: "server"});
       }
 
       db.getUserByAuthToken(socket.handshake.auth.token)
         .then((user)=>{
+          console.log("Retrieved user", user.displayName, "with id", user._id.valueOf(), "associated with socket", socket.id)
           if (user) {
-            console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
             //save user ID
             this.socketIDToUserID[socket.id] = user._id
             // set user's online status
@@ -86,14 +86,16 @@ class SocketManger {
 
       // Change a username
       socket.on('updateUser', (oldName, newName)=>{
+        console.log(oldName, newName)
         db.updateUser(this.socketIDToUserID[socket.id], {displayName: newName})
         .then((user)=>{
           if (user) {
+            console.log("updated user", user.displayName)
             sendServerBroadcast(oldName + " has changed their name to " + newName)
             this.updateActiveUsers()
           }
           else {
-
+            console.log("user not found")
           }
         })
 

@@ -172,7 +172,8 @@ class Message extends Component{
                 return (
                     this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>)
                 )
-            case "info":
+            case "server":
+                console.log("RECEIVED SERVER INFO MESSAGE", message)
                 return(
                     <div style = {infoStyle}>
                         {message.text}
