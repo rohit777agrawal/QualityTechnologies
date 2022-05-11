@@ -1,17 +1,13 @@
 import React from 'react';
-import { CounterObject, groupBy, Hover, HoverStyle, SlackCounterGroup} from '@charkour/react-reactions/';
+import { groupBy, Hover, HoverStyle, SlackCounterGroup} from '@charkour/react-reactions/';
 import SlackCSS from "./SlackCSS.js";
 
 export const defaultProps= {
     style: {},
     counters: [
         {
-            emoji: '👍',
-            by: 'Case Sandberg',
-        },
-        {
-            emoji: '👎',
-            by: 'Charlie!!!!!',
+            emoji: '🚫',
+            by: 'error loading reactions',
         },
     ],
     user: 'Charlie',
@@ -42,7 +38,7 @@ export const SlackCounter = ({
                 <SlackCounterGroup emoji={''} />
             </HoverStyle>
             {Object.keys(groups).map((emoji) => {
-              const names = groups[emoji].map(({ by }: CounterObject) => {
+              const names = groups[emoji].map(({ by }) => {
                 return by === user ? "You" : by;
               });
               return (
@@ -66,7 +62,7 @@ export const SlackCounter = ({
           <SlackCSS/>
           <Hover style={Object.assign({}, counterStyle, style)}>
             {Object.keys(groups).map((emoji) => {
-              const names = groups[emoji].map(({ by }: CounterObject) => {
+              const names = groups[emoji].map(({ by }) => {
                 return user === by ? "You": by;
               });
               return (

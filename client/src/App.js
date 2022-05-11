@@ -54,6 +54,7 @@ class App extends Component {
             email: "",
             currentUser: null,
             messages: [],
+            groups: [],
             activeUsers: [],
             allowChat: true
         };
@@ -219,7 +220,8 @@ class App extends Component {
     render() {
         return (<BrowserRouter>
             <Routes>
-                <Route index="index" element={this.state.currentUser && this.state.loggedIn
+                <Route index="index" element={
+                    this.state.currentUser && this.state.loggedIn
                         ? (<Navigate replace="replace" to="chat"/>)
                         : (<LoginPage
                             allowAccountCreation={false}
@@ -229,7 +231,8 @@ class App extends Component {
                             createNewLogin={this.createNewLogin.bind(this)}
                             />)
                         }/>
-                <Route path="login" element={this.state.currentUser && this.state.loggedIn
+                <Route path="login" element={
+                    this.state.currentUser && this.state.loggedIn
                         ? (<Navigate replace="replace" to="chat"/>)
                         : (<LoginPage
                             allowAccountCreation={true}
@@ -239,13 +242,15 @@ class App extends Component {
                             createNewLogin={this.createNewLogin.bind(this)}
                         />)
                     }/>
-                <Route path="chat" element={this.state.currentUser && this.state.loggedIn
+                <Route path="chat" element={
+                    this.state.currentUser && this.state.loggedIn
                         ? (<ChatPage
                             currentUser={this.state.currentUser}
                             allowChat={this.state.allowChat}
                             socket={this.socket}
                             setLoginError={this.setLoginError.bind(this)}
                             loginHandler={this.updateLoginState.bind(this)}
+                            groups={this.state.groups}
                             messages={this.state.messages}
                             messageHandler={this.sendMessage.bind(this)}
                             initChat={this.initChat.bind(this)}
@@ -254,15 +259,16 @@ class App extends Component {
                             updateLoginInfo={this.updateLoginInfo.bind(this)}/>)
                         : (<Navigate replace="replace" to="/"/>)
                 }/>
-                <Route path="group" element={this.state.currentUser && this.state.loggedIn && this.state.currentUser.isTeacher
+                <Route path="group" element={
+                    this.state.currentUser && this.state.loggedIn && this.state.currentUser.isTeacher
                         ? (<GroupPage
                             currentUser={this.state.currentUser}
                             allowChat={this.state.allowChat}
                             socket={this.socket}
                             setLoginError={this.setLoginError.bind(this)}
-                            loginHandler={this.updateLoginState.bind(this)}/>)
-                        : (<Navigate replace="replace" to="/"/>)
-
+                            loginHandler={this.updateLoginState.bind(this)}
+                            groups={this.state.groups}/>)
+                        : (<Navigate replace="replace" to="/chat"/>)
                 }/>
                 <Route path="error404" element={<Error404/>}/>
                 <Route path="*" element={<NoPage validateUser = {

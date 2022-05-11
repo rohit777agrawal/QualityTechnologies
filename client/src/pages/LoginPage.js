@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import {Container, Row, Col, Button, Form} from 'react-bootstrap';
-import ErrorBox from '../components/ErrorBox.js'
+import ErrorBox from "../components/ErrorBox.js";
 
 class LoginPage extends Component {
   componentDidMount() {

@@ -152,7 +152,7 @@ class Message extends Component{
                 </div>
                 <div style={style.selectorParentDiv}>
                     <div style={style.selectorDiv} hidden={!this.state.showSelector}>
-                    <Picker native={true} onEmojiClick={(event, emojiObject) => {
+                    <Picker native={true} onEmojiClick={(_, emojiObject) => {
                         this.react(emojiObject.emoji);
                     }}/>
                     </div>

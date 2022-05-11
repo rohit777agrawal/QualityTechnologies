@@ -79,7 +79,7 @@ class DatabaseAccessor {
         return UserModel.findOne({ auth: {token: authToken} })
     }
 
-    createTeacher(name, email, password){
+    async createTeacher(name, email, password){
         return this.getUserByEmail(email)
             .then((user)=>{
                 if (user){
@@ -131,7 +131,7 @@ class DatabaseAccessor {
             })
     }
 
-    updateUser(updatedUser){
+    async updateUser(updatedUser){
         if(updatedUser._doc){
             updatedUser = updatedUser._doc;
         }
@@ -151,7 +151,7 @@ class DatabaseAccessor {
             })
     }
 
-    deleteUser(userID){
+    async deleteUser(userID){
         return UserModel.deleteOne({_id: userID}).then(
             (res)=>{return res.deletedCount}
         )
@@ -181,7 +181,7 @@ class DatabaseAccessor {
         return new GroupModel(newGroup).save()
     }
 
-    updateMembersInGroup(groupID, updatedMemberIDs){
+    async updateMembersInGroup(groupID, updatedMemberIDs){
         return this.getGroupByID(groupID)
             .then((group)=>{
                 var exMemberIDs = group.userIDs.filter(id=>!updatedMemberIDs.includes(id))
@@ -214,7 +214,7 @@ class DatabaseAccessor {
             })
     }
 
-    updateGroup(updatedGroup){
+    async updateGroup(updatedGroup){
         return this.getGroupByID(updatedGroup._id)
             .then((group)=>{
                 if (group){
@@ -230,7 +230,7 @@ class DatabaseAccessor {
             })
     }
 
-    deleteGroup(groupID){
+    async deleteGroup(groupID){
         return GroupModel.deleteOne({_id: groupID})
             .then((res)=>{return res.deletedCount})
     }
@@ -251,7 +251,7 @@ class DatabaseAccessor {
         return MessageModel.find({groupID: groupID})
     }
 
-    getMessagesByReceiver(userID){
+    async getMessagesByReceiver(userID){
         return this.getGroupsByUser(userID)
                     .then((groups)=>{
                         if (groups){
@@ -274,7 +274,7 @@ class DatabaseAccessor {
         return new MessageModel(newMessage).save()
     }
 
-    updateMessage(updatedMessage) {
+    async updateMessage(updatedMessage) {
         return this.getMessageByID(message._id)
             .then((message)=>{
                 message.contents = updatedMessage.contents
@@ -282,7 +282,7 @@ class DatabaseAccessor {
             })
     }
 
-    deleteMessage(messageID) {
+    async deleteMessage(messageID) {
         return MessageModel.deleteOne({_id: messageID})
             .then((res)=>{return res.deletedCount})
     }

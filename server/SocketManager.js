@@ -122,7 +122,8 @@ class SocketManger {
               this.io.emit('messageFromServer', {
                 user: user.displayName,
                 text: msg,
-                type: type
+                type: type,
+                reactions: [],
               })
             } else {
               console.log("Error: received message but no user found")
@@ -148,7 +149,7 @@ class SocketManger {
 
       // Listen for chatMessage
       socket.on("messageToServer", (msg, type) => {
-        User.findById(this.socketIDToUserID[socket.id], (err, user) => {
+        db.getUserByID(this.socketIDToUserID[socket.id], (err, user) => {
           if (err) {
             console.log(err)
           }

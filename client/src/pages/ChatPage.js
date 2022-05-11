@@ -1,11 +1,10 @@
 import React, { Component } from "react";
-import { Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal, OverlayTrigger, Popover, Table} from 'react-bootstrap';
+import { Row, Col, InputGroup, FormControl, Button, Form, OverlayTrigger, Popover } from 'react-bootstrap';
 import TemplatePage from "./TemplatePage.js";
 import Picker from "emoji-picker-react";
-import ErrorBox from "../components/ErrorBox.js";
 import Message from "../components/Message.js";
-import ToggleSwitch from "../components/ToggleSwitch.js";
 import URLButtonForm from "../components/URLButtonForm.js";
+import ErrorBox from "../components/ErrorBox.js";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 class ChatPage extends Component {
@@ -16,6 +15,7 @@ class ChatPage extends Component {
             draftMessage: "",
             messages: props.messages,
             url: "",
+            showEmoji: false,
             showLink: false,
             showImage: false,
             error: "",
@@ -25,7 +25,7 @@ class ChatPage extends Component {
 
     }
 
-    send(type){
+    sendURLMessage(type){
         const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)/;
         if(this.state.url.match(urlRegex)){
             this.props.messageHandler(this.state.url, type)
@@ -39,7 +39,6 @@ class ChatPage extends Component {
                 this.setState({error: "Invalid url"})
             }
         }
-
     }
 
     componentDidMount(){
@@ -49,6 +48,7 @@ class ChatPage extends Component {
             event.preventDefault();
             if(this.state.draftMessage){
                 this.props.messageHandler(this.state.draftMessage, "text");
+                console.log(this.state.draftMessage);
                 this.setState({draftMessage: ""});
             }
         })
@@ -100,12 +100,15 @@ class ChatPage extends Component {
 
     renderMessages(){
         return this.props.messages.map((message, keyVal) => {
-            return <Message socket={this.props.socket} currentUser={this.props.currentUser.displayName} key={keyVal} message={message}></Message>
+            return <Message
+                socket={this.props.socket}
+                currentUser={this.props.currentUser.displayName}
+                key={keyVal}
+                message={message}/>
         })
     }
 
     render() {
-        console.log(this.props.currentUser);
         return (
             <TemplatePage
                 parent = {this}
@@ -149,7 +152,7 @@ class ChatPage extends Component {
                                             <Picker pickerStyle={{
                                                 border: 0,
                                                 boxShadow: 0
-                                            }}  native={true} onEmojiClick={(event, emojiObject) => {
+                                            }}  native={true} onEmojiClick={(_, emojiObject) => {
                                                 this.setState({draftMessage: this.state.draftMessage+emojiObject.emoji});
                                             }}/>
                                         </Popover.Body>
@@ -162,7 +165,7 @@ class ChatPage extends Component {
                                 <URLButtonForm
                                     url = {this.state.url}
                                     handleURLInput = {this.handleURLInput.bind(this)}
-                                    send = {this.send.bind(this)}
+                                    send = {this.sendURLMessage.bind(this)}
                                     type = "link"
                                     toggle = {this.toggleLink.bind(this)}
                                     show = {this.state.showLink}>
@@ -171,7 +174,7 @@ class ChatPage extends Component {
                                 <URLButtonForm
                                     url = {this.state.url}
                                     handleURLInput = {this.handleURLInput.bind(this)}
-                                    send = {this.send.bind(this)}
+                                    send = {this.sendURLMessage.bind(this)}
                                     type = "image"
                                     toggle = {this.toggleImage.bind(this)}
                                     show = {this.state.showImage}>
@@ -184,6 +187,11 @@ class ChatPage extends Component {
                         </Form>
                     </Col>
                     <Col/>
+                </Row>
+                <Row>
+                    <Col className="fixed-bottom">
+                        <ErrorBox>{this.state.error}</ErrorBox>
+                    </Col>
                 </Row>
             </TemplatePage>
         );

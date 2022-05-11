@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Container, Col, Row, Button, Dropdown, Modal, Form} from "react-bootstrap";
-import ErrorBox from "../components/ErrorBox.js";
 import ToggleSwitch from "../components/ToggleSwitch.js";
 
 const defaultProps = {
@@ -123,11 +122,6 @@ const TemplatePage = ({
                 </Col>
             </Row>
             {children}
-            <Row>
-                <Col className="fixed-bottom">
-                    <ErrorBox>{parent.state.error}</ErrorBox>
-                </Col>
-            </Row>
             <Modal show={showAccount} onHide={()=>{setShowAccount(false)}}>
                 <Modal.Header closeButton>
                     <Modal.Title style={{textAlign: "center"}}>Account Settings</Modal.Title>
