@@ -1,10 +1,16 @@
 import { React, Component } from "react";
-import { Row, Dropdown } from "react-bootstrap";
+import { Col, Row, Form, Dropdown } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import TemplatePage from "./TemplatePage.js";
 import NavigateLink from "../components/NavigateLink";
 
 class GroupPage extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+        selectedTeacher: this.props.currentUser._id,
+        }
+    }
     componentDidMount(){
         if(!this.props.currentUser
             || !this.props.parent.state.loggedIn
@@ -12,6 +18,9 @@ class GroupPage extends Component {
             {
             return(<Navigate replace="replace" to="/chat"/>)
         }
+    }
+    getTeacherOptions(){
+        return (<option>{this.props.currentUser.displayName}</option>)
     }
     renderGroups(){
         this.props.groups.forEach((group)=>{
@@ -39,7 +48,17 @@ class GroupPage extends Component {
                 updateLoginInfo = {this.props.updateLoginInfo}
             >
                 <Row style={{justifyContent: "center", width: "100%", fontSize: "80pt"}}>
-                    {this.renderGroups()}
+                    <Col/>
+                    <Col>
+                        <Form.Group style={{fontSize: "16pt"}}>
+                            <Form.Select style={{fontSize: "16pt", width:"fit-content"}}>
+                                {this.getTeacherOptions()}
+                            </Form.Select>
+                            's Groups
+                        </Form.Group>
+                        {this.renderGroups()}
+                    </Col>
+                    <Col/>
                 </Row>
             </TemplatePage>
         )
