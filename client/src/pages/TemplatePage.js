@@ -27,8 +27,8 @@ const defaultProps = {
     loginHandler: (val) => {
         console.log("loginHandler", val);
     },
-    updateLoginInfo: (val) => {
-        console.log("updateLoginInfo", val);
+    updateUser: (val) => {
+        console.log("updateUser", val);
     },
 }
 
@@ -42,7 +42,7 @@ const TemplatePage = ({
     additionalDropDownItems = defaultProps.additionalDropDownItems,
     setLoginError = defaultProps.setLoginError,
     loginHandler = defaultProps.setLoginHandler,
-    updateLoginInfo = defaultProps.updateLoginInfo,
+    updateUser = defaultProps.updateUser,
 }) => {
     const [showAccount, setShowAccount] = useState(true);
     const [newDisplayName, setNewDisplayName] = useState("");
@@ -65,13 +65,8 @@ const TemplatePage = ({
             if(newDisplayName === "server"){
                 throw new Error("That user name is invalid.");
             }
-            updateLoginInfo({displayName: newDisplayName, _id: currentUser._id})
-            .then(() => {
-                setShowAccount(false);
-            })
-            .catch((err) => {
-                throw new Error(err);
-            })
+            updateUser({displayName: newDisplayName, _id: currentUser._id})
+            setShowAccount(false);
         } catch(error){
             parent.props.setLoginError(error.message);
         }

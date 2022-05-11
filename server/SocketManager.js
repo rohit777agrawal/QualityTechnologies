@@ -74,27 +74,26 @@ class SocketManger {
 
       // On disconnect tell everyone disconnectee left
       socket.on('disconnect', () => {
-        db.getUserByID(this.socketIDToUserID[socket.id])
+          db.getUserByID(this.socketIDToUserID[socket.id])
           .then((user) => {
-            if (user) {
-              sendServerMessage(user.displayName + " has left the chat");
+              if (user) {
+                  sendServerMessage(user.displayName + " has left the chat");
 
-              user.active = false
-              db.updateUser(user)
+                  user.active = false
+                  db.updateUser(user)
 
-              delete this.socketIDToUserID[socket.id]
+                  delete this.socketIDToUserID[socket.id]
 
-              db.getUsersByID(Object.values(this.socketIDToUserID))
-                .then((activeUsers) => {
-                  console.log("broadcasting updated user list");
-                  this.io.emit('activeUsers', activeUsers)
-                })
-            } else {
-              console.log("Error: received disconnect signal but no user found")
-            }
-          })
-          .catch(err => console.log(err))
-
+                  db.getUsersByID(Object.values(this.socketIDToUserID))
+                  .then((activeUsers) => {
+                      console.log("broadcasting updated user list");
+                      this.io.emit('activeUsers', activeUsers)
+                  })
+              } else {
+                  console.log("Error: received disconnect signal but no user found")
+              }
+            })
+            .catch(err => console.log(err));
       });
 
       socket.on('messageUpdateToServer', (message) => {
@@ -134,12 +133,20 @@ class SocketManger {
         this.io.emit("messageUpdateFromServer", message);
       })
 
-      socket.on("updatedUserToServer", (oldDisplayName, newDisplayName) => {
-        this.ioEmitActiveUsers();
-        this.io.emit("updatedUserFromServer",
-          oldDisplayName,
-          newDisplayName,
-        );
+      socket.on("updateUserToServer", (changesDict) => {
+          this.ioEmitActiveUsers();
+          db.updateUser(changesDict)
+          .then((res, rej) => {
+              let [newUser, valuesChanged] = res;
+              console.log("newUser", newUser, "\nvaluesChanged", valuesChanged);
+              if(valuesChanged.displayName){
+                  this.io.emit("updatedUserFromServer",
+                      valuesChanged.displayName,
+                      newUser,
+                  );
+              }
+          })
+
       })
 
       socket.on("toggleAllowChatToServer", () => {

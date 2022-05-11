@@ -96,23 +96,28 @@ class App extends Component {
             }
         })
 
-        this.socket.on('updatedUserFromServer', (oldDisplayName, newDisplayName) => {
+        this.socket.on('updatedUserFromServer', (oldDisplayName, newUser) => {
+            console.log(oldDisplayName, this.state.currentUser.displayName);
             let newMessages = this.state.messages;
+            if(oldDisplayName === this.state.currentUser.displayName){
+                localStorage.setItem('currentUser', JSON.stringify(newUser));
+                this.setState({currentUser: newUser});
+            }
             for (let i = 0; i < newMessages.length; i++) {
+                if (newMessages[i].user === oldDisplayName) {
+                    newMessages[i].user = newUser.displayName;
+                }
                 if (newMessages[i].reactions) {
                     for (let j = 0; j < newMessages[i].reactions.length; j++) {
                         if (newMessages[i].reactions[j].by === oldDisplayName) {
-                            newMessages[i].reactions[j].by = newDisplayName;
+                            newMessages[i].reactions[j].by = newUser.DisplayName;
                         }
                     }
-                }
-                if (newMessages[i].user === oldDisplayName) {
-                    newMessages[i].user = newDisplayName;
                 }
             }
             this.state.messages.push({
                 user: "server",
-                text: oldDisplayName + " has changed their name to: " + newDisplayName,
+                text: oldDisplayName + " has changed their name to: " + newUser.displayName,
                 reactions: []
             })
             this.setState({messages: newMessages});
@@ -153,8 +158,10 @@ class App extends Component {
         })
     }
 
-    updateLoginInfo(changesDict) {
-        const requestOptions = {
+    updateUser(changesDict) {
+        console.log("updateUser");
+        this.socket.emit("updateUserToServer", changesDict);
+        /*const requestOptions = {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -171,14 +178,14 @@ class App extends Component {
                 }
             })
             .then((json) => {
-                this.socket.emit("updatedUserToServer", this.state.currentUser.displayName, json.displayName);
+
                 localStorage.setItem('currentUser', JSON.stringify(json));
                 this.setState({currentUser: json});
                 resolve(json);
             }).catch((err) => {
                 reject(err);
             })
-        })
+        })*/
     }
 
     submitLoginInfo(email, password) {
@@ -252,12 +259,12 @@ class App extends Component {
                             setLoginError={this.setLoginError.bind(this)}
                             loginHandler={this.updateLoginState.bind(this)}
                             groups={this.state.groups}
+                            updateUser={this.updateUser.bind(this)}
                             messages={this.state.messages}
                             messageHandler={this.sendMessage.bind(this)}
                             initChat={this.initChat.bind(this)}
                             activeUsers={this.state.activeUsers}
-                            loginError={this.state.loginError}
-                            updateLoginInfo={this.updateLoginInfo.bind(this)}/>)
+                            loginError={this.state.loginError}/>)
                         : (<Navigate replace="replace" to="/"/>)
                 }/>
                 <Route path="group" element={
@@ -270,9 +277,8 @@ class App extends Component {
                             loginHandler={this.updateLoginState.bind(this)}
                             groups={this.state.groups}
                             parent={this}
-                        />)
+                            updateUser={this.updateUser.bind(this)}/>)
                     : (<Navigate replace="replace" to="/"/>)
-
                 }/>
                 <Route path="error404" element={<Error404/>}/>
                 <Route path="*" element={<NoPage validateUser = {

@@ -131,7 +131,7 @@ class ChatPage extends Component {
                 }
                 setLoginError = {this.props.setLoginError}
                 loginHandler = {this.props.loginHandler}
-                updateLoginInfo = {this.props.updateLoginInfo}
+                updateUser = {this.props.updateUser}
             >
                 <Row style={{flex: "1 1 auto", width:"100%", overflow:"auto", margin:0}} className="align-items-bottom text-left">
                     <Col md="auto" style={{width: "10%", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>

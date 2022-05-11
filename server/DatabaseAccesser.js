@@ -137,18 +137,23 @@ class DatabaseAccessor {
         if(updatedUser._doc){
             updatedUser = updatedUser._doc;
         }
+        let changedValues = {};
         const {_id, ...changes} = updatedUser;
-        return this.getUserByID(_id)
+        return await this.getUserByID(_id)
             .then((user)=>{
                 if (user){
                     Object.keys(user._doc).filter(key => key in changes).forEach(key=>{
-                        user[key] = changes[key];
+                        if(user[key] !== changes[key]){
+                            changedValues[key] = user[key];
+                            user[key] = changes[key];
+                        }
                     })
-                    return user.save()
+                    user.save();
+                    return [user._doc, changedValues];
                 }
                 else {
                     console.log("User does not exist")
-                    return null
+                    return [null, null];
                 }
             })
     }
