@@ -21,8 +21,8 @@ const defaultProps = {
         }
     },
     additionalDropDownItems: null,
-    setLoginError: (val) => {
-        console.log("setLoginError", val);
+    setErrorMessage: (val) => {
+        console.log("setErrorMessage", val);
     },
     loginHandler: (val) => {
         console.log("loginHandler", val);
@@ -40,7 +40,7 @@ const TemplatePage = ({
     children = defaultProps.children,
     socket = defaultProps.socket,
     additionalDropDownItems = defaultProps.additionalDropDownItems,
-    setLoginError = defaultProps.setLoginError,
+    setErrorMessage = defaultProps.setErrorMessage,
     loginHandler = defaultProps.setLoginHandler,
     updateUser = defaultProps.updateUser,
 }) => {
@@ -52,8 +52,8 @@ const TemplatePage = ({
     }
 
     const handleChangeSubmit = (event) => {
-        const displayNameRegex = /^[A-z0-9_-\s]{3,15}$/;
         event.preventDefault();
+        const displayNameRegex = /^[A-z0-9_-\s]{3,15}$/;
         try{
             if(newDisplayName.match(displayNameRegex)===null){
                 if(newDisplayName.length < 3 || newDisplayName.length > 15){
@@ -68,7 +68,7 @@ const TemplatePage = ({
             updateUser({displayName: newDisplayName, _id: currentUser._id})
             setShowAccount(false);
         } catch(error){
-            parent.props.setLoginError(error.message);
+            parent.props.setErrorMessage(error.message);
         }
     }
 
@@ -76,8 +76,6 @@ const TemplatePage = ({
     React.useEffect(()=>{
         setShowAccount(false);
     }, [])
-
-    console.log(currentUser);
 
     return(
         <Container fluid className="vh-100 text-center" style={{display: "flex", flexDirection: "column", overflow:"hidden", padding:0}} >
@@ -106,7 +104,7 @@ const TemplatePage = ({
                         <Dropdown.Menu style={{minWidth: "100%"}}>
                             <Dropdown.Item onClick={()=>{
                                     setShowAccount(true);
-                                    setLoginError("");
+                                    setErrorMessage("");
                                 }}>
                                 <i className="bi bi-person-circle" /> Account
                             </Dropdown.Item>
@@ -131,7 +129,7 @@ const TemplatePage = ({
                         <Form.Group className="mb-3">
                             <Form.Label>Display Name</Form.Label>
                             <Form.Control placeholder={currentUser.displayName} onChange={(e)=>{handleDisplayNameInput(e)}}/>
-                            <Form.Label style={{color:"#f44"}}>{parent.loginError}</Form.Label>
+                            <Form.Label style={{color:"#f44"}}>{parent.errorMessage}</Form.Label>
                         </Form.Group>
                         <div style={{display:"flex", justifyContent:"space-evenly"}}>
                         <Button variant="secondary" onClick={()=>{setShowAccount(false)}}>

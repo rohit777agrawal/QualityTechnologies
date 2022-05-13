@@ -16,44 +16,50 @@ router.get('/', function(req, res, next) {
     })
 })
 
-router.post('/teacher/', function(req, res, next) {
-  db.createTeacher(req.body.name, req.body.email, req.body.password)
-    .then((user) => {
-      res.status(200).json(user)
-    })
-    .catch((err) => {
-      res.status(400).send("Teacher Creation Error")
-    })
-})
-
 router.get("/:id", function(req, res, next) {
-  db.getUserByID(req.params.id)
-    .then((user) => {
-      if (user) {
-        res.status(200).json(user)
-      } else {
-        res.status(404)
-      }
-    })
-    .catch((err) => {
-        if(err instanceof CastError){
-            res.status(404)
-        } else {
-            console.log(500, err);
-            res.status(500)
-        }
-    })
+    db.getUserByID(req.params.id)
+        .then((user) => {
+            if (user) {
+                res.status(200).json(user)
+            } else {
+                res.status(404)
+            }
+        })
+        .catch((err) => {
+            if(err instanceof CastError){
+                res.status(404)
+            } else {
+                console.log(500, err);
+                res.status(500)
+            }
+        })
 });
 
-router.get('/:id/groups', function(req, res, next){
-    db.getGroupsByUser(req.params.id)
-    .then((groups)=>{
-        res.status(200).json(groups)
+//Create a new group
+router.post("/:id/groups/", function(req, res, next){
+    db.createGroup(req.body.name, req.params.id)
+        .then((group) => {
+            res.status(200).json(group);
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).send(err);
+        })
+})
+
+//Get a Users's Groups
+router.get('/:id/groups/', function(req, res, next){
+    db.getGroupsByTeacher(req.params.id)
+    .then(async (groups)=>{
+        res.status(200).json(await Promise.all(groups.map(async (group) => {
+            return {group: group._doc, students: await db.getUsersByGroupID(group._id)};
+        })));
     })
     .catch((err)=>{
         res.status(500).send(err)
     })
 })
+
 
 router.post("/login", function(req, res, next) {
   db.getUserByEmail(req.body.email)

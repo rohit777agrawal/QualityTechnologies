@@ -38,7 +38,7 @@ class LoginPage extends Component {
             event.preventDefault();
             this.props.loginHandler(this.state.email, this.state.password);
         } else {
-            this.props.setLoginError("");
+            this.props.setErrorMessage("");
             try {
                 if (this.state.userName.match(userNameRegex) === null) {
                     throw new Error("Please try a better username");
@@ -59,7 +59,7 @@ class LoginPage extends Component {
                 })
             } catch (error) {
                 event.preventDefault();
-                this.props.setLoginError(error.message);
+                this.props.setErrorMessage(error.message);
             }
         }
     }
@@ -130,7 +130,7 @@ class LoginPage extends Component {
                 </Row>
                 <Row >
                     <Col className="fixed-bottom">
-                        <ErrorBox>{this.props.loginError}</ErrorBox>
+                        <ErrorBox>{this.props.errorMessage}</ErrorBox>
                     </Col>
                 </Row>
             </Container>

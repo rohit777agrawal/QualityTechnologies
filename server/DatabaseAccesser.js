@@ -72,6 +72,10 @@ class DatabaseAccessor {
         return UserModel.find({_id: {$in: userIDs}})
     }
 
+    async getUsersByGroupID(groupID){
+        return UserModel.find({groupIDs: {$in: groupID}})
+    }
+
     getUserByEmail(email){
         return UserModel.findOne({email: email})
     }
@@ -127,7 +131,8 @@ class DatabaseAccessor {
         }
         return new UserModel(user).save()
             .then((student)=>{
-                student.link = student._id
+                student.link = student._id;
+                this.addUserIDtoGroup(groupID, student._id);
                 return student.save()
             })
 
@@ -187,20 +192,32 @@ class DatabaseAccessor {
         return GroupModel.findById(groupID)
     }
 
-    getGroupsByUser(userID){
+    async getGroupsByUser(userID){
         return GroupModel.find({userIDs: userID})
     }
 
-    createGroup(name, teacherID, userIDs, parentGroupID){
+    async getGroupsByTeacher(teacherID){
+        return GroupModel.find({teacherID: teacherID});
+    }
+
+    async addUserIDtoGroup(groupID, userID){
+        this.getGroupByID(groupID)
+            .then((group)=>{
+                group.userIDs.push(userID);
+                group.save();
+            })
+    }
+
+    async createGroup(name, teacherID, userIDs, parentGroupID){
         var newGroup = {
+            name: name,
+            active: false,
             teacherID: teacherID,
             userIDs: userIDs ? userIDs : [],
             parentGroupID: parentGroupID ? parentGroupID : null,
             childGroupIDs: [],
-            name: name,
-            active: false
         }
-        return new GroupModel(newGroup).save()
+        return await new GroupModel(newGroup).save();
     }
 
     async updateMembersInGroup(groupID, updatedMemberIDs){

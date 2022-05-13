@@ -129,7 +129,7 @@ class ChatPage extends Component {
                         </NavigateLink>)
                     : (null)
                 }
-                setLoginError = {this.props.setLoginError}
+                setErrorMessage = {this.props.setErrorMessage}
                 loginHandler = {this.props.loginHandler}
                 updateUser = {this.props.updateUser}
             >

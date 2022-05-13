@@ -50,7 +50,7 @@ class App extends Component {
         this.state = {
             apiResponse: "",
             loggedIn: false,
-            loginError: "",
+            errorMessage: "",
             email: "",
             currentUser: null,
             messages: [],
@@ -129,7 +129,7 @@ class App extends Component {
         this.setState({loggedIn: loginSuccessful})
         if (!loginSuccessful) {
             //console.log(loginSuccessful);
-            this.setState({loginError: ""});
+            this.setState({errorMessage: ""});
             this.socket.disconnect()
         }
     }
@@ -143,10 +143,9 @@ class App extends Component {
             body: JSON.stringify({'name': name, 'email': email, 'password': password})
         }
         return new Promise((resolve, reject) => {
-            fetch(url + "users/teacher/", requestOptions).then((res) => {
-                console.log(res);
+            fetch(url + "users/teacher/", requestOptions)
+            .then((res) => {
                 if (res.ok) {
-                    //console.log("createNewLogin ok")
                     resolve({success: true});
                 } else {
                     throw new Error("Unspecified error");
@@ -159,33 +158,7 @@ class App extends Component {
     }
 
     updateUser(changesDict) {
-        console.log("updateUser");
         this.socket.emit("updateUserToServer", changesDict);
-        /*const requestOptions = {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(changesDict)
-        }
-        return new Promise((resolve, reject) => {
-            fetch(url + "users/" + changesDict["_id"], requestOptions)
-            .then((res, rej) => {
-                if(res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error(rej);
-                }
-            })
-            .then((json) => {
-
-                localStorage.setItem('currentUser', JSON.stringify(json));
-                this.setState({currentUser: json});
-                resolve(json);
-            }).catch((err) => {
-                reject(err);
-            })
-        })*/
     }
 
     submitLoginInfo(email, password) {
@@ -211,12 +184,12 @@ class App extends Component {
             localStorage.setItem('currentUser', JSON.stringify(user))
         }).catch((err) => {
             console.log(err);
-            this.setState({loginError: err.message})
+            this.setState({errorMessage: err.message})
         });
     }
 
-    setLoginError(errorMessage) {
-        this.setState({loginError: errorMessage})
+    setErrorMessage(errorMessage) {
+        this.setState({errorMessage: errorMessage})
     }
 
     sendMessage(msg, type) {
@@ -224,8 +197,87 @@ class App extends Component {
         this.socket.emit('messageToServer', msg, type);
     }
 
+    createNewGroup(groupName, teacherID) {
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({name: groupName}),
+        }
+        return new Promise((resolve, reject)=>{
+            fetch(url + "users/" + teacherID + "/groups/", requestOptions)
+                .then((res) => {
+                    if(res.ok){
+                        this.getGroups(teacherID);
+                        resolve();
+                    }  else {
+                        throw new Error("Unspecified error");
+                    }
+                })
+                .catch((err) => {
+                    reject((err))
+                })
+        })
+    }
+
+    createNewStudent(displayName, teacherID, groupID){
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({displayName: displayName, groupID: groupID}),
+        }
+        return new Promise((resolve, reject)=>{
+            fetch(url + "users/student/", requestOptions)
+                .then((res) => {
+                    if(res.ok){
+                        this.getGroups(teacherID);
+                        resolve();
+                    }  else {
+                        throw new Error("Unspecified error");
+                    }
+                })
+                .catch((err) => {
+                    reject((err))
+                })
+        })
+    }
+
+    deleteStudent(studentIDObj, teacherID){
+        const requestOptions = {
+            method: 'DELETE',
+        }
+        fetch(url + "users/" + studentIDObj.studentID, requestOptions)
+            .then((res) => {
+                if(res.ok){
+                    this.getGroups(teacherID);
+                }  else {
+                    throw new Error("Unspecified error");
+                }
+            })
+            .catch((err) => {
+                console.error((err))
+            })
+    }
+
+    getGroups(teacherID){
+        fetch(url + "users/" + teacherID + "/groups/")
+            .then(async (res) => {
+                if(res.ok){
+                    this.setState({groups: await res.json()});
+                } else if(res.status === 404){
+                    this.setState({groups: null})
+                }
+            })
+            .catch((err) => {
+                throw (err);
+            })
+
+    }
+
     render() {
-        console.log(this.state.currentUser)
         return (<BrowserRouter>
             <Routes>
                 <Route index="index" element={
@@ -234,8 +286,8 @@ class App extends Component {
                         : (<LoginPage
                             allowAccountCreation={false}
                             loginHandler={this.submitLoginInfo.bind(this)}
-                            loginError={this.state.loginError}
-                            setLoginError={this.setLoginError.bind(this)}
+                            errorMessage={this.state.errorMessage}
+                            setErrorMessage={this.setErrorMessage.bind(this)}
                             createNewLogin={this.createNewLogin.bind(this)}
                             />)
                         }/>
@@ -245,8 +297,8 @@ class App extends Component {
                         : (<LoginPage
                             allowAccountCreation={true}
                             loginHandler={this.submitLoginInfo.bind(this)}
-                            loginError={this.state.loginError}
-                            setLoginError={this.setLoginError.bind(this)}
+                            errorMessage={this.state.errorMessage}
+                            setErrorMessage={this.setErrorMessage.bind(this)}
                             createNewLogin={this.createNewLogin.bind(this)}
                         />)
                     }/>
@@ -256,7 +308,7 @@ class App extends Component {
                             currentUser={this.state.currentUser}
                             allowChat={this.state.allowChat}
                             socket={this.socket}
-                            setLoginError={this.setLoginError.bind(this)}
+                            setErrorMessage={this.setErrorMessage.bind(this)}
                             loginHandler={this.updateLoginState.bind(this)}
                             groups={this.state.groups}
                             updateUser={this.updateUser.bind(this)}
@@ -264,7 +316,7 @@ class App extends Component {
                             messageHandler={this.sendMessage.bind(this)}
                             initChat={this.initChat.bind(this)}
                             activeUsers={this.state.activeUsers}
-                            loginError={this.state.loginError}/>)
+                            errorMessage={this.state.errorMessage}/>)
                         : (<Navigate replace="replace" to="/"/>)
                 }/>
                 <Route path="group" element={
@@ -273,11 +325,16 @@ class App extends Component {
                             currentUser={this.state.currentUser}
                             allowChat={this.state.allowChat}
                             socket={this.socket}
-                            setLoginError={this.setLoginError.bind(this)}
+                            setErrorMessage={this.setErrorMessage.bind(this)}
                             loginHandler={this.updateLoginState.bind(this)}
                             groups={this.state.groups}
                             parent={this}
-                            updateUser={this.updateUser.bind(this)}/>)
+                            updateUser={this.updateUser.bind(this)}
+                            getGroups={this.getGroups.bind(this)}
+                            createNewGroup={this.createNewGroup.bind(this)}
+                            createNewStudent={this.createNewStudent.bind(this)}
+                            pageURL={url}
+                            errorMessage={this.state.errorMessage}/>)
                     : (<Navigate replace="replace" to="/"/>)
                 }/>
                 <Route path="error404" element={<Error404/>}/>
