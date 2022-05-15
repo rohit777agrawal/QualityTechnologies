@@ -52,7 +52,7 @@ class Message extends Component{
         let updatedReactions = this.props.message.reactions;
         let newReaction = {
             emoji: emoji,
-            by: this.props.currentUser.displayName,
+            by: this.props.currentUser.name,
         }
         let indexOf = -1;
         for(let i = 0; i < updatedReactions.length; i++){
@@ -111,22 +111,22 @@ class Message extends Component{
                         <SlackCounter
                             style={style.slackCounter}
                             counters = {parent.props.message.reactions}
-                            user={parent.props.currentUser.displayName}
+                            user={parent.props.currentUser.name}
                             onSelect={(emoji)=>{this.react(emoji)}}
                             onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
                             side={style.side}
                         />
-                        {parent.props.message.senderID}
+                        {parent.props.message.senderName}
                     </>
                 )
             } else {
                 return(
                     <>
-                        {parent.props.message.senderID}
+                        {parent.props.message.senderName}
                         <SlackCounter
                             style={style.slackCounter}
                             counters = {parent.props.message.reactions}
-                            user={parent.props.currentUser.displayName}
+                            user={parent.props.currentUser.name}
                             onSelect={(emoji)=>{this.react(emoji)}}
                             onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
                             side={style.side}
@@ -180,6 +180,7 @@ class Message extends Component{
                     </div>
                 )
             default:
+                console.log(message)
                 return (
                     this.messageTemplate(
                         message.contents.split("\n").map((item, key)=>{

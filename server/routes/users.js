@@ -91,7 +91,7 @@ router.post('/:id/logout', function(req, res, next) {
 })
 
 router.post('/teacher/', function(req, res, next) {
-    db.createTeacher(req.body.email, req.body.password, req.body.displayName)
+    db.createTeacher(req.body.email, req.body.password, req.body.name)
     .then((user)=>{
         if (user) {
             res.status(200).json(user)
@@ -106,7 +106,7 @@ router.post('/teacher/', function(req, res, next) {
 })
 
 router.post('/student', function(req, res, next){
-    db.createStudent(req.body.displayName, req.body.groupID)
+    db.createStudent(req.body.name, req.body.groupID)
     .then((user)=>{
         if (user) {
             res.status(200).json(user)

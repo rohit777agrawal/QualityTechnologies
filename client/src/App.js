@@ -131,27 +131,27 @@ class App extends Component {
             body: JSON.stringify(changesDict)
         }
         return new Promise((resolve, reject) =>{
-            const oldName = this.state.currentUser.displayName
+            const oldName = this.state.currentUser.name
             fetch(url + "users/" + this.state.currentUser._id, requestOptions)
                 .then((res)=> res.json())
                 .then((json)=>{
                     console.log(json);
                     localStorage.setItem('currentUser', JSON.stringify(json));
-                    // this.socket.emit("updateUser", oldName, json.displayName, ())
-                    this.socket.emit("updateUser", oldName, json.displayName);
-                    // this.socket.emit("message", oldName + " has changed their name to " + json.displayName);
+                    // this.socket.emit("updateUser", oldName, json.name, ())
+                    this.socket.emit("updateUser", oldName, json.name);
+                    // this.socket.emit("message", oldName + " has changed their name to " + json.name);
                     let newMessages = this.state.messages;
                     console.log(newMessages);
                     for(let i = 0; i < newMessages.length; i++){
                         if(newMessages[i].reactions){
                             for(let j = 0; j < newMessages[i].reactions.length; j++){
                                 if(newMessages[i].reactions[j].by === json.oldDisplayName){
-                                    newMessages[i].reactions[j].by = json.displayName;
+                                    newMessages[i].reactions[j].by = json.name;
                                 }
                             }
                         }
                         if(newMessages[i].user === json.oldDisplayName){
-                            newMessages[i].user = json.displayName;
+                            newMessages[i].user = json.name;
                         }
                     }
                     this.setState({currentUser: json, messages: newMessages});
