@@ -30,6 +30,7 @@ var MessageSchema = new mongoose.Schema({
     senderID: String,
     groupID: String,
     contents: String,
+    type: String,
     sentTime: Date
 })
 
@@ -134,6 +135,7 @@ class DatabaseAccessor {
     }
 
     updateUser(userID, updatedProps){
+        console.log("updating user", userID, updatedProps)
         return this.getUserByID(userID)
             .then((user)=>{
                 if (user){

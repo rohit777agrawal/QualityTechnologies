@@ -59,9 +59,8 @@ router.post("/login", function(req, res, next) {
         .then((user)=>{
             if (user) {
                 if (user.password === req.body.password) {
-                    user.auth = {token: uuidv4()};
 
-                    db.updateUser(user)
+                    db.updateUser(user._id, {auth: {token: uuidv4()}})
                         .then((user)=>{
                             res.status(200).json(user)
                         })
@@ -124,6 +123,7 @@ router.post('/student', function(req, res, next){
 
 router.put("/:id", function(req, res, next) {
     var updatedProps = req.body
+    console.log("handling route", req.params.id,updatedProps )
     if (!Object.keys(updatedProps).includes('_id')){
         db.updateUser(req.params.id, updatedProps)
         .then((user) => {
@@ -133,6 +133,10 @@ router.put("/:id", function(req, res, next) {
             else {
                 res.status(404).send("User does not exist")
             }
+        })
+        .catch((err)=>{
+            console.log(err)
+            res.status(500).json(err)
         })
     }
     else {

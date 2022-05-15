@@ -59,14 +59,14 @@ class App extends Component {
             }
         })
 
-        this.socket.on('messageFromServer', (message) => {
+        this.socket.on('message', (message) => {
             //console.log(message);
             let updatedMessages = this.state.messages;
             updatedMessages.push(message);
             this.setState({messages: updatedMessages});
         })
 
-        this.socket.on("messageUpdateFromServer", (message) => {
+        this.socket.on("updateMessage", (message) => {
             let updatedMessages = this.state.messages;
             for(let i = 0; i < updatedMessages.length; i++){
                 if(updatedMessages[i].user === message.user && updatedMessages[i].date === message.date){
@@ -117,19 +117,22 @@ class App extends Component {
     }
 
     updateLoginInfo(changesDict){
+        console.log(changesDict)
         const requestOptions = {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(changesDict)
         }
         return new Promise((resolve, reject) =>{
-            fetch(url + "users/" + changesDict["_id"], requestOptions)
+            const oldName = this.state.currentUser.displayName
+            fetch(url + "users/" + this.state.currentUser._id, requestOptions)
                 .then((res)=> res.json())
                 .then((json)=>{
                     console.log(json);
                     localStorage.setItem('currentUser', JSON.stringify(json));
-                    this.socket.emit("updateActiveUsers");
-                    this.socket.emit("sendServerMessage", json.oldDisplayName + " has changed their name to " + json.displayName);
+                    // this.socket.emit("updateUser", oldName, json.displayName, ())
+                    this.socket.emit("updateUser", oldName, json.displayName);
+                    // this.socket.emit("message", oldName + " has changed their name to " + json.displayName);
                     let newMessages = this.state.messages;
                     console.log(newMessages);
                     for(let i = 0; i < newMessages.length; i++){
@@ -188,7 +191,7 @@ class App extends Component {
 
     sendMessage(msg, type) {
         // send messages to message to server-side socket
-        this.socket.emit('messageToServer', msg, type);
+        this.socket.emit('message', msg, type);
     }
     render(){
         if (this.state.loggedIn){
