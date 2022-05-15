@@ -60,20 +60,24 @@ class DatabaseAccessor {
         console.log(err)
     }
 
-    getAllUsers(){
-        return UserModel.find({});
+    async getAllUsers(){
+        return await UserModel.find({});
     }
 
-    getUserByID(userID){
-        return UserModel.findById(userID);
+    async getAllStudents(){
+        return await UserModel.find({isTeacher: false});
     }
 
-    getUsersByID(userIDs){
-        return UserModel.find({_id: {$in: userIDs}})
+    async getUserByID(userID){
+        return await UserModel.findById(userID);
+    }
+
+    async getUsersByID(userIDs){
+        return await UserModel.find({_id: {$in: userIDs}})
     }
 
     async getUsersByGroupID(groupID){
-        return UserModel.find({groupIDs: {$in: groupID}})
+        return await UserModel.find({groupIDs: {$in: groupID}})
     }
 
     getUserByEmail(email){
@@ -153,8 +157,10 @@ class DatabaseAccessor {
                             user[key] = changes[key];
                         }
                     })
-                    user.save();
-                    return [user._doc, changedValues];
+                    return user.save()
+                    .then(()=>{
+                        return [user._doc, changedValues];
+                    })
                 }
                 else {
                     console.log("User does not exist")
@@ -225,41 +231,38 @@ class DatabaseAccessor {
             .then((group)=>{
                 var exMemberIDs = group.userIDs.filter(id=>!updatedMemberIDs.includes(id))
                 var newMemberIDs = updatedMemberIDs.filter(id=>!group.userIDs.includes(id))
-                if (exMemberIDs.includes(group.teacherID)) {
-                    console.log("Removing teacher from group is not allowed")
-                }
-                else {
-                    this.getUsersByID(exMemberIDs)
-                        .then((users)=>{
-                            for (var user of users) {
-                                var userGroupIDs = user.groupIDs
-                                userGroupIDs.remove(groupID)
-                                user.groupIDs = userGroupIDs
-                                this.updateUser(user)
-                            }
+                this.getUsersByID(exMemberIDs)
+                    .then((users)=>{
+                        users.forEach((user)=>{
+                            var userGroupIDs = user.groupIDs
+                            userGroupIDs.splice(userGroupIDs.indexOf(groupID), 1)
+                            this.updateUser({_id: user._id, groupIDs: userGroupIDs})
                         })
-                    this.getUsersByID(newMemberIDs)
-                        .then((users)=>{
-                            for (var user of users) {
-                                var userGroupIDs = user.groupIDs
-                                userGroupIDs.push(groupID)
-                                user.groupIDs = userGroupIDs
-                                this.updateUser(user)
-                            }
+                    })
+                this.getUsersByID(newMemberIDs)
+                    .then((users)=>{
+                        users.forEach((user)=>{
+                            var userGroupIDs = user.groupIDs
+                            userGroupIDs.push(groupID)
+                            this.updateUser({_id: user._id, groupIDs: userGroupIDs})
                         })
-                    group.userIDs = updatedMemberIDs
-                    return this.updateGroup(group)
-                }
+                    })
+                group.userIDs = updatedMemberIDs
+                return this.updateGroup(group)
             })
     }
 
-    async updateGroup(groupID, updatedProps){
-        return this.getGroupByID(groupID)
+    async updateGroup(updatedGroup){
+        if(updatedGroup._doc){
+            updatedGroup = updatedGroup._doc;
+        }
+        const {_id, ...changes} = updatedGroup
+        return this.getGroupByID(_id)
             .then((group)=>{
                 if (group){
-                    for(var prop in updatedProps){
-                        group[prop] = updatedProps[prop]
-                    }
+                    Object.keys(group._doc).filter(key => key in changes).forEach(key=>{
+                        group[key] = changes[key]
+                    })
                     return group.save()
                 }
                 else {

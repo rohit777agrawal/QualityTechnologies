@@ -75,7 +75,7 @@ class Message extends Component{
         if(this.props.currentUser === this.props.message.user){
             return {
                 mainDiv: Object.assign({}, {float: "right"}, mainDiv),
-                chatBubble: Object.assign({}, messageStyle, blueChatBubble),
+                chatBubble: Object.assign({}, messageStyle, blueChatBubble, this.props.message.type === "image" ? {maxWidth:"30%", maxHeight:"30%"}: {}),
                 bottomLine: Object.assign({}, infoStyle, bottomLine, {alignSelf: "flex-end",}),
                 slackCounter: {marginRight: "8px"},
                 selectorParentDiv: {height: 0, width:"100%", alignSelf: "flex-end"},
@@ -85,7 +85,7 @@ class Message extends Component{
         } else {
             return {
                 mainDiv: Object.assign({}, {float: "left"}, mainDiv),
-                chatBubble: Object.assign({}, messageStyle, greyChatBubble),
+                chatBubble: Object.assign({}, messageStyle, greyChatBubble, this.props.message.type === "image" ? {maxWidth:"30%", maxHeight:"30%"}: {}),
                 bottomLine: Object.assign({}, infoStyle, bottomLine, {alignSelf: "flex-start",}),
                 slackCounter: {marginLeft: "8px"},
                 selectorParentDiv: {height: 0, width: "100%", alignSelf: "flex-start"},
@@ -173,7 +173,7 @@ class Message extends Component{
         switch(message.type){
             case "image":
                 return (
-                    this.messageTemplate(<img  alt=""  src = {message.text}/>)
+                    this.messageTemplate(<img style={{maxWidth: "100%", maxHeight:"100%"}}alt=""  src = {message.text}/>)
                 )
             case "link":
                 return (

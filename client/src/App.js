@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
 import ChatPage from "./pages/ChatPage.js";
 import LoginPage from "./pages/LoginPage.js";
-import GroupPage from "./pages/GroupPage.js";
+import GroupsPage from "./pages/GroupsPage.js";
 import Error404 from "./pages/Error404.js";
 import NoPage from "./pages/NoPage.js";
 import "./App.css";
@@ -10,16 +10,13 @@ import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js';
 import io from "socket.io-client"
 
-const url = "http://localhost:5000/";
-
-// const socket = io(url, {autoConnect: false});
-
-//fetch(url + "login/" + localStorage.getItem('login')))
+const clientURL = "http://localhost:3000/"
+const serverURL = "http://localhost:5000/";
 
 class App extends Component {
     validateUser(id) {
         return new Promise((resolve, reject) => {
-            fetch(url + "users/" + id).then((res) => res.json()).then((json) => {
+            fetch(serverURL + "users/" + id).then((res) => res.json()).then((json) => {
                 localStorage.setItem('currentUser', JSON.stringify(json));
                 this.setState({loggedIn: true, currentUser: json});
                 resolve(json)
@@ -54,6 +51,7 @@ class App extends Component {
             email: "",
             currentUser: null,
             messages: [],
+            students: [],
             groups: [],
             activeUsers: [],
             allowChat: true
@@ -64,7 +62,8 @@ class App extends Component {
     }
 
     initChat() {
-        this.socket = io(url, {
+        if(this.socket){return;}
+        this.socket = io(serverURL, {
             auth: {
                 token: this.state.currentUser.auth.token
             }
@@ -96,28 +95,27 @@ class App extends Component {
             }
         })
 
-        this.socket.on('updatedUserFromServer', (oldDisplayName, newUser) => {
-            console.log(oldDisplayName, this.state.currentUser.displayName);
+        this.socket.on('updatedUserFromServer', (oldDisplayName, updatedUser) => {
             let newMessages = this.state.messages;
             if(oldDisplayName === this.state.currentUser.displayName){
-                localStorage.setItem('currentUser', JSON.stringify(newUser));
-                this.setState({currentUser: newUser});
+                localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                this.setState({currentUser: updatedUser});
             }
             for (let i = 0; i < newMessages.length; i++) {
                 if (newMessages[i].user === oldDisplayName) {
-                    newMessages[i].user = newUser.displayName;
+                    newMessages[i].user = updatedUser.displayName;
                 }
                 if (newMessages[i].reactions) {
                     for (let j = 0; j < newMessages[i].reactions.length; j++) {
                         if (newMessages[i].reactions[j].by === oldDisplayName) {
-                            newMessages[i].reactions[j].by = newUser.DisplayName;
+                            newMessages[i].reactions[j].by = updatedUser.DisplayName;
                         }
                     }
                 }
             }
             this.state.messages.push({
                 user: "server",
-                text: oldDisplayName + " has changed their name to: " + newUser.displayName,
+                text: oldDisplayName + " has changed their name to: " + updatedUser.displayName,
                 reactions: []
             })
             this.setState({messages: newMessages});
@@ -143,7 +141,7 @@ class App extends Component {
             body: JSON.stringify({'name': name, 'email': email, 'password': password})
         }
         return new Promise((resolve, reject) => {
-            fetch(url + "users/teacher/", requestOptions)
+            fetch(serverURL + "users/teacher/", requestOptions)
             .then((res) => {
                 if (res.ok) {
                     resolve({success: true});
@@ -169,7 +167,7 @@ class App extends Component {
             },
             body: JSON.stringify({'email': email, 'password': password})
         }
-        fetch(url + "users/login", requestOptions)
+        fetch(serverURL + "users/login", requestOptions)
         .then((res) => {
             if (res.ok) {
                 return res.json()
@@ -206,10 +204,10 @@ class App extends Component {
             body: JSON.stringify({name: groupName}),
         }
         return new Promise((resolve, reject)=>{
-            fetch(url + "users/" + teacherID + "/groups/", requestOptions)
+            fetch(serverURL + "users/" + teacherID + "/groups/", requestOptions)
                 .then((res) => {
                     if(res.ok){
-                        this.getGroups(teacherID);
+                        this.getTeachersGroups(teacherID);
                         resolve();
                     }  else {
                         throw new Error("Unspecified error");
@@ -221,7 +219,32 @@ class App extends Component {
         })
     }
 
-    createNewStudent(displayName, teacherID, groupID){
+    updateGroupStudents(groupID, userIDs, teacherID){
+        const requestOptions = {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userIDs),
+        }
+        return new Promise((resolve, reject)=>{
+            fetch(serverURL + "groups/" + groupID + "/update", requestOptions)
+                .then((res) => {
+                    if(res.ok){
+                        this.getTeachersGroups(teacherID);
+                        this.getAllStudents();
+                        resolve();
+                    }  else {
+                        throw new Error("Unspecified error");
+                    }
+                })
+                .catch((err) => {
+                    reject((err))
+                })
+        })
+    }j
+
+    async createNewStudent(displayName, teacherID, groupID){
         const requestOptions = {
             method: 'POST',
             headers: {
@@ -229,30 +252,29 @@ class App extends Component {
             },
             body: JSON.stringify({displayName: displayName, groupID: groupID}),
         }
-        return new Promise((resolve, reject)=>{
-            fetch(url + "users/student/", requestOptions)
-                .then((res) => {
-                    if(res.ok){
-                        this.getGroups(teacherID);
-                        resolve();
-                    }  else {
-                        throw new Error("Unspecified error");
-                    }
-                })
-                .catch((err) => {
-                    reject((err))
-                })
-        })
+        return fetch(serverURL + "users/student/", requestOptions)
+            .then((res) => {
+                if(res.ok){
+                     this.getTeachersGroups(teacherID);
+                     this.getAllStudents();
+                 }  else {
+                     throw new Error("Unspecified error");
+                 }
+             })
+             .catch((err) => {
+                 return err
+             })
     }
 
-    deleteStudent(studentIDObj, teacherID){
+    deleteStudent(studentID, teacherID){
         const requestOptions = {
             method: 'DELETE',
         }
-        fetch(url + "users/" + studentIDObj.studentID, requestOptions)
+        fetch(serverURL + "users/" + studentID, requestOptions)
             .then((res) => {
                 if(res.ok){
-                    this.getGroups(teacherID);
+                    this.getTeachersGroups(teacherID);
+                    this.getAllStudents();
                 }  else {
                     throw new Error("Unspecified error");
                 }
@@ -262,8 +284,26 @@ class App extends Component {
             })
     }
 
-    getGroups(teacherID){
-        fetch(url + "users/" + teacherID + "/groups/")
+    deleteGroup(groupID, teacherID){
+        const requestOptions = {
+            method: 'DELETE',
+        }
+        fetch(serverURL + "groups/" + groupID, requestOptions)
+            .then((res) => {
+                if(res.ok){
+                    this.getTeachersGroups(teacherID);
+                    this.getAllStudents();
+                }  else {
+                    throw new Error("Unspecified error");
+                }
+            })
+            .catch((err) => {
+                console.error((err))
+            })
+    }
+
+    async getTeachersGroups(teacherID){
+        return await fetch(serverURL + "users/" + teacherID + "/groups/")
             .then(async (res) => {
                 if(res.ok){
                     this.setState({groups: await res.json()});
@@ -272,9 +312,23 @@ class App extends Component {
                 }
             })
             .catch((err) => {
-                throw (err);
+                this.setState({errorMessage: err.message});
             })
 
+    }
+
+    async getAllStudents(){
+        return await fetch(serverURL + "users/students")
+            .then(async (res) => {
+                if(res.ok){
+                    this.setState({students: await res.json()})
+                } else if(res.status === 404){
+                    this.setState({students: null})
+                }
+            })
+            .catch((err) => {
+                this.setState({errorMessage: err.message});
+            })
     }
 
     render() {
@@ -321,20 +375,26 @@ class App extends Component {
                 }/>
                 <Route path="group" element={
                     this.state.currentUser
-                    ? (<GroupPage
+                    ? (<GroupsPage
                             currentUser={this.state.currentUser}
                             allowChat={this.state.allowChat}
                             socket={this.socket}
                             setErrorMessage={this.setErrorMessage.bind(this)}
                             loginHandler={this.updateLoginState.bind(this)}
-                            groups={this.state.groups}
-                            parent={this}
+                            loggedIn={this.state.loggedIn}
                             updateUser={this.updateUser.bind(this)}
-                            getGroups={this.getGroups.bind(this)}
+                            groups={this.state.groups}
+                            getTeachersGroups={this.getTeachersGroups.bind(this)}
                             createNewGroup={this.createNewGroup.bind(this)}
+                            deleteGroup={this.deleteGroup.bind(this)}
+                            students={this.state.students}
+                            getAllStudents={this.getAllStudents.bind(this)}
+                            updateGroupStudents={this.updateGroupStudents.bind(this)}
+                            deleteStudent={this.deleteStudent.bind(this)}
                             createNewStudent={this.createNewStudent.bind(this)}
-                            pageURL={url}
-                            errorMessage={this.state.errorMessage}/>)
+                            pageURL={clientURL}
+                            errorMessage={this.state.errorMessage}
+                        />)
                     : (<Navigate replace="replace" to="/"/>)
                 }/>
                 <Route path="error404" element={<Error404/>}/>

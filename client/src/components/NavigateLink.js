@@ -15,7 +15,9 @@ const NavigateLink = ({
     const navigate = useNavigate();
 
     return(
-        <div onClick={()=>{navigate(to)}}>
+        <div onClick={()=>{
+            navigate(to)
+        }}>
             {children}
         </div>
     )

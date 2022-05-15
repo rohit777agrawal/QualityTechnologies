@@ -1,13 +1,9 @@
 import React, { useState } from "react";
-import { Container, Col, Row, Button, Dropdown, Modal, Form} from "react-bootstrap";
+import { Container, Col, Row, Button, Dropdown, Form} from "react-bootstrap";
+import ModalTemplate from "../components/ModalTemplate.js";
 import ToggleSwitch from "../components/ToggleSwitch.js";
 
 const defaultProps = {
-    parent: {
-        setState : (val) => {
-            console.log("setState", val)
-        },
-    },
     currentUser: {
         _id: "-1",
         displayName: "displayName",
@@ -21,6 +17,7 @@ const defaultProps = {
         }
     },
     additionalDropDownItems: null,
+    errorMessage: "",
     setErrorMessage: (val) => {
         console.log("setErrorMessage", val);
     },
@@ -33,13 +30,13 @@ const defaultProps = {
 }
 
 const TemplatePage = ({
-    parent = defaultProps.parent,
     currentUser = defaultProps.currentUser,
     showSwitch = defaultProps.showSwitch,
     allowChat = defaultProps.allowChat,
     children = defaultProps.children,
     socket = defaultProps.socket,
     additionalDropDownItems = defaultProps.additionalDropDownItems,
+    errorMessage = defaultProps.errorMessage,
     setErrorMessage = defaultProps.setErrorMessage,
     loginHandler = defaultProps.setLoginHandler,
     updateUser = defaultProps.updateUser,
@@ -53,7 +50,7 @@ const TemplatePage = ({
 
     const handleChangeSubmit = (event) => {
         event.preventDefault();
-        const displayNameRegex = /^[A-z0-9_-\s]{3,15}$/;
+        const displayNameRegex = /^[A-z0-9_-]{3,15}$/;
         try{
             if(newDisplayName.match(displayNameRegex)===null){
                 if(newDisplayName.length < 3 || newDisplayName.length > 15){
@@ -68,7 +65,8 @@ const TemplatePage = ({
             updateUser({displayName: newDisplayName, _id: currentUser._id})
             setShowAccount(false);
         } catch(error){
-            parent.props.setErrorMessage(error.message);
+            console.log("hadError")
+            setErrorMessage(error.message);
         }
     }
 
@@ -120,30 +118,20 @@ const TemplatePage = ({
                 </Col>
             </Row>
             {children}
-            <Modal show={showAccount} onHide={()=>{setShowAccount(false)}}>
-                <Modal.Header closeButton>
-                    <Modal.Title style={{textAlign: "center"}}>Account Settings</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form target="">
-                        <Form.Group className="mb-3">
-                            <Form.Label>Display Name</Form.Label>
-                            <Form.Control placeholder={currentUser.displayName} onChange={(e)=>{handleDisplayNameInput(e)}}/>
-                            <Form.Label style={{color:"#f44"}}>{parent.errorMessage}</Form.Label>
+            <ModalTemplate
+                title="Account Settings"
+                show={showAccount}
+                hide={()=>{setShowAccount(false)}}
+                handleSubmit={handleChangeSubmit.bind(this)}
+            >
+                <Form target="">
+                    <Form.Group className="mb-3">
+                        <Form.Label>Display Name</Form.Label>
+                        <Form.Control placeholder={currentUser.displayName} onChange={(e)=>{handleDisplayNameInput(e)}}/>
+                        <Form.Label style={{color:"#f44"}}>{errorMessage}</Form.Label>
                         </Form.Group>
-                        <div style={{display:"flex", justifyContent:"space-evenly"}}>
-                        <Button variant="secondary" onClick={()=>{setShowAccount(false)}}>
-                        Close
-                        </Button>
-                        <Button variant="primary" type="submit" onClick={(e)=>{
-                            handleChangeSubmit(e);
-                        }}>
-                            Save Changes
-                        </Button>
-                        </div>
-                    </Form>
-                </Modal.Body>
-            </Modal>
+                </Form>
+            </ModalTemplate>
         </Container>
     )
 }
