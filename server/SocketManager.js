@@ -36,7 +36,7 @@ class SocketManger {
       socket.on('updateUser', (oldName, newName)=>{this.updateUser(socket, oldName, newName)})
 
       // Listen for chatMessage
-      socket.on("message", (message)=>{this.relayMessage(socket, message)})
+      socket.on("message", (contents, userID, groupID, type)=>{this.relayMessage(contents, userID, groupID, type)})
 
     });
   }
@@ -113,17 +113,11 @@ class SocketManger {
     })
   }
 
-  relayMessage(socket, message){
-    db.getUserByID(this.socketIDToUserID[socket.id])
-    .then((user)=>{
-      if (user){
-        // NOTE: If I had to guess this is where we would want to add to database
-        this.io.emit('message', message)
-      }
-      else {
-        console.log("Error: received message but no user found")
-      }
-    })
+  relayMessage(contents, userID, groupID, type){
+    db.createMessage(contents, userID, groupID, type)
+      .then((message) => {
+          this.io.emit('message', message);
+        })
   }
 
 }

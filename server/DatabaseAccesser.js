@@ -279,7 +279,7 @@ class DatabaseAccessor {
                     })
     }
     
-    createMessage(contents, userID, groupID){
+    createMessage(contents, userID, groupID, type){
         var newMessage = {
             senderID: userID,
             groupID: groupID,

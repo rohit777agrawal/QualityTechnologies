@@ -198,15 +198,7 @@ class App extends Component {
 
     sendMessage(msg, type) {
         // send messages to message to server-side socket
-        const message = {
-            senderID: this.state.currentUser,
-            groupID: GROUPID,
-            contents: msg,
-            type: type,
-            sentTime: Date.now(),
-        }
-
-        this.socket.emit('message', message);
+        this.socket.emit('message', msg, this.state.currentUser._id, GROUPID, type);
     }
     render(){
         if (this.state.loggedIn){
