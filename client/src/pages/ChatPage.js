@@ -27,7 +27,7 @@ class ChatPage extends Component {
 
     }
 
-    send(type){
+    send(type){ // TODO: Update to messageobj
         const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)/;
         if(this.state.url.match(urlRegex)){
             this.props.messageHandler(this.state.url, type)
@@ -101,7 +101,7 @@ class ChatPage extends Component {
         })
     }
 
-    renderMessages(){
+    renderMessages(){ // TODO: Convert to message dict
         return this.props.messages.map((message, keyVal) => {
             return <Message socket={this.props.socket} currentUser={this.props.currentUser.displayName} key={keyVal} message={message}></Message>
         })

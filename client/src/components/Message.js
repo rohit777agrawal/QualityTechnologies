@@ -166,23 +166,23 @@ class Message extends Component{
         switch(message.type){
             case "image":
                 return (
-                    this.messageTemplate(<img  alt=""  src = {message.text}/>)
+                    this.messageTemplate(<img  alt=""  src = {message.contents}/>)
                 )
             case "link":
                 return (
-                    this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>)
+                    this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.contents}>{message.contents}</a>)
                 )
             case "server":
                 console.log("RECEIVED SERVER INFO MESSAGE", message)
                 return(
                     <div style = {infoStyle}>
-                        {message.text}
+                        {message.contents}
                     </div>
                 )
             default:
                 return (
                     this.messageTemplate(
-                        message.text.split("\n").map((item, key)=>{
+                        message.contents.split("\n").map((item, key)=>{
                             return(
                                 <span key={key}>
                                     {item}

@@ -36,17 +36,17 @@ class SocketManger {
       socket.on('updateUser', (oldName, newName)=>{this.updateUser(socket, oldName, newName)})
 
       // Listen for chatMessage
-      socket.on("message", (msg, type)=>{this.relayMessage(socket, msg, type)})
+      socket.on("message", (message)=>{this.relayMessage(socket, message)})
 
     });
   }
 
   sendServerMessage(socket, message){
-    socket.emit('message', {text: message, date: new Date(), type: "server"});
+    socket.emit('message', {contents: message, sentTime: new Date(), type: "server"});
   }
 
   sendServerBroadcast(socket, message){
-    socket.emit('message', {text: message, date: new Date(), type: "server"});
+    socket.emit('message', {contents: message, sentTime: new Date(), type: "server"});
   }
 
   connectSocket(socket){
@@ -113,11 +113,12 @@ class SocketManger {
     })
   }
 
-  relayMessage(socket, msg, type){
+  relayMessage(socket, message){
     db.getUserByID(this.socketIDToUserID[socket.id])
     .then((user)=>{
       if (user){
-        this.io.emit('message', {user: user.displayName, text: msg, type: type})
+        // NOTE: If I had to guess this is where we would want to add to database
+        this.io.emit('message', message)
       }
       else {
         console.log("Error: received message but no user found")

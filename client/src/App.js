@@ -6,6 +6,8 @@ import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js';
 import io from "socket.io-client"
 
+const GROUPID = "1"
+
 const url = "http://localhost:5000/";
 
 // const socket = io(url, {autoConnect: false});
@@ -45,6 +47,9 @@ class App extends Component {
             email: "",
             currentUser: null,
             messages: [],
+            //messages: {},   // messages, users, groups are intended to be a dictionary of arrays that store the given type
+            //users: {},
+            //gorups: {},
             activeUsers: []
         };
 
@@ -60,16 +65,18 @@ class App extends Component {
         })
 
         this.socket.on('message', (message) => {
-            //console.log(message);
             let updatedMessages = this.state.messages;
+
+            //updatedMessages[message.groupID].push(message);
             updatedMessages.push(message);
+
             this.setState({messages: updatedMessages});
         })
 
-        this.socket.on("updateMessage", (message) => {
+        this.socket.on("updateMessage", (message) => {  // TODO: Convert to Message dictionary
             let updatedMessages = this.state.messages;
             for(let i = 0; i < updatedMessages.length; i++){
-                if(updatedMessages[i].user === message.user && updatedMessages[i].date === message.date){
+                if(updatedMessages[i].senderID === message.senderID && updatedMessages[i].timeSent === message.timeSent){
                     updatedMessages[i] = message;
                     this.setState({messages: updatedMessages});
                     break;
@@ -191,7 +198,15 @@ class App extends Component {
 
     sendMessage(msg, type) {
         // send messages to message to server-side socket
-        this.socket.emit('message', msg, type);
+        const message = {
+            senderID: this.state.currentUser,
+            groupID: GROUPID,
+            contents: msg,
+            type: type,
+            sentTime: Date.now(),
+        }
+
+        this.socket.emit('message', message);
     }
     render(){
         if (this.state.loggedIn){
