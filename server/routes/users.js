@@ -73,31 +73,22 @@ router.get('/:id/groups/', function(req, res, _){
     })
 })
 
-router.post("/login", function(req, res, _) {
-db.getUserByEmail(req.body.email)
-    .then((user) => {
+router.post("/login", function(req, res, next) {
+    db.getUserByEmail(req.body.email)
+    .then((user)=>{
         if (user) {
             if (user.password === req.body.password) {
-                user.auth = {
-                    token: uuidv4()
-                };
-
-                db.updateUser(user)
-                .then(([user, _]) => {
-                    res.status(200).json(user)
-                })
+                db.updateUser(user._id, {auth: {token: uuidv4()}})
+                    .then((user)=>{
+                        res.status(200).json(user)
+                    })
                 console.log("Found user '" + req.body.email + "' with password '" + req.body.password + "'");
-            } else {
-                res.status(404).json({
-                    text: "failure"
-                })
             }
-        } else {
-            res.status(404).json({
-                text: "failure"
-            });
-            console.log("User " + req.body.email + " with password " + req.body.password + " does not exist")
+            else {
+                res.status(404).json({text: "failure"})
+            }
         }
+        console.log("User " + req.body.email + " with password " + req.body.password + " does not exist")
     })
 });
 
@@ -156,6 +147,7 @@ router.post('/student', function(req, res, _){
 
 router.put("/:id", function(req, res, _) {
     var updatedProps = req.body
+    console.log("handling route", req.params.id,updatedProps )
     if (!Object.keys(updatedProps).includes('_id')){
         db.updateUser(req.params.id, updatedProps)
         .then((user) => {
@@ -165,6 +157,10 @@ router.put("/:id", function(req, res, _) {
             else {
                 res.status(404).send("User does not exist")
             }
+        })
+        .catch((err)=>{
+            console.log(err)
+            res.status(500).json(err)
         })
     }
     else {

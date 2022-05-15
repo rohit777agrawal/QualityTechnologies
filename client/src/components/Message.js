@@ -68,7 +68,7 @@ class Message extends Component{
         }
         let newMessage = this.props.message;
         newMessage.reactions = updatedReactions;
-        this.props.socket.emit("messageUpdateToServer", newMessage);
+        this.props.socket.emit("updateMessage", newMessage);
     }
 
     styleTemplate(){
@@ -163,13 +163,6 @@ class Message extends Component{
 
     render() {
         const message = this.props.message;
-        if(message.user === "server"){
-            return(
-                <div style = {infoStyle}>
-                    {message.text}
-                </div>
-            )
-        }
         switch(message.type){
             case "image":
                 return (
@@ -178,6 +171,13 @@ class Message extends Component{
             case "link":
                 return (
                     this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>)
+                )
+            case "server":
+                console.log("RECEIVED SERVER INFO MESSAGE", message)
+                return(
+                    <div style = {infoStyle}>
+                        {message.text}
+                    </div>
                 )
             default:
                 return (

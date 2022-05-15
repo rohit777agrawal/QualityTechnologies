@@ -30,6 +30,7 @@ var MessageSchema = new mongoose.Schema({
     senderID: String,
     groupID: String,
     contents: String,
+    type: String,
     sentTime: Date
 })
 
@@ -143,6 +144,7 @@ class DatabaseAccessor {
     }
 
     async updateUser(updatedUser){
+        console.log("updating user", userID, updatedProps)
         if(updatedUser._doc){
             updatedUser = updatedUser._doc;
         }
