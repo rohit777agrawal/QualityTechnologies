@@ -111,6 +111,7 @@ class ChatPage extends Component {
                 />
         })
     }
+
     render() {
         return (
             <TemplatePage

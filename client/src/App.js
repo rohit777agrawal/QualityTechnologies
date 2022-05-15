@@ -77,14 +77,14 @@ class App extends Component {
             this.setState({activeUsers: activeUsers});
         })
 
-        this.socket.on('message', (message) => {
+        this.socket.on('messageFromServer', (message) => {
             //console.log(message);
             let updatedMessages = this.state.messages;
             updatedMessages.push(message);
             this.setState({messages: updatedMessages});
         })
 
-        this.socket.on("updateMessage", (message) => {
+        this.socket.on("messageUpdateFromServer", (message) => {
             let updatedMessages = this.state.messages;
             for (let i = 0; i < updatedMessages.length; i++) {
                 if (updatedMessages[i].user === message.user && updatedMessages[i].date === message.date) {
@@ -192,7 +192,7 @@ class App extends Component {
 
     sendMessage(msg, type) {
         // send messages to message to server-side socket
-        this.socket.emit('message', msg, type);
+        this.socket.emit('messageToServer', msg, type);
     }
 
     createNewGroup(groupName, teacherID) {
