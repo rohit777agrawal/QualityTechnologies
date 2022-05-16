@@ -52,7 +52,7 @@ class Message extends Component{
         let updatedReactions = this.props.message.reactions;
         let newReaction = {
             emoji: emoji,
-            by: this.props.currentUser,
+            by: this.props.currentUser.name,
         }
         let indexOf = -1;
         for(let i = 0; i < updatedReactions.length; i++){
@@ -72,7 +72,7 @@ class Message extends Component{
     }
 
     styleTemplate(){
-        if(this.props.currentUser === this.props.message.user){
+        if(this.props.currentUser._id === this.props.message.senderID){
             return {
                 mainDiv: Object.assign({}, {float: "right"}, mainDiv),
                 chatBubble: Object.assign({}, messageStyle, blueChatBubble),
@@ -105,28 +105,28 @@ class Message extends Component{
             style = defaultBottomLineProps.style,
             parent = defaultBottomLineProps.parent
         }) => {
-            if(parent.props.currentUser === parent.props.message.user){
+            if(parent.props.currentUser._id === parent.props.message.senderID){
                 return(
                     <>
                         <SlackCounter
                             style={style.slackCounter}
                             counters = {parent.props.message.reactions}
-                            user={parent.props.currentUser}
+                            user={parent.props.currentUser.name}
                             onSelect={(emoji)=>{this.react(emoji)}}
                             onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
                             side={style.side}
                         />
-                        {parent.props.message.user}
+                        {parent.props.message.senderName}
                     </>
                 )
             } else {
                 return(
                     <>
-                        {parent.props.message.user}
+                        {parent.props.message.senderName}
                         <SlackCounter
                             style={style.slackCounter}
                             counters = {parent.props.message.reactions}
-                            user={parent.props.currentUser}
+                            user={parent.props.currentUser.name}
                             onSelect={(emoji)=>{this.react(emoji)}}
                             onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
                             side={style.side}
@@ -166,23 +166,24 @@ class Message extends Component{
         switch(message.type){
             case "image":
                 return (
-                    this.messageTemplate(<img  alt=""  src = {message.text}/>)
+                    this.messageTemplate(<img  alt=""  src = {message.contents}/>)
                 )
             case "link":
                 return (
-                    this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>)
+                    this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.contents}>{message.contents}</a>)
                 )
             case "server":
                 console.log("RECEIVED SERVER INFO MESSAGE", message)
                 return(
                     <div style = {infoStyle}>
-                        {message.text}
+                        {message.contents}
                     </div>
                 )
             default:
+                console.log(message)
                 return (
                     this.messageTemplate(
-                        message.text.split("\n").map((item, key)=>{
+                        message.contents.split("\n").map((item, key)=>{
                             return(
                                 <span key={key}>
                                     {item}

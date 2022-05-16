@@ -1,4 +1,3 @@
-const { json } = require('express');
 var mongoose = require('mongoose');
 
 var UserSchema = new mongoose.Schema({
@@ -15,7 +14,7 @@ var UserSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
-    displayName: String,
+    name: String,
     isTeacher: Boolean,
     sentMessageIDs: [String],
     recievedMessageIDs: [String],
@@ -92,8 +91,6 @@ class DatabaseAccessor {
                         name: name,
                         email: email,
                         password: password,
-                        displayName: displayName,
-                        name: displayName, 
                         link: null,
                         isTeacher: true,
                         sentMessageIDs: [],
@@ -110,13 +107,12 @@ class DatabaseAccessor {
 
     }
 
-    createStudent(displayName, groupID){
+    createStudent(name, groupID){
         var user = {
-            name: displayName,
+            name: name,
             email: null,
             password: null,
             link: null,
-            displayName: displayName,
             isTeacher: false,
             sentMessageIDs: [],
             recievedMessageIDs: [],
@@ -151,8 +147,8 @@ class DatabaseAccessor {
             })
     }
 
-    resetUserAuthentication(userID){
-        return this.getUserByID(userID)
+    async resetUserAuthentication(userID){
+        return await this.getUserByID(userID)
             .then((user)=>{
                 if (user) {
                     user.auth.token = ''
@@ -166,8 +162,8 @@ class DatabaseAccessor {
             })
     }
 
-    deleteUser(userID){
-        return UserModel.deleteOne({_id: userID}).then(
+    async deleteUser(userID){
+        return await UserModel.deleteOne({_id: userID}).then(
             (res)=>{return res.deletedCount}
         )
     }
@@ -186,11 +182,11 @@ class DatabaseAccessor {
 
     createGroup(name, teacherID, userIDs, parentGroupID){
         var newGroup = {
+            name: name,
             teacherID: teacherID,
             userIDs: userIDs ? userIDs : [],
             parentGroupID: parentGroupID ? parentGroupID : null,
             childGroupIDs: [],
-            name: name,
             active: false
         }
         return new GroupModel(newGroup).save()
@@ -278,7 +274,7 @@ class DatabaseAccessor {
                         }
                     })
     }
-    
+
     createMessage(contents, userID, groupID){
         var newMessage = {
             senderID: userID,
