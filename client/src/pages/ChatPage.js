@@ -7,7 +7,6 @@ import ToggleSwitch from "../components/ToggleSwitch.js";
 import URLButtonForm from "../components/URLButtonForm.js";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-
 const GROUPID = "1"
 
 class ChatPage extends Component {
@@ -49,6 +48,7 @@ class ChatPage extends Component {
     }
 
     componentDidMount(){
+        // console.log(this.props.users, this.props.messages, this.props.groups)
         document.title = "Chatr Chat Window";
         this.setState({showAccount:false})
         this.props.initChat()

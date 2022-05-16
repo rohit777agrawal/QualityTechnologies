@@ -13,10 +13,6 @@ const GROUPID = "1"
 
 const url = "http://localhost:5000/";
 
-// const socket = io(url, {autoConnect: false});
-
-//fetch(url + "login/" + localStorage.getItem('login')))
-
 class App extends Component {
     componentDidMount(){
         var user;
@@ -34,12 +30,16 @@ class App extends Component {
                     //console.log(json);
                     localStorage.setItem('currentUser', JSON.stringify(user))
                     this.setState({loggedIn: json._id === user._id, currentUser: user});
+                    this.loadGroups()
+                    this.loadAllUsers()
+                    this.loadAllMessages()
                 })
                 .catch((err) => {
                     console.error(err);
                 })
         }
     }
+
     constructor(props) {
         super(props);
 
@@ -60,7 +60,7 @@ class App extends Component {
 
     }
 
-    initChat(){
+    initChatSocket(){
         this.socket = io(url, {
             auth: {
                 token: this.state.currentUser.auth.token
@@ -104,7 +104,6 @@ class App extends Component {
 
         this.socket.on('activeUsers', users=>{
             this.setState({activeUsers: users})
-
         })
 
     }
@@ -185,7 +184,7 @@ class App extends Component {
         })
     }
 
-    updateGroups(){
+    loadGroups(){
         const requestOptions = {
             method: 'GET',
             headers: {'Content-Type': 'application/json'},
@@ -201,7 +200,64 @@ class App extends Component {
             for (let group of groups){
                 groupMap[group._id] = group
             }
+            
+            // if current group has not been set, choose the first one
+            if (this.state.currentGroup === null){
+                this.setState({currentGroup: groups[0]})
+            }
             this.setState({groups: groupMap})
+        })
+    }
+
+    loadAllUsers(){
+        for (let groupID of this.state.currentUser.groupIDs){
+            this.loadUsersByGroup(groupID)
+        }
+    }
+
+    loadUsersByGroup(groupID){
+        const requestOptions = {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'},
+        } 
+        fetch(url + "groups/" + groupID + "/users", requestOptions)
+        .then((res)=>{
+            if (res.ok) {
+                return res.json()
+            }
+        })
+        .then((users)=>{
+            let updatedUsers = this.state.users
+            updatedUsers[groupID] = users
+            this.setState({users: updatedUsers})
+        })
+    }
+
+    loadAllMessages(){
+        for (let groupID of this.state.currentUser.groupIDs){
+            console.log(this.state.currentUser.groupIDs)
+            this.loadMessagesByGroup(groupID)
+        }
+    }
+
+    loadMessagesByGroup(groupID){
+        const requestOptions = {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'},
+        } 
+        fetch(url + "groups/" + groupID + "/messages", requestOptions)
+        .then((res)=>{
+            if (res.ok) {
+                return res.json()
+            }
+            else {
+                console.log(res)
+            }
+        })
+        .then((messages)=>{
+            let updatedMessages = this.state.messages
+            updatedMessages[groupID] = messages
+            this.setState({messages: updatedMessages})
         })
     }
 
@@ -224,11 +280,11 @@ class App extends Component {
             })
             .then((user)=>{
                 //console.log(user)
-                this.setState({
-                    loggedIn: true,
-                    currentUser: user,
-                })
+                this.setState({loggedIn: true, currentUser: user})
                 localStorage.setItem('currentUser', JSON.stringify(user))
+                this.loadGroups()
+                this.loadAllUsers()
+                this.loadAllMessages()
             })
             .catch((err) => {
                 console.log(err);
@@ -250,9 +306,11 @@ class App extends Component {
             return (
                 <ChatPage
                     messages={this.state.messages}
+                    users={this.state.users}
+                    groups={this.state.groups}
                     messageHandler={this.sendMessage.bind(this)}
                     loginHandler={this.updateLoginState.bind(this)}
-                    initChat={this.initChat.bind(this)}
+                    initChat={this.initChatSocket.bind(this)}
                     currentUser={this.state.currentUser}
                     currentGroup={this.state.currentGroup}
                     activeUsers={this.state.activeUsers}
