@@ -7,6 +7,9 @@ import ToggleSwitch from "../components/ToggleSwitch.js";
 import URLButtonForm from "../components/URLButtonForm.js";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+
+const GROUPID = "1"
+
 class ChatPage extends Component {
 
     constructor(props) {
@@ -17,6 +20,7 @@ class ChatPage extends Component {
             allowChat: true,
             newDisplayName: "",
             messages: props.messages,
+            currentGroup: props.currentGroup,
             url: "",
             showLink: false,
             showImage: false,
@@ -102,8 +106,14 @@ class ChatPage extends Component {
     }
 
     renderMessages(){ // TODO: Convert to message dict
-        return this.props.messages.map((message, keyVal) => {
-            return <Message socket={this.props.socket} currentUser={this.props.currentUser} key={keyVal} message={message}></Message>
+        return this.props.messages[GROUPID]?.map((message, keyVal) => {
+            return <Message 
+                socket={this.props.socket}
+                currentUser={this.props.currentUser}
+                currentGroup={this.props.currentGroup}
+                key={keyVal}
+                message={message}
+            ></Message>
         })
     }
 
