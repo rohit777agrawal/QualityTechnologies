@@ -23,7 +23,7 @@ class ChatPage extends Component {
         this.handleMessageInput = this.handleMessageInput.bind(this)
     }
 
-    sendURLMessage(type){
+    send(type){ // TODO: Update to messageobj
         const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)/;
         if(this.state.url.match(urlRegex)){
             this.props.messageHandler(this.state.url, type)
@@ -92,20 +92,15 @@ class ChatPage extends Component {
 
     renderActiveUsers(){
         return this.props.activeUsers.map((user, keyVal)=>{
-            return (<Button
-                variant="outline-info"
-                style={{cursor:"default", margin:"2pt 0"}}
-                key={keyVal}>
-                    {user.displayName}
-                </Button>)
+            return <Button variant="outline-info" style={{cursor:"default", margin:"2pt 0"}} key={keyVal}>{user.name}</Button>
         })
     }
 
-    renderMessages(){
+    renderMessages(){ // TODO: Convert to message dict
         return this.props.messages.map((message, keyVal) => {
             return <Message
                 socket={this.props.socket}
-                currentUser={this.props.currentUser.displayName}
+                currentUser={this.props.currentUser}
                 key={keyVal}
                 message={message}
                 />
@@ -129,9 +124,10 @@ class ChatPage extends Component {
                         </NavigateLink>)
                     : (null)
                 }
+                errorMessage={this.props.errorMessage}
                 setErrorMessage = {this.props.setErrorMessage}
                 loginHandler = {this.props.loginHandler}
-                updateUser = {this.props.updateUser}
+                updateUserName = {this.props.updateUserName}
             >
                 <Row style={{flex: "1 1 auto", width:"100%", overflow:"auto", margin:0}} className="align-items-bottom text-left">
                     <Col md="auto" style={{width: "10%", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>
@@ -178,7 +174,7 @@ class ChatPage extends Component {
                                 <URLButtonForm
                                     url = {this.state.url}
                                     handleURLInput = {this.handleURLInput.bind(this)}
-                                    send = {this.sendURLMessage.bind(this)}
+                                    send = {this.send.bind(this)}
                                     type = "link"
                                     toggle = {this.toggleLink.bind(this)}
                                     show = {this.state.showLink}>
@@ -187,7 +183,7 @@ class ChatPage extends Component {
                                 <URLButtonForm
                                     url = {this.state.url}
                                     handleURLInput = {this.handleURLInput.bind(this)}
-                                    send = {this.sendURLMessage.bind(this)}
+                                    send = {this.send.bind(this)}
                                     type = "image"
                                     toggle = {this.toggleImage.bind(this)}
                                     show = {this.state.showImage}>

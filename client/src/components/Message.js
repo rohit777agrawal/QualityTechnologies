@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { SlackCounter } from "./CustomSlackCounter.js"
 import Picker from "emoji-picker-react";
-const isEqual = require("lodash/isEqual");
+
 const mainDiv = {
     display: "flex",
     flexDirection: "column",
@@ -49,30 +49,11 @@ class Message extends Component{
     }
 
     react(emoji){
-        let updatedReactions = this.props.message.reactions;
-        let newReaction = {
-            emoji: emoji,
-            by: this.props.currentUser,
-        }
-        let indexOf = -1;
-        for(let i = 0; i < updatedReactions.length; i++){
-            if(isEqual(newReaction, updatedReactions[i])){
-                indexOf = i;
-                break;
-            }
-        }
-        if(indexOf === -1){
-            updatedReactions.push(newReaction);
-        } else {
-            updatedReactions.splice(indexOf,1);
-        }
-        let newMessage = this.props.message;
-        newMessage.reactions = updatedReactions;
-        this.props.socket.emit("messageUpdateToServer", newMessage);
+        this.props.socket.emit("messageReaction", this.props.message._id, emoji);
     }
 
     styleTemplate(){
-        if(this.props.currentUser === this.props.message.user){
+        if(this.props.currentUser._id === this.props.message.senderID){
             return {
                 mainDiv: Object.assign({}, {float: "right"}, mainDiv),
                 chatBubble: Object.assign({}, messageStyle, blueChatBubble, this.props.message.type === "image" ? {maxWidth:"30%", maxHeight:"30%"}: {}),
@@ -105,33 +86,25 @@ class Message extends Component{
             style = defaultBottomLineProps.style,
             parent = defaultBottomLineProps.parent
         }) => {
-            if(parent.props.currentUser === parent.props.message.user){
+            let components = [
+                <SlackCounter
+                    style={style.slackCounter}
+                    reactions = {parent.props.message.reactions}
+                    user={parent.props.currentUser.name}
+                    onSelect={(emoji)=>{this.react(emoji)}}
+                    onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
+                    side={style.side}
+                    key = {0}
+                />,
+                <span key={1}>{parent.props.message.senderName}</span>
+            ]
+            if(parent.props.currentUser._id === parent.props.message.senderID){
                 return(
-                    <>
-                        <SlackCounter
-                            style={style.slackCounter}
-                            counters = {parent.props.message.reactions}
-                            user={parent.props.currentUser}
-                            onSelect={(emoji)=>{this.react(emoji)}}
-                            onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
-                            side={style.side}
-                        />
-                        {parent.props.message.user}
-                    </>
+                    components
                 )
             } else {
                 return(
-                    <>
-                        {parent.props.message.user}
-                        <SlackCounter
-                            style={style.slackCounter}
-                            counters = {parent.props.message.reactions}
-                            user={parent.props.currentUser}
-                            onSelect={(emoji)=>{this.react(emoji)}}
-                            onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
-                            side={style.side}
-                        />
-                    </>
+                    [components[1], components[0]]
                 )
             }
         }
@@ -173,16 +146,23 @@ class Message extends Component{
         switch(message.type){
             case "image":
                 return (
-                    this.messageTemplate(<img style={{maxWidth: "100%", maxHeight:"100%"}}alt=""  src = {message.text}/>)
+                    this.messageTemplate(<img style={{maxWidth: "100%", maxHeight:"100%"}} alt="" src = {message.contents}/>)
                 )
             case "link":
                 return (
-                    this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.text}>{message.text}</a>)
+                    this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.contents}>{message.contents}</a>)
+                )
+            case "server":
+                //console.log("RECEIVED SERVER INFO MESSAGE", message)
+                return(
+                    <div style = {infoStyle}>
+                        {message.contents}
+                    </div>
                 )
             default:
                 return (
                     this.messageTemplate(
-                        message.text.split("\n").map((item, key)=>{
+                        message.contents.split("\n").map((item, key)=>{
                             return(
                                 <span key={key}>
                                     {item}

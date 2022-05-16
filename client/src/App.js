@@ -12,6 +12,7 @@ import io from "socket.io-client"
 
 const clientURL = "http://localhost:3000/"
 const serverURL = "http://localhost:5000/";
+const GROUPID = "1"
 
 class App extends Component {
     validateUser(id) {
@@ -54,6 +55,9 @@ class App extends Component {
             students: [],
             groups: [],
             activeUsers: [],
+            //messages: {},   // messages, users, groups are intended to be a dictionary of arrays that store the given type
+            //users: {},
+            //gorups: {},
             allowChat: true
         };
 
@@ -77,17 +81,20 @@ class App extends Component {
             this.setState({activeUsers: activeUsers});
         })
 
-        this.socket.on('messageFromServer', (message) => {
-            //console.log(message);
+        this.socket.on('message', (message) => {
             let updatedMessages = this.state.messages;
+
+            //updatedMessages[message.groupID].push(message);
             updatedMessages.push(message);
+
             this.setState({messages: updatedMessages});
         })
 
-        this.socket.on("messageUpdateFromServer", (message) => {
+        this.socket.on("updatedMessage", (message) => {  // TODO: Convert to Message dictionary
+            console.log("updatedMessage", message);
             let updatedMessages = this.state.messages;
-            for (let i = 0; i < updatedMessages.length; i++) {
-                if (updatedMessages[i].user === message.user && updatedMessages[i].date === message.date) {
+            for(let i = 0; i < updatedMessages.length; i++){
+                if(updatedMessages[i].senderID === message.senderID && updatedMessages[i].timeSent === message.timeSent){
                     updatedMessages[i] = message;
                     this.setState({messages: updatedMessages});
                     break;
@@ -95,27 +102,21 @@ class App extends Component {
             }
         })
 
-        this.socket.on('updatedUserFromServer', (oldDisplayName, updatedUser) => {
+        this.socket.on('updatedUser', (oldName, updatedUser) => {
             let newMessages = this.state.messages;
-            if(oldDisplayName === this.state.currentUser.displayName){
+            if(oldName === this.state.currentUser.name){
                 localStorage.setItem('currentUser', JSON.stringify(updatedUser));
                 this.setState({currentUser: updatedUser});
+                console.log("these should be different", oldName, this.state.currentUser.name)
             }
             for (let i = 0; i < newMessages.length; i++) {
-                if (newMessages[i].user === oldDisplayName) {
-                    newMessages[i].user = updatedUser.displayName;
-                }
-                if (newMessages[i].reactions) {
-                    for (let j = 0; j < newMessages[i].reactions.length; j++) {
-                        if (newMessages[i].reactions[j].by === oldDisplayName) {
-                            newMessages[i].reactions[j].by = updatedUser.DisplayName;
-                        }
-                    }
+                if (newMessages[i].user === oldName) {
+                    newMessages[i].user = updatedUser.name;
                 }
             }
             this.state.messages.push({
                 user: "server",
-                text: oldDisplayName + " has changed their name to: " + updatedUser.displayName,
+                text: oldName + " has changed their name to: " + updatedUser.name,
                 reactions: []
             })
             this.setState({messages: newMessages});
@@ -155,8 +156,8 @@ class App extends Component {
         })
     }
 
-    updateUser(changesDict) {
-        this.socket.emit("updateUserToServer", changesDict);
+    updateUserName(newName) {
+        this.socket.emit("updateUserName", this.state.currentUser.name, newName);
     }
 
     submitLoginInfo(email, password) {
@@ -192,7 +193,7 @@ class App extends Component {
 
     sendMessage(msg, type) {
         // send messages to message to server-side socket
-        this.socket.emit('messageToServer', msg, type);
+        this.socket.emit('message', msg, this.state.currentUser._id, GROUPID, type);
     }
 
     createNewGroup(groupName, teacherID) {
@@ -244,13 +245,13 @@ class App extends Component {
         })
     }j
 
-    async createNewStudent(displayName, teacherID, groupID){
+    async createNewStudent(name, teacherID, groupID){
         const requestOptions = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({displayName: displayName, groupID: groupID}),
+            body: JSON.stringify({name: name, groupID: groupID}),
         }
         return fetch(serverURL + "users/student/", requestOptions)
             .then((res) => {
@@ -362,15 +363,15 @@ class App extends Component {
                             currentUser={this.state.currentUser}
                             allowChat={this.state.allowChat}
                             socket={this.socket}
+                            errorMessage={this.state.errorMessage}
                             setErrorMessage={this.setErrorMessage.bind(this)}
                             loginHandler={this.updateLoginState.bind(this)}
                             groups={this.state.groups}
-                            updateUser={this.updateUser.bind(this)}
+                            updateUserName={this.updateUserName.bind(this)}
                             messages={this.state.messages}
                             messageHandler={this.sendMessage.bind(this)}
                             initChat={this.initChat.bind(this)}
-                            activeUsers={this.state.activeUsers}
-                            errorMessage={this.state.errorMessage}/>)
+                            activeUsers={this.state.activeUsers}/>)
                         : (<Navigate replace="replace" to="/"/>)
                 }/>
                 <Route path="group" element={
@@ -382,7 +383,7 @@ class App extends Component {
                             setErrorMessage={this.setErrorMessage.bind(this)}
                             loginHandler={this.updateLoginState.bind(this)}
                             loggedIn={this.state.loggedIn}
-                            updateUser={this.updateUser.bind(this)}
+                            updateUserName={this.updateUserName.bind(this)}
                             groups={this.state.groups}
                             getTeachersGroups={this.getTeachersGroups.bind(this)}
                             createNewGroup={this.createNewGroup.bind(this)}
@@ -398,9 +399,11 @@ class App extends Component {
                     : (<Navigate replace="replace" to="/"/>)
                 }/>
                 <Route path="error404" element={<Error404/>}/>
-                <Route path="*" element={<NoPage validateUser = {
+                <Route path="*" element={
+                    <NoPage validateUser = {
                         this.validateUser.bind(this)
-                    } />}/>
+                    }/>
+                }/>
             </Routes>
         </BrowserRouter>)
     }

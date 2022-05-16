@@ -6,7 +6,7 @@ import ToggleSwitch from "../components/ToggleSwitch.js";
 const defaultProps = {
     currentUser: {
         _id: "-1",
-        displayName: "displayName",
+        name: "name",
     },
     showSwitch: false,
     allowChat: true,
@@ -24,8 +24,8 @@ const defaultProps = {
     loginHandler: (val) => {
         console.log("loginHandler", val);
     },
-    updateUser: (val) => {
-        console.log("updateUser", val);
+    updateUserName: (val) => {
+        console.log("updateUserName", val);
     },
 }
 
@@ -39,10 +39,10 @@ const TemplatePage = ({
     errorMessage = defaultProps.errorMessage,
     setErrorMessage = defaultProps.setErrorMessage,
     loginHandler = defaultProps.setLoginHandler,
-    updateUser = defaultProps.updateUser,
+    updateUserName = defaultProps.updateUserName,
 }) => {
     const [showAccount, setShowAccount] = useState(true);
-    const [newDisplayName, setNewDisplayName] = useState("");
+    const [newName, setNewDisplayName] = useState("");
 
     const handleDisplayNameInput = (event) => {
         setNewDisplayName(event.target.value);
@@ -50,22 +50,23 @@ const TemplatePage = ({
 
     const handleChangeSubmit = (event) => {
         event.preventDefault();
-        const displayNameRegex = /^[A-z0-9_-]{3,15}$/;
+        const nameRegex = /^[A-z0-9_-]{3,15}$/;
         try{
-            if(newDisplayName.match(displayNameRegex)===null){
-                if(newDisplayName.length < 3 || newDisplayName.length > 15){
+            if(newName.match(nameRegex)===null){
+                if(newName.length < 3 || newName.length > 15){
                     throw new Error("Usernames must be 3 to 15 characters long.");
                 } else {
                     throw new Error("Usernames cannot have special characters.")
                 }
             }
-            if(newDisplayName === "server"){
+            if(newName === "server"){
                 throw new Error("That user name is invalid.");
             }
-            updateUser({displayName: newDisplayName, _id: currentUser._id})
+            updateUserName(newName);
             setShowAccount(false);
         } catch(error){
             console.log("hadError")
+            console.error(error);
             setErrorMessage(error.message);
         }
     }
@@ -98,7 +99,7 @@ const TemplatePage = ({
                         <i className="bi bi-bell"/>
                     </Button>
                     <Dropdown>
-                        <Dropdown.Toggle id="dropdown-basic">{currentUser.displayName}</Dropdown.Toggle>
+                        <Dropdown.Toggle id="dropdown-basic">{currentUser.name}</Dropdown.Toggle>
                         <Dropdown.Menu style={{minWidth: "100%"}}>
                             <Dropdown.Item onClick={()=>{
                                     setShowAccount(true);
@@ -127,7 +128,7 @@ const TemplatePage = ({
                 <Form target="">
                     <Form.Group className="mb-3">
                         <Form.Label>Display Name</Form.Label>
-                        <Form.Control placeholder={currentUser.displayName} onChange={(e)=>{handleDisplayNameInput(e)}}/>
+                        <Form.Control placeholder={currentUser.name} onChange={(e)=>{handleDisplayNameInput(e)}}/>
                         <Form.Label style={{color:"#f44"}}>{errorMessage}</Form.Label>
                         </Form.Group>
                 </Form>

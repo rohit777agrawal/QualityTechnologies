@@ -82,7 +82,7 @@ db.getUserByEmail(req.body.email)
                     token: uuidv4()
                 };
 
-                db.updateUser(user)
+                db.updateUserName(user)
                 .then(([user, _]) => {
                     res.status(200).json(user)
                 })
@@ -103,7 +103,7 @@ db.getUserByEmail(req.body.email)
 
 router.put("/:id", function(req, res, _) {
     let updatedUser = req.body;
-    db.updateUser(updatedUser)
+    db.updateUserName(updatedUser)
         .then((user) => {
             res.status(200).json(user)
     })
@@ -124,7 +124,7 @@ router.post('/:id/logout', function(req, res, _) {
 })
 
 router.post('/teacher/', function(req, res, _) {
-    db.createTeacher(req.body.email, req.body.password, req.body.displayName)
+    db.createTeacher(req.body.email, req.body.password, req.body.name)
     .then((user)=>{
         if (user) {
             res.status(200).json(user)
@@ -139,7 +139,7 @@ router.post('/teacher/', function(req, res, _) {
 })
 
 router.post('/student', function(req, res, _){
-    db.createStudent(req.body.displayName, req.body.groupID)
+    db.createStudent(req.body.name, req.body.groupID)
     .then((user)=>{
         if (user) {
             res.status(200).json(user)
@@ -157,7 +157,7 @@ router.post('/student', function(req, res, _){
 router.put("/:id", function(req, res, _) {
     var updatedProps = req.body
     if (!Object.keys(updatedProps).includes('_id')){
-        db.updateUser(req.params.id, updatedProps)
+        db.updateUserName(req.params.id, updatedProps)
         .then((user) => {
             if (user) {
                 res.status(200).json(user)

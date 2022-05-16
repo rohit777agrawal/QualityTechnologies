@@ -1,4 +1,3 @@
-const { json } = require('express');
 var mongoose = require('mongoose');
 
 var UserSchema = new mongoose.Schema({
@@ -15,7 +14,7 @@ var UserSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
-    displayName: String,
+    name: String,
     isTeacher: Boolean,
     sentMessageIDs: [String],
     recievedMessageIDs: [String],
@@ -30,6 +29,11 @@ var MessageSchema = new mongoose.Schema({
     senderID: String,
     groupID: String,
     contents: String,
+    type: String,
+    reactions: {
+        type: Map,
+        of: [String]
+    },
     sentTime: Date
 })
 
@@ -99,8 +103,6 @@ class DatabaseAccessor {
                         name: name,
                         email: email,
                         password: password,
-                        displayName: displayName,
-                        name: displayName,
                         link: null,
                         isTeacher: true,
                         sentMessageIDs: [],
@@ -117,13 +119,12 @@ class DatabaseAccessor {
 
     }
 
-    createStudent(displayName, groupID){
+    createStudent(name, groupID){
         var user = {
-            name: displayName,
+            name: name,
             email: null,
             password: null,
             link: null,
-            displayName: displayName,
             isTeacher: false,
             sentMessageIDs: [],
             recievedMessageIDs: [],
@@ -146,31 +147,26 @@ class DatabaseAccessor {
         if(updatedUser._doc){
             updatedUser = updatedUser._doc;
         }
-        let changedValues = {};
         const {_id, ...changes} = updatedUser;
         return await this.getUserByID(_id)
             .then((user)=>{
                 if (user){
                     Object.keys(user._doc).filter(key => key in changes).forEach(key=>{
                         if(user[key] !== changes[key]){
-                            changedValues[key] = user[key];
                             user[key] = changes[key];
                         }
                     })
                     return user.save()
-                    .then(()=>{
-                        return [user._doc, changedValues];
-                    })
                 }
                 else {
                     console.log("User does not exist")
-                    return [null, null];
+                    return null;
                 }
             })
     }
 
     async resetUserAuthentication(userID){
-        return this.getUserByID(userID)
+        return await this.getUserByID(userID)
             .then((user)=>{
                 if (user) {
                     user.auth.token = ''
@@ -185,7 +181,7 @@ class DatabaseAccessor {
     }
 
     async deleteUser(userID){
-        return UserModel.deleteOne({_id: userID}).then(
+        return await UserModel.deleteOne({_id: userID}).then(
             (res)=>{return res.deletedCount}
         )
     }
@@ -217,11 +213,11 @@ class DatabaseAccessor {
     async createGroup(name, teacherID, userIDs, parentGroupID){
         var newGroup = {
             name: name,
-            active: false,
             teacherID: teacherID,
             userIDs: userIDs ? userIDs : [],
             parentGroupID: parentGroupID ? parentGroupID : null,
             childGroupIDs: [],
+            active: false
         }
         return await new GroupModel(newGroup).save();
     }
@@ -306,21 +302,62 @@ class DatabaseAccessor {
                     })
     }
 
-    createMessage(contents, userID, groupID){
+    async createMessage(contents, userID, groupID, type){
         var newMessage = {
             senderID: userID,
             groupID: groupID,
             contents: contents,
+            reactions: new Map(),
+            type: type,
             sentTime: Date.now()
         }
-        return new MessageModel(newMessage).save()
+        return await new MessageModel(newMessage).save().then((message)=>{
+            message.reactions = Object.fromEntries(message.reactions);
+            return message;
+        })
     }
 
-    async updateMessage(messageID, contents) {
-        return this.getMessageByID(messageID)
+    async reactToMessage(userID, messageID, emoji){
+        if(userID === null){
+            return await MessageModel.findById(messageID);
+        }
+        return await MessageModel.findById(messageID).then(async (message)=>{
+            let emojiReactionArr = message.reactions.get(emoji);
+            if(emojiReactionArr){
+                let indexOf = emojiReactionArr.indexOf(userID);
+                if(indexOf === -1){
+                    emojiReactionArr.push(userID);
+                } else {
+                    emojiReactionArr.splice(indexOf, 1);
+                }
+                message.reactions.set(emoji, emojiReactionArr.filter((val)=> {return val !== null}));
+            } else {
+                message.reactions.set(emoji, [userID]);
+            }
+            return message.save();
+        })
+    }
+
+    async updateMessage(updatedMessage) {
+        if(updatedMessage._doc){
+            updatedMessage = updatedMessage._doc;
+        }
+        const {_id, ...changes} = updatedMessage
+        return this.getMessageByID(_id)
             .then((message)=>{
-                message.contents = contents
-                return message.save()
+                if (message){
+                    Object.keys(message._doc).filter(key => key in changes).forEach(key=>{
+                        message[key] = changes[key]
+                    })
+                    return message.save().then((message)=>{
+                        message.reactions = Object.fromEntries(message.reactions);
+                        return message;
+                    })
+                }
+                else {
+                    console.log("message does not exist")
+                    return null
+                }
             })
     }
 

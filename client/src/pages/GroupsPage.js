@@ -78,7 +78,7 @@ class GroupsPage extends Component {
     }
 
     getTeacherOptions(){
-        return (<option>{this.props.currentUser.displayName}</option>)
+        return (<option>{this.props.currentUser.name}</option>)
     }
 
     renderGroups(){
@@ -126,7 +126,7 @@ class GroupsPage extends Component {
                                                 return (
                                                     <tr key={j}>
                                                         <td>{j}</td>
-                                                        <td>{student.displayName}</td>
+                                                        <td>{student.name}</td>
                                                         <td>{this.props.pageURL+student._id}</td>
                                                         <td>
                                                             <Button variant="outline-danger" style={{marginLeft: "16pt"}} onClick={()=>{
@@ -145,7 +145,7 @@ class GroupsPage extends Component {
                                                                 <Popover>
                                                                     <Popover.Header>Confirmation</Popover.Header>
                                                                     <Popover.Body>
-                                                                        Are you sure you want to <a style={{color:"#f00"}} href="" onClick={(e)=>{e.preventDefault();this.props.deleteStudent(student._id, this.props.currentUser._id)}}>delete</a> this student?
+                                                                        Are you sure you want to <button style={{color:"#f00", border:"none", backgroundColor: "#fff", padding: 0}} href="" onClick={(e)=>{e.preventDefault();this.props.deleteStudent(student._id, this.props.currentUser._id)}}>delete</button> this student?
                                                                     </Popover.Body>
                                                                 </Popover>
                                                             }>
@@ -174,7 +174,7 @@ class GroupsPage extends Component {
                                                     <Popover>
                                                         <Popover.Header>Confirmation</Popover.Header>
                                                         <Popover.Body>
-                                                            Are you sure you want to <a style={{color:"#f00"}} href="" onClick={(e)=>{e.preventDefault();this.props.deleteGroup(group._id, this.props.currentUser._id)}}>delete</a> this student?
+                                                            Are you sure you want to <button style={{color:"#f00", border:"none", backgroundColor: "#fff", padding: 0}} href="" onClick={(e)=>{e.preventDefault();this.props.deleteGroup(group._id, this.props.currentUser._id)}}>delete</button> this student?
                                                         </Popover.Body>
                                                     </Popover>
                                                 }>
@@ -253,10 +253,10 @@ class GroupsPage extends Component {
                         margin:"auto",
                         border:"1px solid #fff"
                     }}>
-                        {student.displayName.charAt(0)}
+                        {student.name.charAt(0)}
                     </span>
                     <div style={{textAlign:"center", width:"100%"}}>
-                        {student.displayName}
+                        {student.name}
                     </div>
                 </div>
                 </ColoredButton>
@@ -282,7 +282,7 @@ class GroupsPage extends Component {
                 errorMessage = {this.props.errorMessage}
                 setErrorMessage = {this.props.setErrorMessage}
                 loginHandler = {this.props.loginHandler}
-                updateLoginInfo = {this.props.updateLoginInfo}
+                updateUserName = {this.props.updateUserName}
             >
                 <Row style={{justifyContent: "center", width: "100%", fontSize: "80pt"}}>
                     <Col/>

@@ -5,10 +5,8 @@ const db = require('./DatabaseAccesser')
 class SocketManger {
     socketIDToUserID = {}
 
-    allowGlobalChat = false;
-
-    constructor(server) {
-        this.io = new Server(server, {
+    constructor(server){
+        this.io = new Server(server, { /* options */
             cors: {
                 origin: "http://localhost:3000",
                 methods: ["GET", "POST"]
@@ -18,157 +16,129 @@ class SocketManger {
         this.setupConnections()
     }
 
-    ioEmitActiveUsers() {
+    setupConnections(){
+
+        this.io.on("connection", (socket) => {
+            console.log("Establishing socket connection with ", socket.id)
+
+            this.connectSocket(socket)
+
+            // On disconnect tell everyone disconnectee left
+            socket.on('disconnect', () => {
+                this.disconnectSocket(socket)
+
+            });
+
+            socket.on('messageReaction', (messageID, emoji)=>{
+                db.reactToMessage(this.socketIDToUserID[socket.id], messageID, emoji)
+                .then((message)=>{
+                    Promise.all(Array.from(message.reactions, async ([emoji, userIDs])=>{
+                        return [emoji, await Promise.all(userIDs.map(async (userID) => {
+                            return await db.getUserByID(userID).then((user)=>{
+                                if(user){
+                                    return user.name;
+                                }
+                            })
+                        }))]
+                    })).then((emojiUserNamePair) => {
+                        this.io.emit("updatedMessage", {...message._doc,
+                            reactions: Object.fromEntries(emojiUserNamePair)
+                        });
+                    })
+                })
+            })
+
+            // Edit a message, add a reaction, etc
+            socket.on('updateMessage', (message)=>{this.io.emit("updatedMessage", message);})
+
+            // Change a username
+            socket.on('updateUserName', (oldName, newName)=>{this.updateUserName(socket, oldName, newName)})
+
+            // Listen for chatMessage
+            socket.on("message", (contents, userID, groupID, type)=>{this.relayMessage(contents, userID, groupID, type)})
+
+        });
+    }
+
+    sendServerMessage(socket, message){
+        socket.emit('message', {contents: message, sentTime: new Date(), type: "server"});
+    }
+
+    sendServerBroadcast(socket, message){
+        socket.emit('message', {contents: message, sentTime: new Date(), type: "server"});
+    }
+
+    connectSocket(socket){
+        db.getUserByAuthToken(socket.handshake.auth.token)
+        .then((user)=>{
+            if (user) {
+                console.log("Retrieved user", user.name, "with id", user._id.valueOf(), "associated with socket", socket.id)
+                //save user ID
+                this.socketIDToUserID[socket.id] = user._id
+                // set user's online status
+                db.updateUser(user._id, {active: true})
+                // Welcome connectee
+                this.sendServerMessage(socket, 'Welcome to Chatr, ' + user.name);
+                // Broadcast to all users except connectee
+                this.sendServerBroadcast(socket, user.name + " has joined the chat");
+                // inform all users of updated active users list
+                this.broadcastActiveUsers()
+            }
+            else {
+                socket.disconnect()
+            }
+        })
+        .catch((err)=>{console.log(err)})
+    }
+
+    disconnectSocket(socket){
+        db.getUserByID(this.socketIDToUserID[socket.id])
+        .then((user)=>{
+            if (user){
+                this.sendServerMessage(socket, user.name + " has left the chat");
+
+                db.updateUser(user._id, {active: false})
+
+                delete this.socketIDToUserID[socket.id]
+
+                this.broadcastActiveUsers()
+            }
+            else {
+                console.log("Error: received disconnect signal but no user found")
+            }
+        })
+        .catch(err=>console.log(err))
+    }
+
+    broadcastActiveUsers(){
         db.getUsersByID(Object.values(this.socketIDToUserID))
-        .then((activeUsers) => {
+        .then((activeUsers)=>{
+            console.log("broadcasting active user list");
             this.io.emit('activeUsers', activeUsers)
         })
     }
 
-    setupConnections() {
-        this.io.on("connection", (socket) => {
-            console.log("Establishing socket connection with ", socket.id)
-            const sendServerMessage = (message) => {
-                socket.emit('messageFromServer', {
-                    user: 'server',
-                    text: message,
-                    date: new Date()
-                });
+    updateUserName(socket, oldName, newName){
+        db.updateUser({_id: this.socketIDToUserID[socket.id], name: newName})
+        .then((user)=>{
+            if (user) {
+                console.log(user);
+                console.log("updated user", user.name)
+                this.io.emit("updatedUser", oldName, user);
+                this.broadcastActiveUsers();
             }
-
-            const sendServerBroadcast = (message) => {
-                socket.broadcast.emit('messageFromServer', {
-                    user: 'server',
-                    text: message,
-                    date: new Date()
-                });
+            else {
+                console.log("user not found")
             }
-
-            db.getUserByAuthToken(socket.handshake.auth.token)
-            .then((user) => {
-                console.log("Retrieved user", user._id.valueOf(), "associated with socket", socket.id)
-                if (user) {
-                    //save user ID
-                    this.socketIDToUserID[socket.id] = user._id
-                    // set user's online status
-                    user.active = true;
-                    db.updateUser(user)
-                    .then(([user, _])=>{
-                        // Welcome connectee
-                        sendServerMessage('Welcome to Chatr, ' + user.displayName);
-                        // Broadcast to all users except connectee
-                        sendServerBroadcast(user.displayName + " has joined the chat");
-                        // inform all users of updated active users list
-                        this.ioEmitActiveUsers();
-                    })
-                } else {
-                    socket.disconnect()
-                }
-            })
-            .catch((err) => {
-                console.log(err)
-            })
-
-            // On disconnect tell everyone disconnectee left
-            socket.on('disconnect', () => {
-                db.getUserByID(this.socketIDToUserID[socket.id])
-                .then((user) => {
-                    if (user) {
-                        sendServerMessage(user.displayName + " has left the chat");
-
-                        user.active = false
-                        db.updateUser(user)
-
-                        delete this.socketIDToUserID[socket.id]
-
-                        db.getUsersByID(Object.values(this.socketIDToUserID))
-                        .then((activeUsers) => {
-                            console.log("broadcasting updated user list");
-                            this.io.emit('activeUsers', activeUsers)
-                        })
-                    } else {
-                        console.log("Error: received disconnect signal but no user found")
-                    }
-                })
-                .catch(err => console.log(err));
-            });
-
-            socket.on('messageUpdateToServer', (message) => {
-                this.io.emit("messageUpdateFromServer", message);
-            })
-
-            //Update updateActiveUsers
-            socket.on('updateActiveUsers', () => {
-                db.getUsersByID(Object.values(this.socketIDToUserID))
-                .then((activeUsers) => {
-                    console.log("broadcasting updated user list");
-                    this.io.emit('activeUsers', activeUsers)
-                })
-            })
-
-            socket.on("sendServerMessage", (msg) => {
-                sendServerMessage(msg);
-            })
-
-            // Listen for chatMessage
-            socket.on("messageToServer", (msg, type) => {
-                db.getUserByID(this.socketIDToUserID[socket.id])
-                .then((user) => {
-                    if (user) {
-                        this.io.emit('messageFromServer', {
-                            user: user.displayName,
-                            text: msg,
-                            type: type,
-                            reactions: [],
-                        })
-                    } else {
-                        console.log("Error: received message but no user found")
-                    }
-                })
-            })
-            socket.on('messageUpdateToServer', (message) => {
-                this.io.emit("messageUpdateFromServer", message);
-            })
-
-            socket.on("updateUserToServer", (changesDict) => {
-                db.updateUser(changesDict)
-                .then(([updatedUser, valuesChanged]) => {
-                    if(valuesChanged.displayName){
-                        this.io.emit("updatedUserFromServer",
-                        valuesChanged.displayName,
-                        updatedUser,
-                    );
-                    this.ioEmitActiveUsers();
-                }
-            })
         })
+    }
 
-        socket.on("toggleAllowChatToServer", () => {
-            this.allowGlobalChat = !this.allowGlobalChat;
-            this.io.emit("setAllowChatFromServer", this.allowGlobalChat);
+    relayMessage(contents, userID, groupID, type){
+        db.createMessage(contents, userID, groupID, type)
+        .then(async (message) => {
+            this.io.emit('message', {...message._doc, ...{senderName: (await db.getUserByID(userID)).name}});
         })
-
-        // Listen for chatMessage
-        socket.on("messageToServer", (msg, type) => {
-            db.getUserByID(this.socketIDToUserID[socket.id], (err, user) => {
-                if (err) {
-                    console.log(err)
-                }
-                if (user) {
-                    this.io.emit('messageFromServer', {
-                        user: user.displayName,
-                        text: msg,
-                        reactions: [],
-                        type: type,
-                        date: new Date()
-                    })
-                } else {
-                    console.log("Error: received message but no user found")
-                }
-            })
-        })
-    });
-    };
+    }
 }
 
 module.exports = SocketManger
