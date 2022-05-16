@@ -49,7 +49,33 @@ class Message extends Component{
     }
 
     react(emoji){
+<<<<<<< HEAD
         this.props.socket.emit("messageReaction", this.props.message._id, emoji);
+=======
+        let updatedReactions = this.props.message.reactions;
+        if(!updatedReactions)
+            updatedReactions = [];
+
+        let newReaction = {
+            emoji: emoji,
+            by: this.props.currentUser.name,
+        }
+        let indexOf = -1;
+        for(let i = 0; i < updatedReactions.length; i++){
+            if(isEqual(newReaction, updatedReactions[i])){
+                indexOf = i;
+                break;
+            }
+        }
+        if(indexOf === -1){
+            updatedReactions.push(newReaction);
+        } else {
+            updatedReactions.splice(indexOf,1);
+        }
+        let newMessage = this.props.message;
+        newMessage.reactions = updatedReactions;
+        this.props.socket.emit("updateMessage", newMessage);
+>>>>>>> main
     }
 
     styleTemplate(){

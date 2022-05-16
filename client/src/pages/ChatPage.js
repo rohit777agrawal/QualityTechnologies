@@ -8,12 +8,16 @@ import ErrorBox from "../components/ErrorBox.js";
 import NavigateLink from "../components/NavigateLink";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+
+const GROUPID = "1"
+
 class ChatPage extends Component {
     constructor(props) {
         super(props);
         this.state = {
             draftMessage: "",
             messages: props.messages,
+            currentGroup: props.currentGroup,
             url: "",
             showEmoji: false,
             showLink: false,
@@ -97,6 +101,7 @@ class ChatPage extends Component {
     }
 
     renderMessages(){ // TODO: Convert to message dict
+<<<<<<< HEAD
         return this.props.messages.map((message, keyVal) => {
             return <Message
                 socket={this.props.socket}
@@ -104,6 +109,16 @@ class ChatPage extends Component {
                 key={keyVal}
                 message={message}
                 />
+=======
+        return this.props.messages[GROUPID]?.map((message, keyVal) => {
+            return <Message 
+                socket={this.props.socket}
+                currentUser={this.props.currentUser}
+                currentGroup={this.props.currentGroup}
+                key={keyVal}
+                message={message}
+            ></Message>
+>>>>>>> main
         })
     }
 
