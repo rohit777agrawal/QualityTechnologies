@@ -8,6 +8,9 @@ import io from "socket.io-client"
 
 const GROUPID = "1"
 
+//TODO:
+// Move reactions to use ID instead of name
+
 const url = "http://localhost:5000/";
 
 // const socket = io(url, {autoConnect: false});
@@ -46,10 +49,9 @@ class App extends Component {
             loginError: "",
             email: "",
             currentUser: null,
-            messages: [],
-            //messages: {},   // messages, users, groups are intended to be a dictionary of arrays that store the given type
-            //users: {},
-            //gorups: {},
+            messages: {},   // messages, users, groups are intended to be a dictionary of arrays that store the given type
+            users: {},
+            gorups: {},
             activeUsers: []
         };
 
@@ -65,23 +67,40 @@ class App extends Component {
         })
 
         this.socket.on('message', (message) => {
-            let updatedMessages = this.state.messages;
+            let updatedMessages = this.state.messages[message.groupID];
+            if(!updatedMessages)
+                updatedMessages = [];
+            console.log("Cient", message)
+            console.log(updatedMessages)
+            updatedMessages.push(message)
 
-            //updatedMessages[message.groupID].push(message);
-            updatedMessages.push(message);
-
-            this.setState({messages: updatedMessages});
+            this.setState({
+                ...this.state,
+                messages: {
+                    ...this.state.messages,
+                    [message.groupID]: updatedMessages
+                }
+            })
         })
 
         this.socket.on("updateMessage", (message) => {  // TODO: Convert to Message dictionary
-            let updatedMessages = this.state.messages;
-            for(let i = 0; i < updatedMessages.length; i++){
-                if(updatedMessages[i].senderID === message.senderID && updatedMessages[i].timeSent === message.timeSent){
-                    updatedMessages[i] = message;
-                    this.setState({messages: updatedMessages});
+            let updatedMessages = this.state.messages[message.groupID];
+
+
+            for(var msg of updatedMessages) {
+                if(msg.senderID === message.senderID && msg.timeSent === message.timeSent) { // isMatching
+                    msg = message;
                     break;
                 }
             }
+
+            this.setState({
+                ...this.state,
+                messages: {
+                    ...this.state.messages,
+                    [message.groupID]: updatedMessages
+                }
+            })
         })
 
         this.socket.on('activeUsers', users=>{
@@ -140,21 +159,24 @@ class App extends Component {
                     // this.socket.emit("updateUser", oldName, json.displayName, ())
                     this.socket.emit("updateUser", oldName, json.displayName);
                     // this.socket.emit("message", oldName + " has changed their name to " + json.displayName);
-                    let newMessages = this.state.messages;
-                    console.log(newMessages);
-                    for(let i = 0; i < newMessages.length; i++){
-                        if(newMessages[i].reactions){
-                            for(let j = 0; j < newMessages[i].reactions.length; j++){
-                                if(newMessages[i].reactions[j].by === json.oldDisplayName){
-                                    newMessages[i].reactions[j].by = json.displayName;
+                    
+                    let allMessages = this.state.messages; 
+                    console.log(allMessages)
+                    for(let groupMsg in allMessages) {  // I will be shocked if this works properly :')
+                        for(let msg in groupMsg) {
+                            if(msg.reactions) {
+                                for(let reaction in msg.reactions) {
+                                    if(reaction.by === json.oldDisplayName) {
+                                        reaction.by = json.displayName;
+                                    }
                                 }
                             }
                         }
-                        if(newMessages[i].user === json.oldDisplayName){
-                            newMessages[i].user = json.displayName;
-                        }
                     }
-                    this.setState({currentUser: json, messages: newMessages});
+                    this.setState({
+                        messages: allMessages,
+                        currentUser: json,          // I just copied this from the previous one, honestly can't tell why it is here rn ¯\_(ツ)_/¯
+                    })
                     resolve(json);
                 })
                 .catch((err) =>{
@@ -209,6 +231,7 @@ class App extends Component {
                     loginHandler={this.updateLoginState.bind(this)}
                     initChat={this.initChat.bind(this)}
                     currentUser={this.state.currentUser}
+                    currentGroup={this.state.currentGroup}
                     activeUsers={this.state.activeUsers}
                     loginError={this.state.loginError}
                     setLoginError={this.setLoginError.bind(this)}
