@@ -60,7 +60,7 @@ class GroupsPage extends Component {
                     })
                     break;
                 case "Student":
-                    this.props.createNewStudent(this.state.nameDraft, this.props.currentUser._id, this.state.selectedGroup.id)
+                    this.props.createNewStudent(this.state.nameDraft, this.props.currentUser._id, this.state.selectedGroup)
                     .then(() => {
                         this.setState({nameDraft: "", showModal: false});
                     })
@@ -87,7 +87,7 @@ class GroupsPage extends Component {
                 <>
                 <Accordion style={{marginTop: "16pt", fontSize: "16pt"}} defaultActiveKey="0">
                     {
-                        this.props.groups.map((group, i) => {
+                        Object.entries(this.props.groups).map(([id, group], i) => {
                             return (
                                 <Accordion.Item key={i} eventKey={""+i}>
                                     <Accordion.Header>Group: {group.name} </Accordion.Header>
@@ -98,12 +98,12 @@ class GroupsPage extends Component {
                                             <td>
                                                 This group does not have any students
                                                 <Button variant="outline-secondary" style={{marginLeft:"16pt"}} onClick={()=>{
-                                                    this.setState({showModal: true, creating: false, selectedGroup: {index: i, id: group.id}});
+                                                    this.setState({showModal: true, creating: false, selectedGroup: id});
                                                 }}>
                                                     Add existing Students <i className="bi bi-people"/>
                                                 </Button>
                                                 <Button variant="outline-success" style={{marginLeft: "16pt"}} onClick={()=>{
-                                                    this.setState({showModal: true, creating: true, createType: "Student", selectedGroup: {index: i, id: group.id}});
+                                                    this.setState({showModal: true, creating: true, createType: "Student", selectedGroup: id});
                                                 }}>
                                                     Create One <i className="bi bi-person-plus"/>
                                                 </Button>
@@ -158,12 +158,12 @@ class GroupsPage extends Component {
                                             })}
                                             <tr><td colSpan="100%">
                                                 <Button variant="outline-secondary" style={{marginLeft:"16pt"}} onClick={()=>{
-                                                    this.setState({showModal: true, creating: false, selectedGroup: {index: i, id: group.id}});
+                                                    this.setState({showModal: true, creating: false, selectedGroup: id});
                                                 }}>
                                                     Add existing Students <i className="bi bi-people"/>
                                                 </Button>
                                                 <Button variant="outline-success" style={{marginLeft: "16pt"}} onClick={()=>{
-                                                    this.setState({showModal: true, creating: true, createType: "Student", selectedGroup: {index: i, id: group.id}});
+                                                    this.setState({showModal: true, creating: true, createType: "Student", selectedGroup: id});
                                                 }}>
                                                     Create a new Student <i className="bi bi-person-plus"/>
                                                 </Button>
@@ -222,7 +222,7 @@ class GroupsPage extends Component {
     renderStudentSelect(){
         return this.props.students.map((student, i)=>{
             let color = student._id.substring(student._id.length-6,student._id.length);
-            let group = this.props.groups[this.state.selectedGroup.index];
+            let group = this.props.groups[this.state.selectedGroup];
             return (
                 <ColoredButton key={i} color={color} style={{margin: "8px", wordWrap:"break-word", width:"144px", height:"144px"}}
                 active={group.students.map(student=>{return student._id}).indexOf(student._id) !== -1}

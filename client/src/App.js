@@ -44,7 +44,8 @@ class App extends Component {
             console.log("No valid user saved")
         }
         if (user) {
-            this.validateUser(user._id).catch((err) => {
+            this.validateUser(user._id)
+            .catch((err) => {
                 console.log(err);
             })
         }
@@ -60,6 +61,7 @@ class App extends Component {
             currentUser: null,
             messages: {},   // messages, users, groups are intended to be a dictionary of arrays that store the given type
             users: {},
+            students:[],
             groups: {},
             activeUsers: []
         };
@@ -322,7 +324,12 @@ class App extends Component {
         return await fetch(serverURL + "users/" + teacherID + "/groups/")
             .then(async (res) => {
                 if(res.ok){
-                    this.setState({groups: await res.json()});
+                    res.json().then((groups)=>{
+                        this.setState({groups: Object.fromEntries(groups.map((group)=>{
+                            return [group._id, group]
+                        }))});
+                    })
+
                 } else if(res.status === 404){
                     this.setState({groups: null})
                 }
@@ -337,7 +344,9 @@ class App extends Component {
         return await fetch(serverURL + "users/students")
             .then(async (res) => {
                 if(res.ok){
-                    this.setState({students: await res.json()})
+                    res.json().then((students)=>{
+                        this.setState({students: students});
+                    })
                 } else if(res.status === 404){
                     this.setState({students: null})
                 }
