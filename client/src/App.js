@@ -49,9 +49,10 @@ class App extends Component {
             loginError: "",
             email: "",
             currentUser: null,
+            currentGroup: null,
             messages: {},   // messages, users, groups are intended to be a dictionary of arrays that store the given type
             users: {},
-            gorups: {},
+            groups: {},
             activeUsers: []
         };
 
@@ -103,6 +104,7 @@ class App extends Component {
 
         this.socket.on('activeUsers', users=>{
             this.setState({activeUsers: users})
+
         })
 
     }
@@ -183,6 +185,26 @@ class App extends Component {
         })
     }
 
+    updateGroups(){
+        const requestOptions = {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'},
+        } 
+        fetch(url + "users/" + this.state.currentUser._id + "/groups", requestOptions)
+        .then((res)=>{
+            if (res.ok) {
+                return res.json()
+            }
+        })
+        .then((groups)=>{
+            let groupMap = {}
+            for (let group of groups){
+                groupMap[group._id] = group
+            }
+            this.setState({groups: groupMap})
+        })
+    }
+
     submitLoginInfo(email, password){
         const requestOptions = {
             method: 'POST',
@@ -202,7 +224,10 @@ class App extends Component {
             })
             .then((user)=>{
                 //console.log(user)
-                this.setState({currentUser: user, loggedIn: true})
+                this.setState({
+                    loggedIn: true,
+                    currentUser: user,
+                })
                 localStorage.setItem('currentUser', JSON.stringify(user))
             })
             .catch((err) => {
