@@ -101,7 +101,7 @@ class ChatPage extends Component {
 
     renderActiveUsers(){
         return this.props.activeUsers.map((user, keyVal)=>{
-            return <Button variant="outline-info" style={{cursor:"default", margin:"2pt 0"}} key={keyVal}>{user.displayName}</Button>
+            return <Button variant="outline-info" style={{cursor:"default", margin:"2pt 0"}} key={keyVal}>{user.name}</Button>
         })
     }
 
@@ -122,10 +122,10 @@ class ChatPage extends Component {
     }
 
     handleChangeSubmit(event){
-        const displayNameRegex = /^[A-z0-9_-\s]{3,15}$/;
+        const nameRegex = /^[A-z0-9_-\s]{3,15}$/;
         event.preventDefault();
         try{
-            if(this.state.newDisplayName.match(displayNameRegex)===null){
+            if(this.state.newDisplayName.match(nameRegex)===null){
                 if(this.state.newDisplayName.length < 3 || this.state.newDisplayName.length > 15){
                     throw new Error("Usernames must be 3 to 15 characters long.");
                 } else {
@@ -135,7 +135,7 @@ class ChatPage extends Component {
             if(this.state.newDisplayName === "server"){
                 throw new Error("That user name is invalid.");
             }
-            this.props.updateLoginInfo({displayName: this.state.newDisplayName})
+            this.props.updateLoginInfo({name: this.state.newDisplayName})
             .then(() => {
                 this.setState({showAccount: false});
             })
@@ -169,7 +169,7 @@ class ChatPage extends Component {
                             <i className="bi bi-bell"/>
                         </Button>
                         <Dropdown>
-                            <Dropdown.Toggle id="dropdown-basic">{this.props.currentUser.displayName}</Dropdown.Toggle>
+                            <Dropdown.Toggle id="dropdown-basic">{this.props.currentUser.name}</Dropdown.Toggle>
                             <Dropdown.Menu style={{minWidth: "100%"}}>
                                 <Dropdown.Item onClick={()=>{
                                         this.setState({showAccount: true});
@@ -266,7 +266,7 @@ class ChatPage extends Component {
                         <Form target="">
                             <Form.Group className="mb-3">
                                 <Form.Label>Display Name</Form.Label>
-                                <Form.Control placeholder={this.props.currentUser.displayName} onChange={(e)=>{this.handleDisplayNameInput(e)}}/>
+                                <Form.Control placeholder={this.props.currentUser.name} onChange={(e)=>{this.handleDisplayNameInput(e)}}/>
                                 <Form.Label style={{color:"#f44"}}>{this.props.loginError}</Form.Label>
                             </Form.Group>
                             <div style={{display:"flex", justifyContent:"space-evenly"}}>

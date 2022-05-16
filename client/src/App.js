@@ -148,7 +148,7 @@ class App extends Component {
             body: JSON.stringify(changesDict)
         }
         return new Promise((resolve, reject) =>{
-            const oldName = this.state.currentUser.displayName
+            const oldName = this.state.currentUser.name
             fetch(url + "users/" + this.state.currentUser._id, requestOptions)
                 .then((res)=> res.json())
                 .then((json)=>{

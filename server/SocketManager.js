@@ -53,15 +53,15 @@ class SocketManger {
     db.getUserByAuthToken(socket.handshake.auth.token)
         .then((user)=>{
           if (user) {
-            console.log("Retrieved user", user.displayName, "with id", user._id.valueOf(), "associated with socket", socket.id)
+            console.log("Retrieved user", user.name, "with id", user._id.valueOf(), "associated with socket", socket.id)
             //save user ID
             this.socketIDToUserID[socket.id] = user._id
             // set user's online status
             db.updateUser(user._id, {active: true})
             // Welcome connectee
-            this.sendServerMessage(socket, 'Welcome to Chatr, ' + user.displayName);
+            this.sendServerMessage(socket, 'Welcome to Chatr, ' + user.name);
             // Broadcast to all users except connectee
-            this.sendServerBroadcast(socket, user.displayName + " has joined the chat");
+            this.sendServerBroadcast(socket, user.name + " has joined the chat");
             // inform all users of updated active users list
             this.broadcastActiveUsers()
           }
@@ -76,7 +76,7 @@ class SocketManger {
     db.getUserByID(this.socketIDToUserID[socket.id])
     .then((user)=>{
       if (user){
-        this.sendServerMessage(socket, user.displayName + " has left the chat");
+        this.sendServerMessage(socket, user.name + " has left the chat");
 
         db.updateUser(user._id, {active: false})
 
@@ -100,10 +100,10 @@ class SocketManger {
   }
 
   updateUser(socket, oldName, newName){
-    db.updateUser(this.socketIDToUserID[socket.id], {displayName: newName})
+    db.updateUser(this.socketIDToUserID[socket.id], {name: newName})
     .then((user)=>{
       if (user) {
-        console.log("updated user", user.displayName)
+        console.log("updated user", user.name)
         this.sendServerBroadcast(socket, oldName + " has changed their name to " + newName)
         this.broadcastActiveUsers()
       }
@@ -115,8 +115,8 @@ class SocketManger {
 
   relayMessage(contents, userID, groupID, type){
     db.createMessage(contents, userID, groupID, type)
-      .then((message) => {
-          this.io.emit('message', message);
+      .then(async (message) => {
+          this.io.emit('message', {...message._doc, ...{senderName: (await db.getUserByID(userID)).name}});
         })
   }
 
