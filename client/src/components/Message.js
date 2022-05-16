@@ -50,6 +50,9 @@ class Message extends Component{
 
     react(emoji){
         let updatedReactions = this.props.message.reactions;
+        if(!updatedReactions)
+            updatedReactions = [];
+
         let newReaction = {
             emoji: emoji,
             by: this.props.currentUser.displayName,

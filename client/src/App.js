@@ -70,8 +70,6 @@ class App extends Component {
             let updatedMessages = this.state.messages[message.groupID];
             if(!updatedMessages)
                 updatedMessages = [];
-            console.log("Cient", message)
-            console.log(updatedMessages)
             updatedMessages.push(message)
 
             this.setState({

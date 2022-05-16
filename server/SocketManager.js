@@ -116,7 +116,6 @@ class SocketManger {
   relayMessage(contents, userID, groupID, type){
     db.createMessage(contents, userID, groupID, type)
       .then((message) => {
-          console.log(`Server`, message)
           this.io.emit('message', message);
         })
   }
