@@ -14,18 +14,13 @@ const clientURL = "http://localhost:3000/"
 const serverURL = "http://localhost:5000/";
 const GROUPID = "1"
 
-<<<<<<< HEAD
-=======
 //TODO:
 // Move reactions to use ID instead of name
-
-const url = "http://localhost:5000/";
 
 // const socket = io(url, {autoConnect: false});
 
 //fetch(url + "login/" + localStorage.getItem('login')))
 
->>>>>>> main
 class App extends Component {
     validateUser(id) {
         return new Promise((resolve, reject) => {
@@ -63,21 +58,10 @@ class App extends Component {
             errorMessage: "",
             email: "",
             currentUser: null,
-<<<<<<< HEAD
-            messages: [],
-            students: [],
-            groups: [],
-            activeUsers: [],
-            //messages: {},   // messages, users, groups are intended to be a dictionary of arrays that store the given type
-            //users: {},
-            //gorups: {},
-            allowChat: true
-=======
             messages: {},   // messages, users, groups are intended to be a dictionary of arrays that store the given type
             users: {},
-            gorups: {},
+            groups: {},
             activeUsers: []
->>>>>>> main
         };
 
         this.socket = null;
@@ -118,9 +102,9 @@ class App extends Component {
         this.socket.on("updatedMessage", (message) => {  // TODO: Convert to Message dictionary
             let updatedMessages = this.state.messages[message.groupID];
 
-            for(var msg of updatedMessages) {
-                if(msg.senderID === message.senderID && msg.timeSent === message.timeSent) { // isMatching
-                    msg = message;
+            for(let i = 0; i < updatedMessages.length; i++){
+                if(updatedMessages[i].senderID === message.senderID && updatedMessages[i].timeSent === message.timeSent) { // isMatching
+                    updatedMessages[i] = message;
                     break;
                 }
             }
@@ -139,7 +123,6 @@ class App extends Component {
             if(oldName === this.state.currentUser.name){
                 localStorage.setItem('currentUser', JSON.stringify(updatedUser));
                 this.setState({currentUser: updatedUser});
-                console.log("these should be different", oldName, this.state.currentUser.name)
             }
             for (let i = 0; i < newMessages.length; i++) {
                 if (newMessages[i].user === oldName) {
@@ -173,90 +156,12 @@ class App extends Component {
             },
             body: JSON.stringify({'name': name, 'email': email, 'password': password})
         }
-<<<<<<< HEAD
         return new Promise((resolve, reject) => {
             fetch(serverURL + "users/teacher/", requestOptions)
             .then((res) => {
                 if (res.ok) {
                     resolve({success: true});
                 } else {
-=======
-        return new Promise((resolve, reject) =>{
-            fetch(url + "users/teacher/", requestOptions)
-                .then((res) => {
-                    console.log(res);
-                    if(res.ok){
-                        //console.log("createNewLogin ok")
-                        resolve({success: true});
-                    } else {
-                        throw new Error("Unspecified error");
-                    }
-                })
-                .catch((err) => {
-                    console.log("createNewLogin error")
-                    reject({success: false, error: err});
-                })
-        })
-    }
-
-    updateLoginInfo(changesDict){
-        console.log(changesDict)
-        const requestOptions = {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(changesDict)
-        }
-        return new Promise((resolve, reject) =>{
-            const oldName = this.state.currentUser.name
-            fetch(url + "users/" + this.state.currentUser._id, requestOptions)
-                .then((res)=> res.json())
-                .then((json)=>{
-                    console.log(json);
-                    localStorage.setItem('currentUser', JSON.stringify(json));
-                    // this.socket.emit("updateUser", oldName, json.displayName, ())
-                    this.socket.emit("updateUser", oldName, json.displayName);
-                    // this.socket.emit("message", oldName + " has changed their name to " + json.displayName);
-
-                    let allMessages = this.state.messages;
-                    console.log(allMessages)
-                    for(let groupMsg in allMessages) {  // I will be shocked if this works properly :')
-                        for(let msg in groupMsg) {
-                            if(msg.reactions) {
-                                for(let reaction in msg.reactions) {
-                                    if(reaction.by === json.oldDisplayName) {
-                                        reaction.by = json.displayName;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    this.setState({
-                        messages: allMessages,
-                        currentUser: json,          // I just copied this from the previous one, honestly can't tell why it is here rn ¯\_(ツ)_/¯
-                    })
-                    resolve(json);
-                })
-                .catch((err) =>{
-                    reject(err);
-                })
-        })
-    }
-
-    submitLoginInfo(email, password){
-        const requestOptions = {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ 'email': email, 'password': password })
-        }
-        fetch(url + "users/login", requestOptions)
-            .then((res) =>{
-                if (res.ok){
-                    return res.json()
-                } else if (res.status === 404){
-                    throw new Error("Email or password not found");
-                }
-                else {
->>>>>>> main
                     throw new Error("Unspecified error");
                 }
             }).catch((err) => {
@@ -305,7 +210,6 @@ class App extends Component {
         // send messages to message to server-side socket
         this.socket.emit('message', msg, this.state.currentUser._id, GROUPID, type);
     }
-<<<<<<< HEAD
 
     createNewGroup(groupName, teacherID) {
         const requestOptions = {
@@ -314,25 +218,6 @@ class App extends Component {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({name: groupName}),
-=======
-    render(){
-        if (this.state.loggedIn){
-            return (
-                <ChatPage
-                    messages={this.state.messages}
-                    messageHandler={this.sendMessage.bind(this)}
-                    loginHandler={this.updateLoginState.bind(this)}
-                    initChat={this.initChat.bind(this)}
-                    currentUser={this.state.currentUser}
-                    currentGroup={this.state.currentGroup}
-                    activeUsers={this.state.activeUsers}
-                    loginError={this.state.loginError}
-                    setLoginError={this.setLoginError.bind(this)}
-                    updateLoginInfo={this.updateLoginInfo.bind(this)}
-                    socket={this.socket}
-                />
-            );
->>>>>>> main
         }
         return new Promise((resolve, reject)=>{
             fetch(serverURL + "users/" + teacherID + "/groups/", requestOptions)

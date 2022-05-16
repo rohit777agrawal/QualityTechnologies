@@ -50,7 +50,6 @@ class ChatPage extends Component {
             event.preventDefault();
             if(this.state.draftMessage){
                 this.props.messageHandler(this.state.draftMessage, "text");
-                console.log(this.state.draftMessage);
                 this.setState({draftMessage: ""});
             }
         })
@@ -101,24 +100,15 @@ class ChatPage extends Component {
     }
 
     renderMessages(){ // TODO: Convert to message dict
-<<<<<<< HEAD
-        return this.props.messages.map((message, keyVal) => {
+        if(!this.props.messages[GROUPID]){return;}
+        return this.props.messages[GROUPID].map((message, keyVal) => {
             return <Message
-                socket={this.props.socket}
-                currentUser={this.props.currentUser}
-                key={keyVal}
-                message={message}
-                />
-=======
-        return this.props.messages[GROUPID]?.map((message, keyVal) => {
-            return <Message 
                 socket={this.props.socket}
                 currentUser={this.props.currentUser}
                 currentGroup={this.props.currentGroup}
                 key={keyVal}
                 message={message}
             ></Message>
->>>>>>> main
         })
     }
 

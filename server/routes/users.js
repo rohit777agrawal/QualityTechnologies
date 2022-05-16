@@ -82,8 +82,8 @@ db.getUserByEmail(req.body.email)
                     token: uuidv4()
                 };
 
-                db.updateUserName(user)
-                .then(([user, _]) => {
+                db.updateUser(user)
+                .then((user) => {
                     res.status(200).json(user)
                 })
                 console.log("Found user '" + req.body.email + "' with password '" + req.body.password + "'");
@@ -103,7 +103,7 @@ db.getUserByEmail(req.body.email)
 
 router.put("/:id", function(req, res, _) {
     let updatedUser = req.body;
-    db.updateUserName(updatedUser)
+    db.updateUser(updatedUser)
         .then((user) => {
             res.status(200).json(user)
     })
@@ -157,7 +157,7 @@ router.post('/student', function(req, res, _){
 router.put("/:id", function(req, res, _) {
     var updatedProps = req.body
     if (!Object.keys(updatedProps).includes('_id')){
-        db.updateUserName(req.params.id, updatedProps)
+        db.updateUser(req.params.id, updatedProps)
         .then((user) => {
             if (user) {
                 res.status(200).json(user)
