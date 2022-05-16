@@ -18,15 +18,15 @@ router.get('/', function(req, res, next) {
         })
 })
 
-router.post('/teacher/', function(req, res, next) {
-    db.createTeacher(req.body.name, req.body.email, req.body.password)
-    .then((user)=>{
-        res.status(200).json(user)
-    })
-    .catch(err => {
-        res.status(400).send("Teacher Creation Error")
-    })
-})
+// router.post('/teacher/', function(req, res, next) {
+//     db.createTeacher(req.body.name, req.body.email, req.body.password)
+//     .then((user)=>{
+//         res.status(200).json(user)
+//     })
+//     .catch(err => {
+//         res.status(400).send("Teacher Creation Error")
+//     })
+// })
 
 router.get("/:id", function(req, res, next) {
     db.getUserByID(req.params.id)
@@ -91,7 +91,7 @@ router.post('/:id/logout', function(req, res, next) {
 })
 
 router.post('/teacher/', function(req, res, next) {
-    db.createTeacher(req.body.email, req.body.password, req.body.name)
+    db.createTeacher(req.body.name, req.body.email, req.body.password)
     .then((user)=>{
         if (user) {
             res.status(200).json(user)

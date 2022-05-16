@@ -83,27 +83,34 @@ class DatabaseAccessor {
     createTeacher(name, email, password){
         return this.getUserByEmail(email)
         .then((user)=>{
-                if (user){
-                    return null
-                }
-                else {
-                    var user = {
-                        name: name,
-                        email: email,
-                        password: password,
-                        link: null,
-                        isTeacher: true,
-                        sentMessageIDs: [],
-                        recievedMessageIDs: [],
-                        groupIDs: [],
-                        active: true,
-                        auth: {
-                            token: ''
-                        }
+            if (user){
+                return null
+            }
+            else {
+                var user = {
+                    name: name,
+                    email: email,
+                    password: password,
+                    link: null,
+                    isTeacher: true,
+                    sentMessageIDs: [],
+                    recievedMessageIDs: [],
+                    groupIDs: [],
+                    active: true,
+                    auth: {
+                        token: ''
                     }
-                    return new UserModel(user).save();
                 }
-            })
+                console.log(user)
+                return new UserModel(user).save()
+                .then((user)=>{
+                    return this.createGroup("Classroom", user._id, [user._id], null)
+                    .then((group)=>{
+                        return this.updateUser(user._id, {groupIDs: [group._id]})
+                    })
+                })
+            }
+        })
 
     }
 
