@@ -104,7 +104,7 @@ class App extends Component {
 
         this.socket.on("updatedMessage", (message) => {  // TODO: Convert to Message dictionary
             let updatedMessages = this.state.messages[message.groupID];
-
+            if(!updatedMessages){return;}
             for(let i = 0; i < updatedMessages.length; i++){
                 if(updatedMessages[i]._id === message._id) { // isMatching
                     updatedMessages[i] = message;
