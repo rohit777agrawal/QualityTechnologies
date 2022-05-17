@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Row, Col, InputGroup, FormControl, Button, Form, OverlayTrigger, Popover, Dropdown} from 'react-bootstrap';
+import { Row, Col, InputGroup, FormControl, Button, Form, OverlayTrigger, Popover, Dropdown, Accordion} from 'react-bootstrap';
 import TemplatePage from "./TemplatePage.js";
 import Picker from "emoji-picker-react";
 import Message from "../components/Message.js";
@@ -8,16 +8,12 @@ import ErrorBox from "../components/ErrorBox.js";
 import NavigateLink from "../components/NavigateLink";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-
-const GROUPID = "1"
-
 class ChatPage extends Component {
     constructor(props) {
         super(props);
         this.state = {
             draftMessage: "",
             messages: props.messages,
-            currentGroup: props.currentGroup,
             url: "",
             showEmoji: false,
             showLink: false,
@@ -30,12 +26,12 @@ class ChatPage extends Component {
     send(type){ // TODO: Update to messageobj
         const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)/;
         if(this.state.url.match(urlRegex)){
-            this.props.messageHandler(this.state.url, type)
+            this.props.messageHandler(this.state.url, this.props.currentGroup, type)
             this.setState({url: "", error: ""});
         } else {
             let testURL = "http://" + this.state.url;
             if(testURL.match(urlRegex)){
-                this.props.messageHandler(testURL, type)
+                this.props.messageHandler(testURL, this.props.currentGroup, type)
                 this.setState({url: "", error: ""});
             } else {
                 this.setState({error: "Invalid url"})
@@ -49,7 +45,7 @@ class ChatPage extends Component {
         this.messageForm.addEventListener("submit", (event)=>{
             event.preventDefault();
             if(this.state.draftMessage){
-                this.props.messageHandler(this.state.draftMessage, "text");
+                this.props.messageHandler(this.state.draftMessage, this.props.currentGroup,  "text");
                 this.setState({draftMessage: ""});
             }
         })
@@ -57,6 +53,11 @@ class ChatPage extends Component {
             if(event.charCode === 13 && event.shiftKey === false){
                 event.target.form.dispatchEvent(new Event("submit", {bubbles: true, cancelable: true}));
                 event.preventDefault(); // Prevents the addition of a new line in the text field (not needed in a lot of cases)
+            }
+        })
+        this.props.getGroups(this.props.currentUser._id).then(()=>{
+            if(this.props.groups && Object.keys(this.props.groups).length > 0){
+                this.props.setCurrentGroup(Object.keys(this.props.groups)[0]);
             }
         })
     }
@@ -93,22 +94,56 @@ class ChatPage extends Component {
         });
     }
 
-    renderActiveUsers(){
-        return this.props.activeUsers.map((user, keyVal)=>{
-            return <Button variant="outline-info" style={{cursor:"default", margin:"2pt 0"}} key={keyVal}>{user.name}</Button>
-        })
+    renderGroups(){
+        return(
+            <Accordion style={{marginTop: "16pt", fontSize: "16pt"}} defaultActiveKey="0">
+                {
+                    Object.values(this.props.groups).map((group, i)=>{
+                        return(
+                            <Accordion.Item key={group._id} eventKey={""+i}>
+                                <Accordion.Header onClick={()=>{
+                                    if(this.props.currentGroup !== group._id.valueOf()){
+                                        this.props.setCurrentGroup(group._id);
+                                        this.props.socket.emit("changedGroup", group._id, group.name)
+                                    }
+                                }}>
+                                    {group.name}
+                                </Accordion.Header>
+                                <Accordion.Body>
+                                    {
+                                        group.students.map((student, j)=>{
+                                            return (
+                                                <>
+                                                <Button variant={
+                                                    this.props.activeUsers.map(activeUser => {return activeUser._id}).indexOf(student._id) !== -1
+                                                    ? "outline-info"
+                                                    : "outline-secondary"
+                                                } style={{cursor:"default", margin:"2pt 0", width:"128pt"}} key={student._id}>
+                                                    {student.name}
+                                                    </Button>
+                                                <br key={j}/>
+                                                </>
+                                            )
+                                        })
+                                    }
+                                </Accordion.Body>
+                            </Accordion.Item>
+                        )
+                    })
+                }
+            </Accordion>
+        )
     }
 
     renderMessages(){ // TODO: Convert to message dict
-        if(!this.props.messages[GROUPID]){return;}
-        return this.props.messages[GROUPID].map((message, keyVal) => {
+        if(!this.props.messages[this.props.currentGroup]){return;}
+        return this.props.messages[this.props.currentGroup].map((message) => {
             return <Message
                 socket={this.props.socket}
                 currentUser={this.props.currentUser}
-                currentGroup={this.props.currentGroup}
-                key={keyVal}
+                key={message._id}
                 message={message}
-            ></Message>
+            />
         })
     }
 
@@ -135,8 +170,8 @@ class ChatPage extends Component {
                 updateUserName = {this.props.updateUserName}
             >
                 <Row style={{flex: "1 1 auto", width:"100%", overflow:"auto", margin:0}} className="align-items-bottom text-left">
-                    <Col md="auto" style={{width: "10%", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>
-                        {this.renderActiveUsers()}
+                    <Col md="auto" style={{width: "fit-content", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>
+                        {this.renderGroups()}
                     </Col>
                     <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding: "4px 4px 48pt 4px"}} className="align-items-bottom text-left">
                         {this.renderMessages()}

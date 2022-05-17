@@ -29,7 +29,7 @@ class GroupsPage extends Component {
             return(<Navigate replace="replace" to="/chat"/>)
         } else {
             this.setState({showModal: false});
-            this.props.getTeachersGroups(this.props.currentUser._id);
+            this.props.getGroups(this.props.currentUser._id);
             this.props.getAllStudents();
         }
     }

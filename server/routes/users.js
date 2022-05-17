@@ -61,7 +61,20 @@ router.post("/:id/groups/", function(req, res, _){
 
 //Get a Users's Groups, and all of the users in those groups
 router.get('/:id/groups/', function(req, res, _){
-    db.getGroupsByTeacher(req.params.id)
+    db.getGroups(req.params.id)
+    .then(async (groups)=>{
+        res.status(200).json(await Promise.all(groups.map(async (group) => {
+            return {...group._doc, ...{students: await db.getUsersByID(group.userIDs)}};
+        })));
+    })
+    .catch((err)=>{
+        console.log(err);
+        res.status(500).send(err)
+    })
+})
+
+router.get('/:id/studentsGroups', function(req, res, _){
+    db.getGroupsByUser(req.params.id)
     .then(async (groups)=>{
         res.status(200).json(await Promise.all(groups.map(async (group) => {
             return {...group._doc, ...{students: await db.getUsersByID(group.userIDs)}};

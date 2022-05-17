@@ -203,6 +203,16 @@ class DatabaseAccessor {
         return GroupModel.find({teacherID: teacherID});
     }
 
+    async getGroups(userID){
+        return this.getUserByID(userID).then(async (user)=>{
+            if(user.isTeacher){
+                return await db.getGroupsByTeacher(userID)
+            } else {
+                return await db.getGroupsByUser(userID)
+            }
+        })
+    }
+
     async addUserIDtoGroup(groupID, userID){
         this.getGroupByID(groupID)
             .then((group)=>{
@@ -288,6 +298,10 @@ class DatabaseAccessor {
 
     getMessagesByGroup(groupID){
         return MessageModel.find({groupID: groupID})
+    }
+
+    get30LatestMessagesByGroup(groupID){
+        return MessageModel.find({groupID: groupID}).sort({_id: -1}).limit(30);
     }
 
     async getMessagesByReceiver(userID){

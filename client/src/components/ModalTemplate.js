@@ -34,6 +34,7 @@ const StudentsModal = ({
                 Close
                 </Button>
                 <Button variant="primary" type="submit" onClick={(e)=>{
+                    e.preventDefault();
                     handleSubmit(e);
                 }}>
                     Save

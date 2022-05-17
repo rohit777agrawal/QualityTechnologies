@@ -83,7 +83,7 @@ class Message extends Component{
             parent: {}
         }
         if(this.props.message.deleted){
-            style.chatBubble = {...style.chatBubble, backgroundColor: "#f00"}
+            style.chatBubble = {...style.chatBubble, backgroundColor: "#f44"}
         }
         const BottomLine = ({
             style = defaultBottomLineProps.style,
@@ -103,9 +103,8 @@ class Message extends Component{
             ]
             if(this.props.currentUser.isTeacher){
                 components.push(
-                    <button key={2} style={{color:"#f00", border:"none", backgroundColor: "#fff", padding: 0, marginLeft: "4pt"}} href="" onClick={(e)=>{
+                    <button key={2} style={{color:"#f00", border:"none", backgroundColor: "#fff", padding: 0, margin: "0 2pt"}} href="" onClick={(e)=>{
                         e.preventDefault();
-                        console.log(this.props.message._id)
                         this.props.socket.emit("deleteMessage", this.props.message._id)
                     }}>{this.props.message.deleted ? "undelete" : "delete"}</button>
                 )
@@ -158,13 +157,6 @@ class Message extends Component{
 
     render() {
         const message = this.props.message;
-        if(message.user === "server"){
-            return(
-                <div style = {infoStyle}>
-                    {message.text}
-                </div>
-            )
-        }
         if(!this.props.currentUser.isTeacher && message.deleted) return null;
         switch(message.type){
             case "image":
