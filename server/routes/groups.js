@@ -4,6 +4,7 @@ var router = express.Router();
 // var {mongoose, db, User: UserModel} = require('../database/database');
 var db = require('../DatabaseAccesser')
 
+//Get all groups
 router.get('/', function(req, res, next) {
     db.getAllGroups()
         .then((groups)=>{
@@ -16,7 +17,8 @@ router.get('/', function(req, res, next) {
         })
 })
 
-router.get('/:id', function(req, res, next) {
+//Get group by id
+router.get('/:id', function(req, res, _) {
     db.getGroupByID(req.params.id)
     .then((group)=>{
         if (group) {
@@ -31,7 +33,8 @@ router.get('/:id', function(req, res, next) {
     })
 })
 
-router.get('/:id/teacher', function(req, res, next) {
+//Get a group's teacher
+router.get('/:id/teacher', function(req, res, _) {
     db.getGroupByID(req.params.id)
     .then((group)=>{
         if (group) {
@@ -49,6 +52,7 @@ router.get('/:id/teacher', function(req, res, next) {
     })
 })
 
+//Get all of a groups users
 router.get('/:id/users', function(req, res, next){
     db.getGroupByID(req.params.id)
     .then((group)=>{
@@ -63,6 +67,7 @@ router.get('/:id/users', function(req, res, next){
         }
     })
 })
+
 
 router.get('/:id/messages', function(req, res, next){
     db.getMessagesByGroup(req.params.id)
@@ -99,6 +104,18 @@ router.put('/:id', function(req, res, next){
     else {
         res.status(300).send("Changing group id is not allowed")
     }
+})
+
+router.put('/:id/update', function(req, res, next){
+    db.updateMembersInGroup(req.params.id, req.body)
+    .then((group)=>{
+        if (group) {
+            res.status(200).json(group)
+        }
+        else {
+            res.status(404).send("No group found with id " + req.params.id)
+        }
+    })
 })
 
 router.delete('/:id', function(req, res, next){

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { SlackCounter } from "./CustomSlackCounter.js"
 import Picker from "emoji-picker-react";
-const isEqual = require("lodash/isEqual");
+
 const mainDiv = {
     display: "flex",
     flexDirection: "column",
@@ -49,36 +49,14 @@ class Message extends Component{
     }
 
     react(emoji){
-        let updatedReactions = this.props.message.reactions;
-        if(!updatedReactions)
-            updatedReactions = [];
-
-        let newReaction = {
-            emoji: emoji,
-            by: this.props.currentUser.name,
-        }
-        let indexOf = -1;
-        for(let i = 0; i < updatedReactions.length; i++){
-            if(isEqual(newReaction, updatedReactions[i])){
-                indexOf = i;
-                break;
-            }
-        }
-        if(indexOf === -1){
-            updatedReactions.push(newReaction);
-        } else {
-            updatedReactions.splice(indexOf,1);
-        }
-        let newMessage = this.props.message;
-        newMessage.reactions = updatedReactions;
-        this.props.socket.emit("updateMessage", newMessage);
+        this.props.socket.emit("messageReaction", this.props.message._id, emoji);
     }
 
     styleTemplate(){
         if(this.props.currentUser._id === this.props.message.senderID){
             return {
                 mainDiv: Object.assign({}, {float: "right"}, mainDiv),
-                chatBubble: Object.assign({}, messageStyle, blueChatBubble),
+                chatBubble: Object.assign({}, messageStyle, blueChatBubble, this.props.message.type === "image" ? {maxWidth:"30%", maxHeight:"30%"}: {}),
                 bottomLine: Object.assign({}, infoStyle, bottomLine, {alignSelf: "flex-end",}),
                 slackCounter: {marginRight: "8px"},
                 selectorParentDiv: {height: 0, width:"100%", alignSelf: "flex-end"},
@@ -88,7 +66,7 @@ class Message extends Component{
         } else {
             return {
                 mainDiv: Object.assign({}, {float: "left"}, mainDiv),
-                chatBubble: Object.assign({}, messageStyle, greyChatBubble),
+                chatBubble: Object.assign({}, messageStyle, greyChatBubble, this.props.message.type === "image" ? {maxWidth:"30%", maxHeight:"30%"}: {}),
                 bottomLine: Object.assign({}, infoStyle, bottomLine, {alignSelf: "flex-start",}),
                 slackCounter: {marginLeft: "8px"},
                 selectorParentDiv: {height: 0, width: "100%", alignSelf: "flex-start"},
@@ -104,38 +82,52 @@ class Message extends Component{
             style: {},
             parent: {}
         }
+        if(this.props.message.deleted){
+            style.chatBubble = {...style.chatBubble, backgroundColor: "#f00"}
+        }
         const BottomLine = ({
             style = defaultBottomLineProps.style,
             parent = defaultBottomLineProps.parent
         }) => {
-            if(parent.props.currentUser._id === parent.props.message.senderID){
-                return(
-                    <>
-                        <SlackCounter
-                            style={style.slackCounter}
-                            counters = {parent.props.message.reactions}
-                            user={parent.props.currentUser.name}
-                            onSelect={(emoji)=>{this.react(emoji)}}
-                            onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
-                            side={style.side}
-                        />
-                        {parent.props.message.senderName}
-                    </>
+            let components = [
+                <SlackCounter
+                    style={style.slackCounter}
+                    reactions = {parent.props.message.reactions}
+                    user={parent.props.currentUser.name}
+                    onSelect={(emoji)=>{this.react(emoji)}}
+                    onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
+                    side={style.side}
+                    key = {0}
+                />,
+                <span key={1}>{parent.props.message.senderName}</span>
+            ]
+            if(this.props.currentUser.isTeacher){
+                components.push(
+                    <button key={2} style={{color:"#f00", border:"none", backgroundColor: "#fff", padding: 0, marginLeft: "4pt"}} href="" onClick={(e)=>{
+                        e.preventDefault();
+                        console.log(this.props.message._id)
+                        this.props.socket.emit("deleteMessage", this.props.message._id)
+                    }}>{this.props.message.deleted ? "undelete" : "delete"}</button>
                 )
+                if(parent.props.currentUser._id === parent.props.message.senderID){
+                    return(
+                        components
+                    )
+                } else {
+                    return(
+                        [components[2], components[1], components[0]]
+                    )
+                }
             } else {
-                return(
-                    <>
-                        {parent.props.message.senderName}
-                        <SlackCounter
-                            style={style.slackCounter}
-                            counters = {parent.props.message.reactions}
-                            user={parent.props.currentUser.name}
-                            onSelect={(emoji)=>{this.react(emoji)}}
-                            onAdd={()=>{this.setState({showSelector: !this.state.showSelector});}}
-                            side={style.side}
-                        />
-                    </>
-                )
+                if(parent.props.currentUser._id === parent.props.message.senderID){
+                    return(
+                        components
+                    )
+                } else {
+                    return(
+                        [components[1], components[0]]
+                    )
+                }
             }
         }
         return(
@@ -155,7 +147,7 @@ class Message extends Component{
                 </div>
                 <div style={style.selectorParentDiv}>
                     <div style={style.selectorDiv} hidden={!this.state.showSelector}>
-                    <Picker native={true} onEmojiClick={(event, emojiObject) => {
+                    <Picker native={true} onEmojiClick={(_, emojiObject) => {
                         this.react(emojiObject.emoji);
                     }}/>
                     </div>
@@ -166,24 +158,31 @@ class Message extends Component{
 
     render() {
         const message = this.props.message;
+        if(message.user === "server"){
+            return(
+                <div style = {infoStyle}>
+                    {message.text}
+                </div>
+            )
+        }
+        if(!this.props.currentUser.isTeacher && message.deleted) return null;
         switch(message.type){
             case "image":
                 return (
-                    this.messageTemplate(<img  alt=""  src = {message.contents}/>)
+                    this.messageTemplate(<img style={{maxWidth: "100%", maxHeight:"100%"}} alt="" src = {message.contents}/>)
                 )
             case "link":
                 return (
                     this.messageTemplate(<a style={{color: "#fff"}} rel="noreferrer" target="_blank" href= {message.contents}>{message.contents}</a>)
                 )
             case "server":
-                console.log("RECEIVED SERVER INFO MESSAGE", message)
+                //console.log("RECEIVED SERVER INFO MESSAGE", message)
                 return(
                     <div style = {infoStyle}>
                         {message.contents}
                     </div>
                 )
             default:
-                console.log(message)
                 return (
                     this.messageTemplate(
                         message.contents.split("\n").map((item, key)=>{

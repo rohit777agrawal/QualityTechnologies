@@ -1,34 +1,30 @@
 import React, { Component } from "react";
-import { Container, Row, Col, InputGroup, FormControl, Button, Form, Dropdown, Modal, OverlayTrigger, Popover} from 'react-bootstrap';
+import { Row, Col, InputGroup, FormControl, Button, Form, OverlayTrigger, Popover, Dropdown} from 'react-bootstrap';
+import TemplatePage from "./TemplatePage.js";
 import Picker from "emoji-picker-react";
-import ErrorBox from "../components/ErrorBox.js";
 import Message from "../components/Message.js";
-import ToggleSwitch from "../components/ToggleSwitch.js";
 import URLButtonForm from "../components/URLButtonForm.js";
+import ErrorBox from "../components/ErrorBox.js";
+import NavigateLink from "../components/NavigateLink";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 
 const GROUPID = "1"
 
 class ChatPage extends Component {
-
     constructor(props) {
         super(props);
         this.state = {
             draftMessage: "",
-            showAccount: true,
-            allowChat: true,
-            newDisplayName: "",
             messages: props.messages,
             currentGroup: props.currentGroup,
             url: "",
+            showEmoji: false,
             showLink: false,
             showImage: false,
             error: "",
         }
-
         this.handleMessageInput = this.handleMessageInput.bind(this)
-
     }
 
     send(type){ // TODO: Update to messageobj
@@ -45,12 +41,10 @@ class ChatPage extends Component {
                 this.setState({error: "Invalid url"})
             }
         }
-
     }
 
     componentDidMount(){
         document.title = "Chatr Chat Window";
-        this.setState({showAccount:false})
         this.props.initChat()
         this.messageForm.addEventListener("submit", (event)=>{
             event.preventDefault();
@@ -106,8 +100,9 @@ class ChatPage extends Component {
     }
 
     renderMessages(){ // TODO: Convert to message dict
-        return this.props.messages[GROUPID]?.map((message, keyVal) => {
-            return <Message 
+        if(!this.props.messages[GROUPID]){return;}
+        return this.props.messages[GROUPID].map((message, keyVal) => {
+            return <Message
                 socket={this.props.socket}
                 currentUser={this.props.currentUser}
                 currentGroup={this.props.currentGroup}
@@ -117,81 +112,33 @@ class ChatPage extends Component {
         })
     }
 
-    handleDisplayNameInput(event){
-        this.setState({newDisplayName: event.target.value});
-    }
-
-    handleChangeSubmit(event){
-        const nameRegex = /^[A-z0-9_-\s]{3,15}$/;
-        event.preventDefault();
-        try{
-            if(this.state.newDisplayName.match(nameRegex)===null){
-                if(this.state.newDisplayName.length < 3 || this.state.newDisplayName.length > 15){
-                    throw new Error("Usernames must be 3 to 15 characters long.");
-                } else {
-                    throw new Error("Usernames cannot have special characters.")
-                }
-            }
-            if(this.state.newDisplayName === "server"){
-                throw new Error("That user name is invalid.");
-            }
-            this.props.updateLoginInfo({name: this.state.newDisplayName})
-            .then(() => {
-                this.setState({showAccount: false});
-            })
-            .catch((err) => {
-                throw new Error(err);
-            })
-        } catch(error){
-            this.props.setLoginError(error.message);
-        }
-    }
-
     render() {
         return (
-            <Container fluid className="vh-100 text-center" style={{display: "flex", flexDirection: "column", overflow:"hidden", padding:0}} >
-                <Row style={{justifyContent: "center"}} className="h-10 bg-dark text-light sticky-top">
-                    <Col />
-                    <Col>
-                        <h1>Chatr</h1>
-                    </Col>
-                    <Col style={{display:"flex", alignItems: "center", justifyContent:"right", marginRight:"8px"}}>
-                        <ToggleSwitch
-                            show={this.props.currentUser.isTeacher}
-                            toggled={this.state.allowChat}
-                            onToggle={()=>{this.setState({allowChat: !this.state.allowChat})}}
-                            name="allowChat"
-                            style={{container:{width: "48px", height: "24px", marginLeft: "4px", marginRight:"16px"}}}
-                        >
-                        Allow Chat
-                        </ToggleSwitch>
-                        <Button style={{marginRight:"16px"}}>
-                            <i className="bi bi-bell"/>
-                        </Button>
-                        <Dropdown>
-                            <Dropdown.Toggle id="dropdown-basic">{this.props.currentUser.name}</Dropdown.Toggle>
-                            <Dropdown.Menu style={{minWidth: "100%"}}>
-                                <Dropdown.Item onClick={()=>{
-                                        this.setState({showAccount: true});
-                                        this.props.setLoginError("");
-                                    }}>
-                                    <i className="bi bi-person-circle" /> Account
-                                </Dropdown.Item>
-                                <Dropdown.Item style={{color:"red"}} onClick={()=>{
-                                    delete localStorage.currentUser;
-                                    this.props.loginHandler(false);
-                                }}>
-                                    <i className="bi bi-power" /> Log Out
-                                </Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </Col>
-                </Row>
+            <TemplatePage
+                parent = {this}
+                currentUser = {this.props.currentUser}
+                showSwitch = {this.props.currentUser.isTeacher}
+                allowChat = {this.props.allowChat}
+                socket = {this.props.socket}
+                additionalDropDownItems = {
+                    this.props.currentUser.isTeacher
+                    ? (<NavigateLink to="/group">
+                            <Dropdown.Item>
+                                <i className="bi bi-people-fill"/> Groups
+                            </Dropdown.Item>
+                        </NavigateLink>)
+                    : (null)
+                }
+                errorMessage={this.props.errorMessage}
+                setErrorMessage = {this.props.setErrorMessage}
+                loginHandler = {this.props.loginHandler}
+                updateUserName = {this.props.updateUserName}
+            >
                 <Row style={{flex: "1 1 auto", width:"100%", overflow:"auto", margin:0}} className="align-items-bottom text-left">
                     <Col md="auto" style={{width: "10%", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>
                         {this.renderActiveUsers()}
                     </Col>
-                    <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding: "0 4px 48pt 4px"}} className="align-items-bottom text-left">
+                    <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding: "4px 4px 48pt 4px"}} className="align-items-bottom text-left">
                         {this.renderMessages()}
                     </Col>
                 </Row>
@@ -201,9 +148,11 @@ class ChatPage extends Component {
                         <Form ref={(ref)=>{this.messageForm = ref;}} style = {{backgroundColor: "#fff"}}>
                             <InputGroup className="mb-3">
                             <FormControl
+                                disabled={!(this.props.allowChat || this.props.currentUser.isTeacher)}
                                 ref={(ref)=>{this.textArea = ref;}}
                                 as="textarea"
-                                placeholder="type a message and press enter"
+                                placeholder={(this.props.allowChat || this.props.currentUser.isTeacher)?
+                                    "type a message and press enter" : "The teacher has disabled chatting for the moment."}
                                 aria-label="message box"
                                 aria-describedby="basic-addon2"
                                 id="draftMessage"
@@ -217,7 +166,7 @@ class ChatPage extends Component {
                                             <Picker pickerStyle={{
                                                 border: 0,
                                                 boxShadow: 0
-                                            }}  native={true} onEmojiClick={(event, emojiObject) => {
+                                            }}  native={true} onEmojiClick={(_, emojiObject) => {
                                                 this.setState({draftMessage: this.state.draftMessage+emojiObject.emoji});
                                             }}/>
                                         </Popover.Body>
@@ -253,36 +202,12 @@ class ChatPage extends Component {
                     </Col>
                     <Col/>
                 </Row>
-                <Row >
+                <Row>
                     <Col className="fixed-bottom">
                         <ErrorBox>{this.state.error}</ErrorBox>
                     </Col>
                 </Row>
-                <Modal show={this.state.showAccount} onHide={()=>{this.setState({showAccount: false})}}>
-                    <Modal.Header closeButton>
-                        <Modal.Title style={{textAlign: "center"}}>Account Settings</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form target="">
-                            <Form.Group className="mb-3">
-                                <Form.Label>Display Name</Form.Label>
-                                <Form.Control placeholder={this.props.currentUser.name} onChange={(e)=>{this.handleDisplayNameInput(e)}}/>
-                                <Form.Label style={{color:"#f44"}}>{this.props.loginError}</Form.Label>
-                            </Form.Group>
-                            <div style={{display:"flex", justifyContent:"space-evenly"}}>
-                            <Button variant="secondary" onClick={()=>{this.setState({showAccount: false})}}>
-                            Close
-                            </Button>
-                            <Button variant="primary" type="submit" onClick={(e)=>{
-                                this.handleChangeSubmit(e);
-                            }}>
-                                Save Changes
-                            </Button>
-                            </div>
-                        </Form>
-                    </Modal.Body>
-                </Modal>
-            </Container>
+            </TemplatePage>
         );
     }
 }
