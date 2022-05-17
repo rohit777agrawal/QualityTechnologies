@@ -24,7 +24,6 @@ class ChatPage extends Component {
     }
 
     send(type){ // TODO: Update to messageobj
-        console.log("currentGroup", this.props.currentGroup)
         const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)/;
         if(this.state.url.match(urlRegex)){
             this.props.messageHandler(this.state.url, this.props.currentGroup, type)
@@ -96,35 +95,33 @@ class ChatPage extends Component {
     }
 
     renderGroups(){
-        if(this.props.groups && Object.keys(this.props.groups).length > 0 && !this.props.currentGroup){
-            this.props.setCurrentGroup(Object.keys(this.props.groups)[0]);
-        }
         return(
             <Accordion style={{marginTop: "16pt", fontSize: "16pt"}} defaultActiveKey="0">
                 {
-                    Object.values(this.props.groups).map((group, groupKeyVal)=>{
+                    Object.values(this.props.groups).map((group, i)=>{
                         return(
-                            <Accordion.Item key={groupKeyVal} eventKey={""+groupKeyVal}>
+                            <Accordion.Item key={group._id} eventKey={""+i}>
                                 <Accordion.Header onClick={()=>{
-                                    console.log(this.props.currentGroup, group._id)
                                     if(this.props.currentGroup !== group._id.valueOf()){
                                         this.props.setCurrentGroup(group._id);
                                         this.props.socket.emit("changedGroup", group._id, group.name)
                                     }
-                                }}>{group.name}</Accordion.Header>
+                                }}>
+                                    {group.name}
+                                </Accordion.Header>
                                 <Accordion.Body>
                                     {
-                                        group.students.map((student, studentKeyVal)=>{
+                                        group.students.map((student, j)=>{
                                             return (
                                                 <>
                                                 <Button variant={
                                                     this.props.activeUsers.map(activeUser => {return activeUser._id}).indexOf(student._id) !== -1
                                                     ? "outline-info"
                                                     : "outline-secondary"
-                                                } style={{cursor:"default", margin:"2pt 0", width:"128pt"}} key={2*studentKeyVal}>
+                                                } style={{cursor:"default", margin:"2pt 0", width:"128pt"}} key={student._id}>
                                                     {student.name}
                                                     </Button>
-                                                <br key={2*studentKeyVal+1}/>
+                                                <br key={j}/>
                                                 </>
                                             )
                                         })
@@ -140,12 +137,11 @@ class ChatPage extends Component {
 
     renderMessages(){ // TODO: Convert to message dict
         if(!this.props.messages[this.props.currentGroup]){return;}
-        console.log(this.props.messages)
-        return this.props.messages[this.props.currentGroup].map((message, keyVal) => {
+        return this.props.messages[this.props.currentGroup].map((message) => {
             return <Message
                 socket={this.props.socket}
                 currentUser={this.props.currentUser}
-                key={keyVal}
+                key={message._id}
                 message={message}
             />
         })

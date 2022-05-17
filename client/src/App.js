@@ -12,7 +12,6 @@ import io from "socket.io-client"
 
 const clientURL = "http://localhost:3000/"
 const serverURL = "http://localhost:5000/";
-const GROUPID = "1"
 
 //TODO:
 // Move reactions to use ID instead of name
@@ -101,8 +100,6 @@ class App extends Component {
         })
 
         this.socket.on('message', (message) => {
-            console.log(message);
-
             let messagesUpdated = this.state.messages;
             if(messagesUpdated[message.groupID]) {
                 messagesUpdated[message.groupID].push(message);
@@ -337,7 +334,7 @@ class App extends Component {
         return await fetch(serverURL + "users/" + userID + "/groups/")
             .then(async (res) => {
                 if(res.ok){
-                    res.json().then((groups)=>{
+                    return res.json().then((groups)=>{
                         this.setState({groups: Object.fromEntries(groups.map((group)=>{
                             return [group._id, group]
                         }))});
@@ -389,7 +386,7 @@ class App extends Component {
                         }/>
                 <Route path="login" element={
                     this.state.currentUser && this.state.loggedIn
-                        ? (<Navigate replace="replace" to="chat"/>)
+                        ? (<Navigate replace="replace" to="/chat"/>)
                         : (<LoginPage
                             allowAccountCreation={true}
                             loginHandler={this.submitLoginInfo.bind(this)}

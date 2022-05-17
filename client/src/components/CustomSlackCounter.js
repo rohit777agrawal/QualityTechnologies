@@ -59,7 +59,6 @@ export const SlackCounter = ({
                     names={names}
                     active={names.includes(user)}
                     onSelect={onSelect}
-                    key={i}
                     />
                 </div>
             );
