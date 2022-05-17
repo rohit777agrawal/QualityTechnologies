@@ -301,7 +301,7 @@ class DatabaseAccessor {
     }
 
     get30LatestMessagesByGroup(groupID){
-        return MessageModel.find({groupID: groupID}).sort({_id: -1}).limit(30);
+        return MessageModel.find({groupID: groupID}).sort({_id: 1}).limit(30);
     }
 
     async getMessagesByReceiver(userID){
