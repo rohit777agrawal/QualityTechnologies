@@ -101,7 +101,6 @@ class ChatPage extends Component {
 
     renderMessages(){ // TODO: Convert to message dict
         if(!this.props.messages[GROUPID]){return;}
-        console.log(this.props.messages[GROUPID])
         return this.props.messages[GROUPID].map((message, keyVal) => {
             return <Message
                 socket={this.props.socket}

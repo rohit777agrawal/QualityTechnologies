@@ -29,6 +29,9 @@ class SocketManger {
 
             });
 
+            socket.on('setAllowChat', (allowChat) =>{
+                this.io.emit('setAllowChat', allowChat)
+            })
 
             //react to a message
             socket.on('messageReaction', (messageID, emoji)=>{

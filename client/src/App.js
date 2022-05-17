@@ -54,6 +54,7 @@ class App extends Component {
         super(props);
 
         this.state = {
+            allowChat: true,
             apiResponse: "",
             loggedIn: false,
             errorMessage: "",
@@ -78,7 +79,7 @@ class App extends Component {
             }
         })
 
-        this.socket.on("setAllowChatFromServer", (allowChat) => {
+        this.socket.on("setAllowChat", (allowChat) => {
             this.setState({allowChat: allowChat});
         })
 

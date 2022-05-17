@@ -88,12 +88,12 @@ const TemplatePage = ({
                         show={showSwitch}
                         toggled={allowChat}
                         onToggle={()=>{
-                            socket.emit("toggleAllowChatToServer");
+                            socket.emit("setAllowChat", !allowChat);
                         }}
                         name="allowChat"
                         style={{container:{width: "48px", height: "24px", marginLeft: "4px", marginRight:"16px"}}}
                     >
-                    <span onClick={()=>{socket.emit("toggleAllowChatToServer")}}>Allow Chat</span>
+                    <span onClick={()=>{socket.emit("setAllowChat", !allowChat)}}>Allow Chat</span>
                     </ToggleSwitch>
                     <Button style={{marginRight:"16px"}}>
                         <i className="bi bi-bell"/>
