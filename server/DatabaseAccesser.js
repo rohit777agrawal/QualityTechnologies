@@ -29,7 +29,12 @@ var MessageSchema = new mongoose.Schema({
     senderID: String,
     groupID: String,
     contents: String,
+    deleted: Boolean,
     type: String,
+    reactions: {
+        type: Map,
+        of: [String]
+    },
     sentTime: Date
 })
 
@@ -60,16 +65,24 @@ class DatabaseAccessor {
         console.log(err)
     }
 
-    getAllUsers(){
-        return UserModel.find({});
+    async getAllUsers(){
+        return await UserModel.find({});
     }
 
-    getUserByID(userID){
-        return UserModel.findById(userID);
+    async getAllStudents(){
+        return await UserModel.find({isTeacher: false});
     }
 
-    getUsersByID(userIDs){
-        return UserModel.find({_id: {$in: userIDs}})
+    async getUserByID(userID){
+        return await UserModel.findById(userID);
+    }
+
+    async getUsersByID(userIDs){
+        return await UserModel.find({_id: {$in: userIDs}})
+    }
+
+    async getUsersByGroupID(groupID){
+        return await UserModel.find({groupIDs: {$in: groupID}})
     }
 
     getUserByEmail(email){
@@ -80,7 +93,7 @@ class DatabaseAccessor {
         return UserModel.findOne({ auth: {token: authToken} })
     }
 
-    createTeacher(name, email, password){
+    async createTeacher(name, email, password){
         return this.getUserByEmail(email)
         .then((user)=>{
             if (user){
@@ -131,25 +144,31 @@ class DatabaseAccessor {
         }
         return new UserModel(user).save()
             .then((student)=>{
-                student.link = student._id
+                student.link = student._id;
+                this.addUserIDtoGroup(groupID, student._id);
                 return student.save()
             })
 
     }
 
-    updateUser(userID, updatedProps){
-        console.log("updating user", userID, updatedProps)
-        return this.getUserByID(userID)
+    async updateUser(updatedUser){
+        if(updatedUser._doc){
+            updatedUser = updatedUser._doc;
+        }
+        const {_id, ...changes} = updatedUser;
+        return await this.getUserByID(_id)
             .then((user)=>{
                 if (user){
-                    for(var prop in updatedProps){
-                        user[prop] = updatedProps[prop]
-                    }
+                    Object.keys(user._doc).filter(key => key in changes).forEach(key=>{
+                        if(user[key] !== changes[key]){
+                            user[key] = changes[key];
+                        }
+                    })
                     return user.save()
                 }
                 else {
                     console.log("User does not exist")
-                    return null
+                    return null;
                 }
             })
     }
@@ -183,11 +202,23 @@ class DatabaseAccessor {
         return GroupModel.findById(groupID)
     }
 
-    getGroupsByUser(userID){
+    async getGroupsByUser(userID){
         return GroupModel.find({userIDs: userID})
     }
 
-    createGroup(name, teacherID, userIDs, parentGroupID){
+    async getGroupsByTeacher(teacherID){
+        return GroupModel.find({teacherID: teacherID});
+    }
+
+    async addUserIDtoGroup(groupID, userID){
+        this.getGroupByID(groupID)
+            .then((group)=>{
+                group.userIDs.push(userID);
+                group.save();
+            })
+    }
+
+    async createGroup(name, teacherID, userIDs, parentGroupID){
         var newGroup = {
             name: name,
             teacherID: teacherID,
@@ -196,49 +227,46 @@ class DatabaseAccessor {
             childGroupIDs: [],
             active: false
         }
-        return new GroupModel(newGroup).save()
+        return await new GroupModel(newGroup).save();
     }
 
-    updateMembersInGroup(groupID, updatedMemberIDs){
+    async updateMembersInGroup(groupID, updatedMemberIDs){
         return this.getGroupByID(groupID)
             .then((group)=>{
                 var exMemberIDs = group.userIDs.filter(id=>!updatedMemberIDs.includes(id))
                 var newMemberIDs = updatedMemberIDs.filter(id=>!group.userIDs.includes(id))
-                if (exMemberIDs.includes(group.teacherID)) {
-                    console.log("Removing teacher from group is not allowed")
-                }
-                else {
-                    this.getUsersByID(exMemberIDs)
-                        .then((users)=>{
-                            for (var user of users) {
-                                var userGroupIDs = user.groupIDs
-                                userGroupIDs.remove(groupID)
-                                user.groupIDs = userGroupIDs
-                                this.updateUser(user)
-                            }
+                this.getUsersByID(exMemberIDs)
+                    .then((users)=>{
+                        users.forEach((user)=>{
+                            var userGroupIDs = user.groupIDs
+                            userGroupIDs.splice(userGroupIDs.indexOf(groupID), 1)
+                            this.updateUser({_id: user._id, groupIDs: userGroupIDs})
                         })
-                    this.getUsersByID(newMemberIDs)
-                        .then((users)=>{
-                            for (var user of users) {
-                                var userGroupIDs = user.groupIDs
-                                userGroupIDs.push(groupID)
-                                user.groupIDs = userGroupIDs
-                                this.updateUser(user)
-                            }
+                    })
+                this.getUsersByID(newMemberIDs)
+                    .then((users)=>{
+                        users.forEach((user)=>{
+                            var userGroupIDs = user.groupIDs
+                            userGroupIDs.push(groupID)
+                            this.updateUser({_id: user._id, groupIDs: userGroupIDs})
                         })
-                    group.userIDs = updatedMemberIDs
-                    return this.updateGroup(group)
-                }
+                    })
+                group.userIDs = updatedMemberIDs
+                return this.updateGroup(group)
             })
     }
 
-    updateGroup(groupID, updatedProps){
-        return this.getGroupByID(groupID)
+    async updateGroup(updatedGroup){
+        if(updatedGroup._doc){
+            updatedGroup = updatedGroup._doc;
+        }
+        const {_id, ...changes} = updatedGroup
+        return this.getGroupByID(_id)
             .then((group)=>{
                 if (group){
-                    for(var prop in updatedProps){
-                        group[prop] = updatedProps[prop]
-                    }
+                    Object.keys(group._doc).filter(key => key in changes).forEach(key=>{
+                        group[key] = changes[key]
+                    })
                     return group.save()
                 }
                 else {
@@ -248,7 +276,7 @@ class DatabaseAccessor {
             })
     }
 
-    deleteGroup(groupID){
+    async deleteGroup(groupID){
         return GroupModel.deleteOne({_id: groupID})
             .then((res)=>{return res.deletedCount})
     }
@@ -269,7 +297,7 @@ class DatabaseAccessor {
         return MessageModel.find({groupID: groupID})
     }
 
-    getMessagesByReceiver(userID){
+    async getMessagesByReceiver(userID){
         return this.getGroupsByUser(userID)
                     .then((groups)=>{
                         if (groups){
@@ -282,27 +310,72 @@ class DatabaseAccessor {
                     })
     }
 
-    createMessage(contents, userID, groupID){
+    async createMessage(contents, userID, groupID, type){
         var newMessage = {
             senderID: userID,
             groupID: groupID,
             contents: contents,
+            deleted: false,
+            reactions: new Map(),
+            type: type,
             sentTime: Date.now()
         }
-        return new MessageModel(newMessage).save()
+        return await new MessageModel(newMessage).save().then((message)=>{
+            message.reactions = Object.fromEntries(message.reactions);
+            return message;
+        })
     }
 
-    updateMessage(messageID, contents) {
-        return this.getMessageByID(messageID)
+    async reactToMessage(userID, messageID, emoji){
+        if(userID === null){
+            return await MessageModel.findById(messageID);
+        }
+        return await MessageModel.findById(messageID).then(async (message)=>{
+            let emojiReactionArr = message.reactions.get(emoji);
+            if(emojiReactionArr){
+                let indexOf = emojiReactionArr.indexOf(userID);
+                if(indexOf === -1){
+                    emojiReactionArr.push(userID);
+                } else {
+                    emojiReactionArr.splice(indexOf, 1);
+                }
+                message.reactions.set(emoji, emojiReactionArr.filter((val)=> {return val !== null}));
+            } else {
+                message.reactions.set(emoji, [userID]);
+            }
+            return message.save();
+        })
+    }
+
+    async updateMessage(updatedMessage) {
+        if(updatedMessage._doc){
+            updatedMessage = updatedMessage._doc;
+        }
+        const {_id, ...changes} = updatedMessage
+        return this.getMessageByID(_id)
             .then((message)=>{
-                message.contents = contents
-                return message.save()
+                if (message){
+                    Object.keys(message._doc).filter(key => key in changes).forEach(key=>{
+                        message[key] = changes[key]
+                    })
+                    return message.save().then((message)=>{
+                        message.reactions = Object.fromEntries(message.reactions);
+                        return message;
+                    })
+                }
+                else {
+                    console.log("message does not exist")
+                    return null
+                }
             })
     }
 
-    deleteMessage(messageID) {
-        return MessageModel.deleteOne({_id: messageID})
-            .then((res)=>{return res.deletedCount})
+    async deleteMessage(messageID) {
+        return this.getMessageByID(messageID)
+            .then((message)=>{
+                message.deleted = !message.deleted;
+                return message.save();
+            })
     }
 
 }
