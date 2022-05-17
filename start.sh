@@ -2,10 +2,10 @@
 
 cd client 
 npm install 
-npm start
+npm start &
 
 cd ..
 
 cd server
 npm install
-npm start
+npm start &
