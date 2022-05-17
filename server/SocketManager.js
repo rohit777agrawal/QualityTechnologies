@@ -29,22 +29,20 @@ class SocketManger {
 
             });
 
+
+            //react to a message
             socket.on('messageReaction', (messageID, emoji)=>{
                 db.reactToMessage(this.socketIDToUserID[socket.id], messageID, emoji)
                 .then((message)=>{
-                    Promise.all(Array.from(message.reactions, async ([emoji, userIDs])=>{
-                        return [emoji, await Promise.all(userIDs.map(async (userID) => {
-                            return await db.getUserByID(userID).then((user)=>{
-                                if(user){
-                                    return user.name;
-                                }
-                            })
-                        }))]
-                    })).then((emojiUserNamePair) => {
-                        this.io.emit("updatedMessage", {...message._doc,
-                            reactions: Object.fromEntries(emojiUserNamePair)
-                        });
-                    })
+                    this.updatedMessage(message);
+                })
+            })
+
+            //delete a message for students
+            socket.on("deleteMessage", (messageID) => {
+                db.deleteMessage(messageID)
+                .then((message)=>{
+                    this.updatedMessage(message);
                 })
             })
 
@@ -130,6 +128,22 @@ class SocketManger {
             else {
                 console.log("user not found")
             }
+        })
+    }
+
+    updatedMessage(message){
+        Promise.all(Array.from(message.reactions, async ([emoji, userIDs])=>{
+            return [emoji, await Promise.all(userIDs.map(async (userID) => {
+                return await db.getUserByID(userID).then((user)=>{
+                    if(user){
+                        return user.name;
+                    }
+                })
+            }))]
+        })).then((emojiUserNamePair) => {
+            this.io.emit("updatedMessage", {...message._doc,
+                reactions: Object.fromEntries(emojiUserNamePair)
+            });
         })
     }
 

@@ -138,7 +138,7 @@ class ChatPage extends Component {
                     <Col md="auto" style={{width: "10%", borderRight: "#aaa 2px solid", padding: "8px", display:"flex", flexDirection:"column"}}>
                         {this.renderActiveUsers()}
                     </Col>
-                    <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding: "0 4px 48pt 4px"}} className="align-items-bottom text-left">
+                    <Col style = {{display:"flex", flexDirection: "column", width:"80%", padding: "4px 4px 48pt 4px"}} className="align-items-bottom text-left">
                         {this.renderMessages()}
                     </Col>
                 </Row>

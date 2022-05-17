@@ -29,6 +29,7 @@ var MessageSchema = new mongoose.Schema({
     senderID: String,
     groupID: String,
     contents: String,
+    deleted: Boolean,
     type: String,
     reactions: {
         type: Map,
@@ -307,6 +308,7 @@ class DatabaseAccessor {
             senderID: userID,
             groupID: groupID,
             contents: contents,
+            deleted: false,
             reactions: new Map(),
             type: type,
             sentTime: Date.now()
@@ -362,8 +364,11 @@ class DatabaseAccessor {
     }
 
     async deleteMessage(messageID) {
-        return MessageModel.deleteOne({_id: messageID})
-            .then((res)=>{return res.deletedCount})
+        return this.getMessageByID(messageID)
+            .then((message)=>{
+                message.deleted = !message.deleted;
+                return message.save();
+            })
     }
 
 }

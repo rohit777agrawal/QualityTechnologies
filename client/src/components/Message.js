@@ -82,6 +82,9 @@ class Message extends Component{
             style: {},
             parent: {}
         }
+        if(this.props.message.deleted){
+            style.chatBubble = {...style.chatBubble, backgroundColor: "#f00"}
+        }
         const BottomLine = ({
             style = defaultBottomLineProps.style,
             parent = defaultBottomLineProps.parent
@@ -98,14 +101,32 @@ class Message extends Component{
                 />,
                 <span key={1}>{parent.props.message.senderName}</span>
             ]
-            if(parent.props.currentUser._id === parent.props.message.senderID){
-                return(
-                    components
+            if(this.props.currentUser.isTeacher){
+                components.push(
+                    <button key={2} style={{color:"#f00", border:"none", backgroundColor: "#fff", padding: 0, marginLeft: "4pt"}} href="" onClick={(e)=>{
+                        e.preventDefault();
+                        this.props.socket.emit("deleteMessage", this.props.message._id)
+                    }}>{this.props.message.deleted ? "undelete" : "delete"}</button>
                 )
+                if(parent.props.currentUser._id === parent.props.message.senderID){
+                    return(
+                        components
+                    )
+                } else {
+                    return(
+                        [components[2], components[1], components[0]]
+                    )
+                }
             } else {
-                return(
-                    [components[1], components[0]]
-                )
+                if(parent.props.currentUser._id === parent.props.message.senderID){
+                    return(
+                        components
+                    )
+                } else {
+                    return(
+                        [components[1], components[0]]
+                    )
+                }
             }
         }
         return(
@@ -143,6 +164,7 @@ class Message extends Component{
                 </div>
             )
         }
+        if(!this.props.currentUser.isTeacher && message.deleted) return null;
         switch(message.type){
             case "image":
                 return (
