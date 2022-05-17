@@ -26,6 +26,7 @@ class App extends Component {
             fetch(serverURL + "users/" + id).then((res) => res.json()).then((json) => {
                 localStorage.setItem('currentUser', JSON.stringify(json));
                 this.setState({loggedIn: true, currentUser: json});
+                this.loadMessages()
                 resolve(json)
             }).catch((err) => {
                 console.log(err);
@@ -208,10 +209,30 @@ class App extends Component {
             //console.log(user)
             this.setState({currentUser: user, loggedIn: true})
             localStorage.setItem('currentUser', JSON.stringify(user))
+            this.loadMessages()
         }).catch((err) => {
             console.log(err);
             this.setState({errorMessage: err.message})
         });
+    }
+
+    loadMessages(){
+        for (let groupID of this.state.currentUser.groupIDs) {
+            const requestOptions = {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            }
+            fetch(serverURL + "groups/" + groupID + "/messages", requestOptions)
+            .then((messages)=>{
+                messages.reverse()
+                console.log("messages", messages)
+                let updatedMessages = this.state.messages
+                updatedMessages[groupID] = messages
+                this.setState({messages: updatedMessages})
+            })
+        }
     }
 
     setErrorMessage(errorMessage) {
