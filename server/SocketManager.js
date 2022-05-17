@@ -141,16 +141,25 @@ class SocketManger {
                 })
             }))]
         })).then((emojiUserNamePair) => {
-            this.io.emit("updatedMessage", {...message._doc,
+            this.addSenderNameToMessage(message, (message) => {this.io.emit("updatedMessage", {...message,
                 reactions: Object.fromEntries(emojiUserNamePair)
-            });
+            })});
+        })
+    }
+
+    async addSenderNameToMessage(message, fn){
+        if(message._doc){
+            message = message._doc
+        }
+        db.getUserByID(message.senderID).then((user)=>{
+            fn({...message, ...{senderName: user.name}})
         })
     }
 
     relayMessage(contents, userID, groupID, type){
         db.createMessage(contents, userID, groupID, type)
         .then(async (message) => {
-            this.io.emit('message', {...message._doc, ...{senderName: (await db.getUserByID(userID)).name}});
+            this.addSenderNameToMessage(message, (message)=>{this.io.emit('message', message)});
         })
     }
 }

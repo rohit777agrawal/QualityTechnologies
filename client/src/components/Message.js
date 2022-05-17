@@ -105,6 +105,7 @@ class Message extends Component{
                 components.push(
                     <button key={2} style={{color:"#f00", border:"none", backgroundColor: "#fff", padding: 0, marginLeft: "4pt"}} href="" onClick={(e)=>{
                         e.preventDefault();
+                        console.log(this.props.message._id)
                         this.props.socket.emit("deleteMessage", this.props.message._id)
                     }}>{this.props.message.deleted ? "undelete" : "delete"}</button>
                 )

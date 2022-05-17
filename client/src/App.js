@@ -105,7 +105,7 @@ class App extends Component {
             let updatedMessages = this.state.messages[message.groupID];
 
             for(let i = 0; i < updatedMessages.length; i++){
-                if(updatedMessages[i].senderID === message.senderID && updatedMessages[i].timeSent === message.timeSent) { // isMatching
+                if(updatedMessages[i]._id === message._id) { // isMatching
                     updatedMessages[i] = message;
                     break;
                 }
