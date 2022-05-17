@@ -32,6 +32,10 @@ class GroupsPage extends Component {
             this.props.getGroups(this.props.currentUser._id);
             this.props.getAllStudents();
         }
+        this.createForm.addEventListener("submit", (event)=>{
+            event.preventDefault();
+            this.handleCreateSubmit(event);
+        })
     }
 
     handleNameChange(event){
@@ -108,7 +112,7 @@ class GroupsPage extends Component {
                                                     Create One <i className="bi bi-person-plus"/>
                                                 </Button>
                                                 <Button variant="outline-danger" style={{marginLeft: "16pt"}} onClick={()=>{
-                                                    this.props.deleteGroup(this.props.groups[i]._id, this.props.currentUser._id)
+                                                    this.props.deleteGroup(group._id, this.props.currentUser._id)
                                                 }}>
                                                     Delete this group <i className="bi bi-trash"/>
                                                 </Button>
@@ -127,7 +131,7 @@ class GroupsPage extends Component {
                                                     <tr key={j}>
                                                         <td>{j}</td>
                                                         <td>{student.name}</td>
-                                                        <td>{this.props.pageURL+student._id}</td>
+                                                        <td><input readOnly style={{width:"400pt"}}value={this.props.pageURL+student._id}/></td>
                                                         <td>
                                                             <Button variant="outline-danger" style={{marginLeft: "16pt"}} onClick={()=>{
                                                                 let changedStudents = group.userIDs;
@@ -307,12 +311,12 @@ class GroupsPage extends Component {
                     }
                 >
                     {this.state.creating
-                    ? (<Form>
+                    ? (<Form ref={(ref)=>{this.createForm = ref}} target="">
                             <Form.Group>
                                 <Form.Label>{this.state.createType} Name</Form.Label>
                                 <Form.Control placeholder={this.state.createType+"Name"} onChange={(e)=>{this.handleNameChange(e)}}/>
-                                    <Form.Label style={{color:"#f44"}}>{this.props.errorMessage}</Form.Label>
-                                </Form.Group>
+                                <Form.Label style={{color:"#f44"}}>{this.props.errorMessage}</Form.Label>
+                            </Form.Group>
                         </Form>)
                     : (
                         <div style={{

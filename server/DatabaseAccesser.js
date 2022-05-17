@@ -132,7 +132,7 @@ class DatabaseAccessor {
             groupIDs: [groupID],
             active: false,
             auth: {
-                token: null
+                token: ''
             }
         }
         return new UserModel(user).save()
@@ -164,6 +164,19 @@ class DatabaseAccessor {
                     return null;
                 }
             })
+    }
+
+    async addGroupIDtoUser(userID, groupID){
+        return await this.getUserByID(userID).then(async(user)=>{
+            if(user){
+                user = user._doc
+                user.groupIDs.push(groupID);
+                console.log(user.groupIDs);
+                return await user.save();
+            } else {
+                return user;
+            }
+        })
     }
 
     async resetUserAuthentication(userID){
@@ -213,7 +226,7 @@ class DatabaseAccessor {
         })
     }
 
-    async addUserIDtoGroup(groupID, userID){
+    async addUserIDtoGroup(userID, groupID){
         this.getGroupByID(groupID)
             .then((group)=>{
                 group.userIDs.push(userID);
@@ -230,7 +243,18 @@ class DatabaseAccessor {
             childGroupIDs: [],
             active: false
         }
-        return await new GroupModel(newGroup).save();
+        return await new GroupModel(newGroup).save().then(async(group)=>{
+            console.log(group._id, teacherID);
+            await this.getUserByID(teacherID).then(async(user)=>{
+                user.groupIDs.push(group._id);
+                return await user.save()
+            });
+            /*if(userIDs){
+                userIDs.forEach((userID)=>{
+                    this.addGroupIDtoUser(group._id, userID);
+                })
+            }*/
+        })
     }
 
     async updateMembersInGroup(groupID, updatedMemberIDs){
