@@ -211,16 +211,21 @@ class DatabaseAccessor {
             })
     }
 
-    async createGroup(name, teacherID, userIDs, parentGroupID){
+    createGroup(name, teacherID, userIDs, parentGroupID){
         var newGroup = {
             name: name,
             teacherID: teacherID,
-            userIDs: userIDs ? userIDs : [],
+            userIDs: userIDs ? userIDs : [teacherID],
             parentGroupID: parentGroupID ? parentGroupID : null,
             childGroupIDs: [],
             active: false
         }
-        return await new GroupModel(newGroup).save();
+        return new GroupModel(newGroup).save()
+        .then((group)=>{
+            console.log(group)
+            this.addUserIDtoGroup(group._id, teacherID)
+            return group
+        });
     }
 
     async updateMembersInGroup(groupID, updatedMemberIDs){
