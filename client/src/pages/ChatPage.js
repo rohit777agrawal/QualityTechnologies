@@ -148,7 +148,6 @@ class ChatPage extends Component {
     }
 
     render() {
-        console.log(this.props.currentUser)
         return (
             <TemplatePage
                 parent = {this}

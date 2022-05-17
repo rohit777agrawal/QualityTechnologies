@@ -79,7 +79,7 @@ class SocketManger {
 
     connectSocket(socket){
         db.getUserByAuthToken(socket.handshake.auth.token)
-        .then((user)=>{
+        .then(async (user)=>{
             if (user) {
                 console.log("Retrieved user", user.name, "with id", user._id.valueOf(), "associated with socket", socket.id);
                 //save user ID
@@ -87,8 +87,8 @@ class SocketManger {
                 // set user's online status
                 db.updateUser(user._id, {active: true})
                 //Get the id of the user's first group
-                db.getGroups(user._id).then((groups)=>{
-                    if(groups && Object.values(groups).length > 1){
+                await db.getGroups(user._id).then((groups)=>{
+                    if(groups && Object.values(groups).length > 0){
                         let groupID = Object.values(groups)[0]._id.valueOf();
                         groups.forEach((group)=>{
                             db.get30LatestMessagesByGroup(group._id).then((messages)=>{
