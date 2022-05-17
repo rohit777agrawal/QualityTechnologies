@@ -83,7 +83,7 @@ class Message extends Component{
             parent: {}
         }
         if(this.props.message.deleted){
-            style.chatBubble = {...style.chatBubble, backgroundColor: "#f44"}
+            style.chatBubble = {...style.chatBubble, backgroundColor: "#f44", color: "#fff"}
         }
         const BottomLine = ({
             style = defaultBottomLineProps.style,

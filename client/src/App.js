@@ -22,8 +22,8 @@ const serverURL = "http://localhost:5000/";
 
 class App extends Component {
     validateUser(id) {
-        return new Promise((resolve, reject) => {
-            fetch(serverURL + "users/" + id).then((res) => res.json()).then((json) => {
+        return new Promise(async (resolve, reject) => {
+            return await fetch(serverURL + "users/" + id).then((res) => res.json()).then((json) => {
                 localStorage.setItem('currentUser', JSON.stringify(json));
                 this.setState({loggedIn: true, currentUser: json});
                 resolve(json)
