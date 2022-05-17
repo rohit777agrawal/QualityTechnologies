@@ -33,6 +33,10 @@ class SocketManger {
                 this.io.emit('setAllowChat', allowChat)
             })
 
+            socket.on('changedGroup', (groupID, groupName)=>{
+                this.sendServerMessage(socket, groupID, "You have changed to the " + groupName +" group.");
+            })
+
             //react to a message
             socket.on('messageReaction', (messageID, emoji)=>{
                 db.reactToMessage(this.socketIDToUserID[socket.id], messageID, emoji)
@@ -61,29 +65,46 @@ class SocketManger {
         });
     }
 
-    sendServerMessage(socket, message){
-        socket.emit('message', {contents: message, sentTime: new Date(), type: "server"});
+    sendServerMessage(socket, groupID, message){
+        socket.emit('message', {contents: message, groupID: groupID, deleted:false, sentTime: new Date(), type: "server"});
     }
 
-    sendServerBroadcast(socket, message){
-        socket.emit('message', {contents: message, sentTime: new Date(), type: "server"});
+    sendServerBroadcast(socket, groupID, message){
+        socket.emit('message', {contents: message, groupID: groupID,deleted:false, sentTime: new Date(), type: "server"});
     }
 
-    connectSocket(socket){
+    connectSocket(socket, currentGroup){
         db.getUserByAuthToken(socket.handshake.auth.token)
         .then((user)=>{
             if (user) {
-                console.log("Retrieved user", user.name, "with id", user._id.valueOf(), "associated with socket", socket.id)
+                console.log("Retrieved user", user.name, "with id", user._id.valueOf(), "associated with socket", socket.id);
                 //save user ID
                 this.socketIDToUserID[socket.id] = user._id
                 // set user's online status
                 db.updateUser(user._id, {active: true})
-                // Welcome connectee
-                this.sendServerMessage(socket, 'Welcome to Chatr, ' + user.name);
-                // Broadcast to all users except connectee
-                this.sendServerBroadcast(socket, user.name + " has joined the chat");
-                // inform all users of updated active users list
-                this.broadcastActiveUsers()
+                //Get the id of the user's first group
+                db.getGroups(user._id).then((groups)=>{
+
+                    if(groups && Object.values(groups).length > 1){
+                        let groupID = Object.values(groups)[0]._id.valueOf();
+                        groups.forEach((group)=>{
+                            db.get30LatestMessagesByGroup(group._id).then((messages)=>{
+                                Promise.all(messages.map(async (message)=>{
+                                    return await this.sendMessageWithSenderNameAndReactions(message);
+                                })).then((messages)=>{
+                                    socket.emit("loadGroupMessages", group._id, messages);
+                                })
+                            })
+                        })
+                        // Welcome connectee
+                        this.sendServerMessage(socket, groupID, 'Welcome to Chatr, ' + user.name);
+                        // Broadcast to all users except connectee
+                        this.sendServerBroadcast(socket, groupID, user.name + " has joined the chat");
+                        // inform all users of updated active users list
+                        this.broadcastActiveUsers()
+
+                    }
+                })
             }
             else {
                 socket.disconnect()
@@ -131,6 +152,33 @@ class SocketManger {
             else {
                 console.log("user not found")
             }
+        })
+    }
+
+    async sendMessageWithSenderNameAndReactions(message){
+        if(message._doc){
+            message = message._doc
+        }
+        if(!message.reactions){
+            db.deleteMessage(message._id);
+            return;
+        }
+        return Promise.all(Array.from(message.reactions, async ([emoji, userIDs])=>{
+            return [emoji, await Promise.all(userIDs.map(async (userID) => {
+                return await db.getUserByID(userID).then((user)=>{
+                    if(user){
+                        return user.name;
+                    }
+                })
+            }))]
+        })).then(async (emojiUserNamePair) => {
+            return await db.getUserByID(message.senderID).then((user)=>{
+                if(user){
+                    return ({...message, senderName: user.name, reactions: Object.fromEntries(emojiUserNamePair)})
+                } else {
+                    return ({...message, senderName: "unknown", reactions: Object.fromEntries(emojiUserNamePair)})
+                }
+            })
         })
     }
 

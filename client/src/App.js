@@ -62,6 +62,7 @@ class App extends Component {
             currentUser: null,
             messages: {},   // messages, users, groups are intended to be a dictionary of arrays that store the given type
             users: {},
+            currentGroup: null,
             students:[],
             groups: {},
             activeUsers: []
@@ -77,7 +78,7 @@ class App extends Component {
             auth: {
                 token: this.state.currentUser.auth.token
             }
-        })
+        }, this.state.currentGroup)
 
         this.socket.on("setAllowChat", (allowChat) => {
             this.setState({allowChat: allowChat});
@@ -87,18 +88,29 @@ class App extends Component {
             this.setState({activeUsers: activeUsers});
         })
 
-        this.socket.on('message', (message) => {
-            let updatedMessages = this.state.messages[message.groupID];
-            if(!updatedMessages)
-                updatedMessages = [];
-            updatedMessages.push(message)
-
+        this.socket.on("loadGroupMessages", (groupID, groupMessages) => {
+            let messagesUpdated = this.state.messages;
+            if(messagesUpdated[groupID]) {
+                messagesUpdated[groupID] = messagesUpdated[groupID].concat(groupMessages);
+            } else {
+                messagesUpdated[groupID] = groupMessages;
+            }
             this.setState({
-                ...this.state,
-                messages: {
-                    ...this.state.messages,
-                    [message.groupID]: updatedMessages
-                }
+                messages: messagesUpdated
+            })
+        })
+
+        this.socket.on('message', (message) => {
+            console.log(message);
+
+            let messagesUpdated = this.state.messages;
+            if(messagesUpdated[message.groupID]) {
+                messagesUpdated[message.groupID].push(message);
+            } else {
+                messagesUpdated[message.groupID] = [message];
+            }
+            this.setState({
+                messages: messagesUpdated
             })
         })
 
@@ -209,9 +221,9 @@ class App extends Component {
         this.setState({errorMessage: errorMessage})
     }
 
-    sendMessage(msg, type) {
+    sendMessage(msg, groupID, type) {
         // send messages to message to server-side socket
-        this.socket.emit('message', msg, this.state.currentUser._id, GROUPID, type);
+        this.socket.emit('message', msg, this.state.currentUser._id, groupID, type);
     }
 
     createNewGroup(groupName, teacherID) {
@@ -226,7 +238,7 @@ class App extends Component {
             fetch(serverURL + "users/" + teacherID + "/groups/", requestOptions)
                 .then((res) => {
                     if(res.ok){
-                        this.getTeachersGroups(teacherID);
+                        this.getGroups(teacherID);
                         resolve();
                     }  else {
                         throw new Error("Unspecified error");
@@ -250,7 +262,7 @@ class App extends Component {
             fetch(serverURL + "groups/" + groupID + "/update", requestOptions)
                 .then((res) => {
                     if(res.ok){
-                        this.getTeachersGroups(teacherID);
+                        this.getGroups(teacherID);
                         this.getAllStudents();
                         resolve();
                     }  else {
@@ -274,7 +286,7 @@ class App extends Component {
         return fetch(serverURL + "users/student/", requestOptions)
             .then((res) => {
                 if(res.ok){
-                     this.getTeachersGroups(teacherID);
+                     this.getGroups(teacherID);
                      this.getAllStudents();
                  }  else {
                      throw new Error("Unspecified error");
@@ -292,7 +304,7 @@ class App extends Component {
         fetch(serverURL + "users/" + studentID, requestOptions)
             .then((res) => {
                 if(res.ok){
-                    this.getTeachersGroups(teacherID);
+                    this.getGroups(teacherID);
                     this.getAllStudents();
                 }  else {
                     throw new Error("Unspecified error");
@@ -310,7 +322,7 @@ class App extends Component {
         fetch(serverURL + "groups/" + groupID, requestOptions)
             .then((res) => {
                 if(res.ok){
-                    this.getTeachersGroups(teacherID);
+                    this.getGroups(teacherID);
                     this.getAllStudents();
                 }  else {
                     throw new Error("Unspecified error");
@@ -321,8 +333,8 @@ class App extends Component {
             })
     }
 
-    async getTeachersGroups(teacherID){
-        return await fetch(serverURL + "users/" + teacherID + "/groups/")
+    async getGroups(userID){
+        return await fetch(serverURL + "users/" + userID + "/groups/")
             .then(async (res) => {
                 if(res.ok){
                     res.json().then((groups)=>{
@@ -355,6 +367,10 @@ class App extends Component {
             .catch((err) => {
                 this.setState({errorMessage: err.message});
             })
+    }
+
+    setCurrentGroup(currentGroup){
+        this.setState({currentGroup: currentGroup});
     }
 
     render() {
@@ -391,7 +407,10 @@ class App extends Component {
                             errorMessage={this.state.errorMessage}
                             setErrorMessage={this.setErrorMessage.bind(this)}
                             loginHandler={this.updateLoginState.bind(this)}
+                            getGroups={this.getGroups.bind(this)}
                             groups={this.state.groups}
+                            setCurrentGroup={this.setCurrentGroup.bind(this)}
+                            currentGroup={this.state.currentGroup}
                             updateUserName={this.updateUserName.bind(this)}
                             messages={this.state.messages}
                             messageHandler={this.sendMessage.bind(this)}
@@ -410,7 +429,7 @@ class App extends Component {
                             loggedIn={this.state.loggedIn}
                             updateUserName={this.updateUserName.bind(this)}
                             groups={this.state.groups}
-                            getTeachersGroups={this.getTeachersGroups.bind(this)}
+                            getGroups={this.getGroups.bind(this)}
                             createNewGroup={this.createNewGroup.bind(this)}
                             deleteGroup={this.deleteGroup.bind(this)}
                             students={this.state.students}
@@ -423,12 +442,12 @@ class App extends Component {
                         />)
                     : (<Navigate replace="replace" to="/"/>)
                 }/>
-                <Route path="error404" element={<Error404/>}/>
                 <Route path="*" element={
                     <NoPage validateUser = {
                         this.validateUser.bind(this)
                     }/>
                 }/>
+                <Route path="error404" element={<Error404/>}/>
             </Routes>
         </BrowserRouter>)
     }
