@@ -53,6 +53,10 @@ class SocketManger {
                 })
             })
 
+            socket.on("requestActiveUsers", () => {
+                this.broadcastActiveUsers();
+            })
+
             // Edit a message, add a reaction, etc
             socket.on('updateMessage', (message)=>{this.io.emit("updatedMessage", message);})
 
@@ -73,7 +77,7 @@ class SocketManger {
         socket.emit('message', {contents: message, groupID: groupID,deleted:false, sentTime: new Date(), type: "server"});
     }
 
-    connectSocket(socket, currentGroup){
+    connectSocket(socket){
         db.getUserByAuthToken(socket.handshake.auth.token)
         .then((user)=>{
             if (user) {
@@ -84,7 +88,6 @@ class SocketManger {
                 db.updateUser(user._id, {active: true})
                 //Get the id of the user's first group
                 db.getGroups(user._id).then((groups)=>{
-
                     if(groups && Object.values(groups).length > 1){
                         let groupID = Object.values(groups)[0]._id.valueOf();
                         groups.forEach((group)=>{
@@ -101,9 +104,9 @@ class SocketManger {
                         // Broadcast to all users except connectee
                         this.sendServerBroadcast(socket, groupID, user.name + " has joined the chat");
                         // inform all users of updated active users list
-                        this.broadcastActiveUsers()
 
                     }
+                    this.broadcastActiveUsers()
                 })
             }
             else {

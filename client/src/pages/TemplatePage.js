@@ -130,7 +130,7 @@ const TemplatePage = ({
                         <Form.Label>Display Name</Form.Label>
                         <Form.Control placeholder={currentUser.name} onChange={(e)=>{handleDisplayNameInput(e)}}/>
                         <Form.Label style={{color:"#f44"}}>{errorMessage}</Form.Label>
-                        </Form.Group>
+                    </Form.Group>
                 </Form>
             </ModalTemplate>
         </Container>

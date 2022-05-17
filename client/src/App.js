@@ -235,7 +235,7 @@ class App extends Component {
             fetch(serverURL + "users/" + teacherID + "/groups/", requestOptions)
                 .then((res) => {
                     if(res.ok){
-                        this.getGroups(teacherID);
+                        this.getGroups(teacherID)
                         resolve();
                     }  else {
                         throw new Error("Unspecified error");
@@ -335,6 +335,7 @@ class App extends Component {
             .then(async (res) => {
                 if(res.ok){
                     return res.json().then((groups)=>{
+                        this.socket.emit("requestActiveUsers");
                         this.setState({groups: Object.fromEntries(groups.map((group)=>{
                             return [group._id, group]
                         }))});
